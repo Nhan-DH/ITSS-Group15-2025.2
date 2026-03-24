@@ -1,0 +1,68 @@
+import React from 'react';
+import { Menu, Sun, Moon, LogOut, User } from 'lucide-react';
+import useAuthStore from '@/store/useAuthStore';
+import useThemeStore from '@/store/useThemeStore';
+import useUIStore from '@/store/useUIStore';
+
+const Header = () => {
+  // Lấy hàm xử lý đăng xuất và thông tin user từ Zustand Store
+  const { user, logout } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
+  const toggleSidebar = useUIStore((state) => state.toggleSidebar);
+
+  return (
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white/90 px-4 backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/90 transition-colors">
+      <div className="flex items-center">
+        {/* Nút Hamburger bật tắt Sidebar ở giao diện Mobile */}
+        <button
+          onClick={toggleSidebar}
+          className="mr-4 rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden focus:outline-none"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        
+        {/* Tên màn hình / Ứng dụng ở góc trái Header */}
+        <h1 className="hidden text-lg font-bold tracking-tight lg:block md:text-xl text-gray-900 dark:text-white">
+          Trang Quản Trị
+        </h1>
+      </div>
+
+      <div className="flex items-center gap-4">
+        {/* Nút Đổi màu Sáng/Tối (Light/Dark Mode) */}
+        <button
+          onClick={toggleTheme}
+          className="rounded-full p-2.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white focus:outline-none"
+          title="Đổi giao diện"
+        >
+          {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+        </button>
+
+        {/* Khối quản lý User Profile (Hình ảnh + Tên + Logout) */}
+        <div className="flex items-center gap-3 border-l border-gray-300 pl-4 dark:border-gray-700">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 shadow-sm">
+            <User className="h-5 w-5" />
+          </div>
+          
+          <div className="hidden flex-col md:flex">
+            <span className="text-sm font-semibold leading-none text-gray-900 dark:text-white">
+              {user?.fullName || "Người dùng"}
+            </span>
+            <span className="mt-1.5 text-xs font-medium leading-none text-gray-500 dark:text-gray-400">
+              {user?.role ? user.role.toUpperCase() : "GUEST"}
+            </span>
+          </div>
+          
+          <button
+            onClick={logout}
+            className="ml-3 rounded-md p-2 text-red-500 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300 focus:outline-none transition-colors"
+            title="Đăng xuất"
+          >
+            <LogOut className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;

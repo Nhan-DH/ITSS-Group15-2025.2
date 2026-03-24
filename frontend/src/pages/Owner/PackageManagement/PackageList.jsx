@@ -1,0 +1,107 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import { usePackages } from '@/hooks/queries/usePackages';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
+import Button from '@/components/Common/Button';
+import { formatPriceVND } from '@/utils/formatters';
+
+const PackageList = () => {
+  const { data: packages, isLoading, isError } = usePackages();
+
+  // Tạo mock data fallback cho tình huống usePackages hook chưa có data thật
+  const mockPackages = packages || [
+    { id: 1, name: "Gói Cơ Bản", duration: 1, durationUnit: "Tháng", price: 300000, status: "active", features: ["Phòng gym cơ bản", "Yoga"] },
+    { id: 2, name: "Gói Nâng Cao", duration: 3, durationUnit: "Tháng", price: 800000, status: "active", features: ["Tất cả khu vực", "Tủ đồ cá nhân"] },
+    { id: 3, name: "Gói VIP (1 Năm)", duration: 12, durationUnit: "Tháng", price: 3000000, status: "active", features: ["HLV cá nhân 2 buổi", "Massge", "Sauna"] },
+    { id: 4, name: "Gói Trải Nghiệm", duration: 7, durationUnit: "Ngày", price: 100000, status: "inactive", features: ["Dùng thử giới hạn"] },
+  ];
+
+  return (
+    <div className="space-y-6 relative">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Danh sách Gói tập</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Quản lý và cấu hình các dịch vụ gói tập do Gym cung cấp.
+          </p>
+        </div>
+        <Link to="/owner/packages/create">
+          <Button leftIcon={<Plus className="h-4 w-4" />}>
+            Thêm gói mới
+          </Button>
+        </Link>
+      </div>
+
+      <div className="rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 dark:bg-gray-950 dark:ring-gray-800">
+        {isLoading ? (
+          <div className="p-8 text-center text-gray-500">Đang tải biểu giá...</div>
+        ) : isError && !packages ? (
+          <div className="p-8 text-center text-red-500">Lỗi lấy dữ liệu Gói tập.</div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Tên Gói</TableHead>
+                <TableHead>Thời lượng</TableHead>
+                <TableHead>Giá (VND)</TableHead>
+                <TableHead>Mô tả ngắn</TableHead>
+                <TableHead>Trạng Thái</TableHead>
+                <TableHead className="text-right">Hành động</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockPackages.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-gray-500 h-24">
+                    Chưa có cấu hình gói tập nào. Bấm "Thêm gói mới" để thiết lập.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                mockPackages.map((pkg) => (
+                  <TableRow key={pkg.id}>
+                    <TableCell className="font-semibold text-gray-900 dark:text-gray-100">{pkg.name}</TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-300">
+                      {pkg.duration} {pkg.durationUnit}
+                    </TableCell>
+                    <TableCell className="font-medium text-emerald-600 dark:text-emerald-400">
+                      {formatPriceVND ? formatPriceVND(pkg.price) : `${pkg.price.toLocaleString('vi-VN')} đ`}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-500 max-w-[200px] truncate">
+                      {pkg.features?.join(", ")}
+                    </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${
+                        pkg.status === 'active' 
+                          ? 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400' 
+                          : 'bg-gray-50 text-gray-600 ring-gray-600/20 dark:bg-gray-800/50 dark:text-gray-400'
+                      }`}>
+                        {pkg.status === 'active' ? 'Đang bán' : 'Bị ẩn'}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <div className="flex items-center justify-end gap-1">
+                        <Link to={`/owner/packages/${pkg.id}/edit`}>
+                          <Button variant="ghost" size="icon" title="Chỉnh sửa" className="h-8 w-8 text-blue-500 hidden sm:inline-flex">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Button variant="ghost" size="icon" title="Xóa" className="h-8 w-8 text-red-500 hidden sm:inline-flex">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        {/* Mobile view Action Fallback */}
+                        <div className="sm:hidden text-blue-500 font-medium text-sm underline px-2 py-1">Sửa</div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default PackageList;

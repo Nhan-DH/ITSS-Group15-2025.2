@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+@layer base {
+  body {
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  #root {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Fix for <select> options text color in Dark/Light Mode */
+  option {
+    background-color: #ffffff;
+    color: #111827;
+  }
+  
+  :is(.dark) option,
+  .dark option {
+    background-color: #1f2937;
+    color: #ffffff;
+  }
+}
+
