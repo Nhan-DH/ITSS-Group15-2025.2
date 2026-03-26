@@ -1,8 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MemberFormComponent from '@/components/Forms/MemberForm';
 import { UserPlus } from 'lucide-react';
+import { toast } from '@/utils/toast';
 
 const RegisterMember = () => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = (data) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success('Đã tạo hội viên mới thành công!');
+      navigate('/manager/members');
+    }, 500);
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3">
@@ -18,7 +32,11 @@ const RegisterMember = () => {
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm md:p-8 dark:border-gray-800 dark:bg-gray-950">
-        <MemberFormComponent isEditing={false} />
+        <MemberFormComponent 
+          initialData={null} 
+          onSubmit={handleSubmit} 
+          isLoading={isLoading} 
+        />
       </div>
     </div>
   );

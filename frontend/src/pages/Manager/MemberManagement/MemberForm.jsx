@@ -1,12 +1,48 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import MemberFormComponent from '@/components/Forms/MemberForm';
 import { ArrowLeft } from 'lucide-react';
 import Button from '@/components/Common/Button';
+import { toast } from '@/utils/toast';
 
 const MemberFormPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const isEditing = !!id;
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialData, setInitialData] = useState(null);
+
+  useEffect(() => {
+    if (isEditing) {
+      setIsLoading(true);
+      // Giả lập tải dữ liệu từ API
+      setTimeout(() => {
+        setInitialData({
+          fullName: 'Nguyễn Văn A',
+          phoneNumber: '0987654321',
+          email: 'nguyenvana@example.com',
+          address: '123 Đường B, Quận C',
+          gender: 'male',
+          dateOfBirth: '1990-01-01',
+        });
+        setIsLoading(false);
+      }, 500);
+    }
+  }, [id, isEditing]);
+
+  const handleSubmit = (data) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success(isEditing ? 'Cập nhật thay đổi thành công!' : 'Đã thêm hội viên mới thành công!');
+      navigate('/manager/members');
+    }, 500);
+  };
+
+  if (isEditing && !initialData) {
+    return <div className="p-8 text-center text-gray-500">Đang tải dữ liệu...</div>;
+  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -27,7 +63,11 @@ const MemberFormPage = () => {
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm md:p-8 dark:border-gray-800 dark:bg-gray-950">
-        <MemberFormComponent isEditing={isEditing} memberId={id} />
+        <MemberFormComponent 
+          initialData={initialData} 
+          onSubmit={handleSubmit} 
+          isLoading={isLoading} 
+        />
       </div>
     </div>
   );

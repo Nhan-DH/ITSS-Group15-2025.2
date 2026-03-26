@@ -1,12 +1,48 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import EquipmentFormComponent from '@/components/Forms/EquipmentForm';
 import { ArrowLeft } from 'lucide-react';
 import Button from '@/components/Common/Button';
+import { toast } from '@/utils/toast';
 
 const EquipmentFormPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const isEditing = !!id;
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialData, setInitialData] = useState(null);
+
+  useEffect(() => {
+    if (isEditing) {
+      setIsLoading(true);
+      // Giả lập tải dữ liệu từ API
+      setTimeout(() => {
+        setInitialData({
+          name: 'Máy chạy bộ Kingsmith XS-100',
+          code: 'TB-001-A',
+          quantity: 2,
+          status: 'active',
+          purchaseDate: '2023-01-01',
+          warrantyUntil: '2025-01-01',
+        });
+        setIsLoading(false);
+      }, 500);
+    }
+  }, [id, isEditing]);
+
+  const handleSubmit = (data) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success(isEditing ? 'Cập nhật tài sản thành công!' : 'Đã nhập thiết bị mới thành công!');
+      navigate('/owner/equipment');
+    }, 500);
+  };
+
+  if (isEditing && !initialData) {
+    return <div className="p-8 text-center text-gray-500">Đang tải dữ liệu...</div>;
+  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -29,7 +65,11 @@ const EquipmentFormPage = () => {
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm md:p-8 dark:border-gray-800 dark:bg-gray-950">
-        <EquipmentFormComponent isEditing={isEditing} equipmentId={id} />
+        <EquipmentFormComponent 
+          initialData={initialData} 
+          onSubmit={handleSubmit} 
+          isLoading={isLoading} 
+        />
       </div>
     </div>
   );

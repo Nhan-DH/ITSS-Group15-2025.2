@@ -1,12 +1,47 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import PackageFormComponent from '@/components/Forms/PackageForm';
 import { ArrowLeft } from 'lucide-react';
 import Button from '@/components/Common/Button';
+import { toast } from '@/utils/toast';
 
 const PackageFormPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const isEditing = !!id;
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialData, setInitialData] = useState(null);
+
+  useEffect(() => {
+    if (isEditing) {
+      setIsLoading(true);
+      // Giả lập tải dữ liệu từ API
+      setTimeout(() => {
+        setInitialData({
+          name: 'Gói Yoga - Cơ bản 1 tháng',
+          durationMonths: 1,
+          price: 500000,
+          description: 'Truy cập không giới hạn khu tập Yoga cơ bản',
+          type: 'basic',
+        });
+        setIsLoading(false);
+      }, 500);
+    }
+  }, [id, isEditing]);
+
+  const handleSubmit = (data) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success(isEditing ? 'Cập nhật thay đổi thành công!' : 'Đã thiết lập gói tập mới thành công!');
+      navigate('/owner/packages');
+    }, 500);
+  };
+
+  if (isEditing && !initialData) {
+    return <div className="p-8 text-center text-gray-500">Đang tải dữ liệu...</div>;
+  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -29,8 +64,11 @@ const PackageFormPage = () => {
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm md:p-8 dark:border-gray-800 dark:bg-gray-950">
-        {/* Component Dùng Xuyên Suốt từ `src/components/Forms` */}
-        <PackageFormComponent isEditing={isEditing} packageId={id} />
+        <PackageFormComponent 
+          initialData={initialData} 
+          onSubmit={handleSubmit} 
+          isLoading={isLoading} 
+        />
       </div>
     </div>
   );

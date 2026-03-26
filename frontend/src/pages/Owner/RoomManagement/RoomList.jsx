@@ -1,6 +1,8 @@
 import React from 'react';
-import { Plus, Users, MapPin, Edit, Settings } from 'lucide-react';
+import { Plus, Users, MapPin, Edit, Eye, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Button from '@/components/Common/Button';
+import { toast } from '@/utils/toast';
 
 const RoomList = () => {
   const rooms = [
@@ -19,9 +21,11 @@ const RoomList = () => {
             Theo dõi sức chứa và mật độ hiện tại của các không gian tập.
           </p>
         </div>
-        <Button leftIcon={<Plus className="h-4 w-4" />}>
-          Thêm phân khu mới
-        </Button>
+        <Link to="/owner/rooms/create">
+          <Button leftIcon={<Plus className="h-4 w-4" />}>
+            Thêm phân khu mới
+          </Button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -57,8 +61,35 @@ const RoomList = () => {
                 {room.status === 'active' ? 'Đang mở cửa' : 'Bảo trì'}
               </span>
               <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500"><Edit className="h-4 w-4"/></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500"><Settings className="h-4 w-4"/></Button>
+                <Link to={`/owner/rooms/${room.id}`}>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/50"
+                    title="Xem chi tiết"
+                  >
+                    <Eye className="h-4 w-4"/>
+                  </Button>
+                </Link>
+                <Link to={`/owner/rooms/${room.id}/edit`}>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/50"
+                    title="Chỉnh sửa"
+                  >
+                    <Edit className="h-4 w-4"/>
+                  </Button>
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/50"
+                  title="Xóa"
+                  onClick={() => toast.error('Tính năng xóa đang được phát triển')}
+                >
+                  <Trash2 className="h-4 w-4"/>
+                </Button>
               </div>
             </div>
           </div>

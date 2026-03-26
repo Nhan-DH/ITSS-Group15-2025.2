@@ -17,6 +17,8 @@ import EquipmentFormPage from '@/pages/Owner/EquipmentManagement/EquipmentForm';
 import StaffList from '@/pages/Owner/StaffManagement/StaffList';
 import StaffFormPage from '@/pages/Owner/StaffManagement/StaffForm';
 import RoomList from '@/pages/Owner/RoomManagement/RoomList';
+import RoomDetail from '@/pages/Owner/RoomManagement/RoomDetail';
+import RoomFormPage from '@/pages/Owner/RoomManagement/RoomForm';
 import FeedbackList from '@/pages/Owner/FeedbackManagement/FeedbackList';
 import RevenueReport from '@/pages/Owner/Reports/RevenueReport';
 
@@ -39,6 +41,7 @@ import MemberDashboard from '@/pages/Member/MemberDashboard';
 import PackageInfo from '@/pages/Member/MyPackage/PackageInfo';
 import TrainingHistory from '@/pages/Member/MyPackage/TrainingHistory';
 import RenewPackage from '@/pages/Member/RenewPackage/RenewPackage';
+import PaymentCheckout from '@/pages/Member/RenewPackage/PaymentCheckout';
 import SendFeedback from '@/pages/Member/Feedback/SendFeedback';
 import ProfileInfo from '@/pages/Member/Profile/ProfileInfo';
 import EditProfile from '@/pages/Member/Profile/EditProfile';
@@ -73,6 +76,7 @@ export const router = createBrowserRouter([
               { path: 'my-package', element: <PackageInfo /> },
               { path: 'history', element: <TrainingHistory /> },
               { path: 'renew', element: <RenewPackage /> },
+              { path: 'renew/checkout', element: <PaymentCheckout /> },
               { path: 'feedback', element: <SendFeedback /> },
               { path: 'profile', element: <ProfileInfo /> },
               { path: 'profile/edit', element: <EditProfile /> }
@@ -98,6 +102,9 @@ export const router = createBrowserRouter([
               { path: 'staffs/create', element: <StaffFormPage /> },
               { path: 'staffs/:id/edit', element: <StaffFormPage /> },
               { path: 'rooms', element: <RoomList /> },
+              { path: 'rooms/create', element: <RoomFormPage /> },
+              { path: 'rooms/:id', element: <RoomDetail /> },
+              { path: 'rooms/:id/edit', element: <RoomFormPage /> },
               { path: 'feedbacks', element: <FeedbackList /> },
               { path: 'reports/revenue', element: <RevenueReport /> }
             ]
