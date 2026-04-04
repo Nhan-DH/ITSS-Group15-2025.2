@@ -1,0 +1,106 @@
+package http
+
+import (
+	"encoding/json"
+	"net/http"
+	"strconv"
+
+	"gym-management/internal/domain/entity"
+	"gym-management/internal/domain/usecase"
+
+	"github.com/gorilla/mux"
+)
+
+type PTDetailHandler struct {
+	usecase usecase.PTDetailUsecase
+}
+
+func NewPTDetailHandler(usecase usecase.PTDetailUsecase) *PTDetailHandler {
+	return &PTDetailHandler{usecase: usecase}
+}
+
+func (h *PTDetailHandler) Create(w http.ResponseWriter, r *http.Request) {
+	var ptDetail entity.PTDetail
+	if err := json.NewDecoder(r.Body).Decode(&ptDetail); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := h.usecase.CreatePTDetail(&ptDetail); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(ptDetail)
+}
+
+func (h *PTDetailHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	employeeID, err := strconv.Atoi(vars["employeeID"])
+	if err != nil {
+		http.Error(w, "Invalid Employee ID", http.StatusBadRequest)
+		return
+	}
+
+	ptDetail, err := h.usecase.GetPTDetailByID(employeeID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(ptDetail)
+}
+
+func (h *PTDetailHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	ptDetails, err := h.usecase.GetAllPTDetails()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(ptDetails)
+}
+
+func (h *PTDetailHandler) Update(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	employeeID, err := strconv.Atoi(vars["employeeID"])
+	if err != nil {
+		http.Error(w, "Invalid Employee ID", http.StatusBadRequest)
+		return
+	}
+
+	var ptDetail entity.PTDetail
+	if err := json.NewDecoder(r.Body).Decode(&ptDetail); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	ptDetail.EmployeeID = employeeID
+
+	if err := h.usecase.UpdatePTDetail(&ptDetail); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(ptDetail)
+}
+
+func (h *PTDetailHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	employeeID, err := strconv.Atoi(vars["employeeID"])
+	if err != nil {
+		http.Error(w, "Invalid Employee ID", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.usecase.DeletePTDetail(employeeID); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
