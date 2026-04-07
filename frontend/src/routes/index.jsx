@@ -21,6 +21,9 @@ import RoomDetail from '@/pages/Owner/RoomManagement/RoomDetail';
 import RoomFormPage from '@/pages/Owner/RoomManagement/RoomForm';
 import FeedbackList from '@/pages/Owner/FeedbackManagement/FeedbackList';
 import RevenueReport from '@/pages/Owner/Reports/RevenueReport';
+import MemberReport from '@/pages/Owner/Reports/MemberReport';
+import StaffPerformanceReport from '@/pages/Owner/Reports/StaffPerformanceReport';
+import ReportsOverview from '@/pages/Owner/Reports/ReportsOverview';
 
 import ManagerDashboard from '@/pages/Manager/ManagerDashboard';
 import ManagerMemberList from '@/pages/Manager/MemberManagement/MemberList';
@@ -106,7 +109,10 @@ export const router = createBrowserRouter([
               { path: 'rooms/:id', element: <RoomDetail /> },
               { path: 'rooms/:id/edit', element: <RoomFormPage /> },
               { path: 'feedbacks', element: <FeedbackList /> },
-              { path: 'reports/revenue', element: <RevenueReport /> }
+              { path: 'reports', element: <ReportsOverview /> },
+              { path: 'reports/revenue', element: <RevenueReport /> },
+              { path: 'reports/members', element: <MemberReport /> },
+              { path: 'reports/staff', element: <StaffPerformanceReport /> }
             ]
           },
           // 4. Manager Area (Quản lý thu ngân)
