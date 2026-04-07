@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/schemas/authSchemas';
 import { useLogin } from '@/hooks/mutations/useAuthMutations';
 import { Dumbbell, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import gigachadVideo from '@/assets/gigachad.mp4';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -137,12 +138,15 @@ const Login = () => {
       <div className="relative hidden w-1/2 overflow-hidden lg:block bg-gray-900">
         <div className="absolute inset-0 z-10 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
         <div className="absolute inset-0 z-10 bg-blue-600/10 mix-blend-multiply"></div>
-        <img 
-          src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop" 
-          alt="Gym Background" 
-          className="h-full w-full object-cover opacity-80"
+        <video
+          src={gigachadVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="h-full w-full object-cover object-center opacity-80"
         />
-        
+
         {/* Quote overlay */}
         <div className="absolute bottom-0 left-0 z-20 w-full p-16 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
           <div className="inline-flex rounded-full bg-white/10 px-3 py-1 text-sm font-medium tracking-wide text-white backdrop-blur-md mb-6 border border-white/20">
