@@ -1,25 +1,28 @@
-package http
+package routes
 
 import (
 	"github.com/gorilla/mux"
+	"gym-management/internal/infra/api/handlers"
+	"gym-management/internal/infra/api/middleware"
 )
 
 func NewRouter(
-	memberHandler *MemberHandler,
-	employeeHandler *EmployeeHandler,
-	packageHandler *PackageHandler,
-	equipmentHandler *EquipmentHandler,
-	feedbackHandler *FeedbackHandler,
-	roleHandler *RoleHandler,
-	facilityHandler *FacilityHandler,
-	accountHandler *AccountHandler,
-	serviceCategoryHandler *ServiceCategoryHandler,
-	subscriptionHandler *SubscriptionHandler,
-	trainingBookingHandler *TrainingBookingHandler,
-	trainingSessionHandler *TrainingSessionHandler,
-	ptDetailHandler *PTDetailHandler,
+	memberHandler *handlers.MemberHandler,
+	employeeHandler *handlers.EmployeeHandler,
+	packageHandler *handlers.PackageHandler,
+	equipmentHandler *handlers.EquipmentHandler,
+	feedbackHandler *handlers.FeedbackHandler,
+	roleHandler *handlers.RoleHandler,
+	facilityHandler *handlers.FacilityHandler,
+	accountHandler *handlers.AccountHandler,
+	serviceCategoryHandler *handlers.ServiceCategoryHandler,
+	subscriptionHandler *handlers.SubscriptionHandler,
+	trainingBookingHandler *handlers.TrainingBookingHandler,
+	trainingSessionHandler *handlers.TrainingSessionHandler,
+	ptDetailHandler *handlers.PTDetailHandler,
 ) *mux.Router {
 	r := mux.NewRouter()
+	r.Use(middleware.LoggingMiddleware)
 
 	// Member routes
 	r.HandleFunc("/members", memberHandler.Create).Methods("POST")

@@ -1,4 +1,4 @@
-package http
+package handlers
 
 import (
 	"encoding/json"
@@ -11,32 +11,32 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type AccountHandler struct {
-	usecase usecase.AccountUsecase
+type SubscriptionHandler struct {
+	usecase usecase.SubscriptionUsecase
 }
 
-func NewAccountHandler(usecase usecase.AccountUsecase) *AccountHandler {
-	return &AccountHandler{usecase: usecase}
+func NewSubscriptionHandler(usecase usecase.SubscriptionUsecase) *SubscriptionHandler {
+	return &SubscriptionHandler{usecase: usecase}
 }
 
-func (h *AccountHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var account entity.Account
-	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
+func (h *SubscriptionHandler) Create(w http.ResponseWriter, r *http.Request) {
+	var subscription entity.Subscription
+	if err := json.NewDecoder(r.Body).Decode(&subscription); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := h.usecase.CreateAccount(&account); err != nil {
+	if err := h.usecase.CreateSubscription(&subscription); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(account)
+	json.NewEncoder(w).Encode(subscription)
 }
 
-func (h *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+func (h *SubscriptionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -44,28 +44,28 @@ func (h *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	account, err := h.usecase.GetAccountByID(id)
+	subscription, err := h.usecase.GetSubscriptionByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(account)
+	json.NewEncoder(w).Encode(subscription)
 }
 
-func (h *AccountHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	accounts, err := h.usecase.GetAllAccounts()
+func (h *SubscriptionHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	subscriptions, err := h.usecase.GetAllSubscriptions()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(accounts)
+	json.NewEncoder(w).Encode(subscriptions)
 }
 
-func (h *AccountHandler) Update(w http.ResponseWriter, r *http.Request) {
+func (h *SubscriptionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -73,23 +73,23 @@ func (h *AccountHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var account entity.Account
-	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
+	var subscription entity.Subscription
+	if err := json.NewDecoder(r.Body).Decode(&subscription); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	account.ID = id
+	subscription.ID = id
 
-	if err := h.usecase.UpdateAccount(&account); err != nil {
+	if err := h.usecase.UpdateSubscription(&subscription); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(account)
+	json.NewEncoder(w).Encode(subscription)
 }
 
-func (h *AccountHandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *SubscriptionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -97,7 +97,7 @@ func (h *AccountHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.usecase.DeleteAccount(id); err != nil {
+	if err := h.usecase.DeleteSubscription(id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

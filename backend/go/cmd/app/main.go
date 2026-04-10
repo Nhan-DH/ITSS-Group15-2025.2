@@ -4,15 +4,16 @@ import (
 	"log"
 	"net/http"
 
-	httpHandler "gym-management/internal/delivery/http"
-	"gym-management/internal/infrastructure"
+	handlers "gym-management/internal/infra/api/handlers"
+	"gym-management/internal/infra/api/routes"
+	"gym-management/internal/infra/postgresql"
 	"gym-management/internal/repository"
 	"gym-management/internal/usecase"
 )
 
 func main() {
 	// Initialize database
-	db := infrastructure.NewDB()
+	db := postgresql.NewDB()
 
 	// Initialize repositories
 	memberRepo := repository.NewMemberRepository(db)
@@ -45,22 +46,22 @@ func main() {
 	ptDetailUsecase := usecase.NewPTDetailUsecase(ptDetailRepo)
 
 	// Initialize handlers
-	memberHandler := httpHandler.NewMemberHandler(memberUsecase)
-	employeeHandler := httpHandler.NewEmployeeHandler(employeeUsecase)
-	packageHandler := httpHandler.NewPackageHandler(packageUsecase)
-	equipmentHandler := httpHandler.NewEquipmentHandler(equipmentUsecase)
-	feedbackHandler := httpHandler.NewFeedbackHandler(feedbackUsecase)
-	roleHandler := httpHandler.NewRoleHandler(roleUsecase)
-	facilityHandler := httpHandler.NewFacilityHandler(facilityUsecase)
-	accountHandler := httpHandler.NewAccountHandler(accountUsecase)
-	serviceCategoryHandler := httpHandler.NewServiceCategoryHandler(serviceCategoryUsecase)
-	subscriptionHandler := httpHandler.NewSubscriptionHandler(subscriptionUsecase)
-	trainingBookingHandler := httpHandler.NewTrainingBookingHandler(trainingBookingUsecase)
-	trainingSessionHandler := httpHandler.NewTrainingSessionHandler(trainingSessionUsecase)
-	ptDetailHandler := httpHandler.NewPTDetailHandler(ptDetailUsecase)
+	memberHandler := handlers.NewMemberHandler(memberUsecase)
+	employeeHandler := handlers.NewEmployeeHandler(employeeUsecase)
+	packageHandler := handlers.NewPackageHandler(packageUsecase)
+	equipmentHandler := handlers.NewEquipmentHandler(equipmentUsecase)
+	feedbackHandler := handlers.NewFeedbackHandler(feedbackUsecase)
+	roleHandler := handlers.NewRoleHandler(roleUsecase)
+	facilityHandler := handlers.NewFacilityHandler(facilityUsecase)
+	accountHandler := handlers.NewAccountHandler(accountUsecase)
+	serviceCategoryHandler := handlers.NewServiceCategoryHandler(serviceCategoryUsecase)
+	subscriptionHandler := handlers.NewSubscriptionHandler(subscriptionUsecase)
+	trainingBookingHandler := handlers.NewTrainingBookingHandler(trainingBookingUsecase)
+	trainingSessionHandler := handlers.NewTrainingSessionHandler(trainingSessionUsecase)
+	ptDetailHandler := handlers.NewPTDetailHandler(ptDetailUsecase)
 
 	// Setup routes
-	router := httpHandler.NewRouter(memberHandler, employeeHandler, packageHandler, equipmentHandler, feedbackHandler, roleHandler, facilityHandler, accountHandler, serviceCategoryHandler, subscriptionHandler, trainingBookingHandler, trainingSessionHandler, ptDetailHandler)
+	router := routes.NewRouter(memberHandler, employeeHandler, packageHandler, equipmentHandler, feedbackHandler, roleHandler, facilityHandler, accountHandler, serviceCategoryHandler, subscriptionHandler, trainingBookingHandler, trainingSessionHandler, ptDetailHandler)
 
 	log.Println("Server starting on :8080")
 	log.Fatal(http.ListenAndServe(":8080", router))
