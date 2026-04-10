@@ -66,6 +66,12 @@ export const packageService = {
   deletePackage: async (id) => {
     if (IS_MOCK) {
       await delay(400);
+      // Get existing packages from localStorage
+      const existingPackages = getMemberPackagesFromStorage();
+      // Filter out the package to delete
+      const updatedPackages = existingPackages.filter(pkg => pkg.id !== id);
+      // Save updated packages back to localStorage
+      saveMemberPackagesToStorage(updatedPackages);
       return { success: true };
     }
     return axios.delete(`/packages/${id}`);
@@ -120,5 +126,35 @@ export const packageService = {
       return getMemberPackagesFromStorage();
     }
     return axios.get('/members/packages');
+  },
+
+  renewPackage: async (renewalData) => {
+    if (IS_MOCK) {
+      await delay(1200); // Simulate payment processing
+      
+      // Get existing packages from localStorage
+      const existingPackages = getMemberPackagesFromStorage();
+      
+      // Find the package being renewed
+      const packageIndex = existingPackages.findIndex(pkg => pkg.id === renewalData.packageId);
+      
+      if (packageIndex !== -1) {
+        // Update the package with new end date
+        existingPackages[packageIndex].endDate = renewalData.newEndDate;
+        existingPackages[packageIndex].status = 'active';
+        
+        // Save updated packages
+        saveMemberPackagesToStorage(existingPackages);
+        
+        return {
+          success: true,
+          message: 'Gia hạn gói tập thành công',
+          package: existingPackages[packageIndex]
+        };
+      }
+      
+      return { success: false, message: 'Không tìm thấy gói tập' };
+    }
+    return axios.post('/members/packages/renew', renewalData);
   }
 };

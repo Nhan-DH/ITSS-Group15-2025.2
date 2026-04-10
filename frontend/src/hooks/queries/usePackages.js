@@ -20,7 +20,7 @@ export const usePackageDetails = (id) => {
 
 export const useMemberPackages = () => {
   return useQuery({
-    queryKey: ['MemberPackages'],
+    queryKey: ['memberPackages'],
     queryFn: () => packageService.getMemberPackages(),
   });
 };
