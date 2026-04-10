@@ -37,3 +37,18 @@ export const useDeletePackage = () => {
     },
   });
 };
+export const useRegisterPackage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (packageData) => packageService.registerPackage(packageData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['memberPackages'] });
+      toast.success('Đăng ký gói tập thành công!');
+    },
+    onError: (error) => {
+      console.error('Package registration error:', error);
+      toast.error('Đăng ký gói tập thất bại. Vui lòng thử lại.');
+    },
+  });
+};

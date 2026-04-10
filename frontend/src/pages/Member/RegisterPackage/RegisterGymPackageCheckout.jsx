@@ -3,14 +3,16 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import Button from '@/components/Common/Button';
 import { toast } from '@/utils/toast';
+import { useRegisterPackage } from '@/hooks/mutations/usePackageMutations';
 
 const RegisterGymPackageCheckout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedPackage = location.state?.package;
   const [paymentMethod, setPaymentMethod] = useState('card');
-  const [isLoading, setIsLoading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  
+  const registerPackageMutation = useRegisterPackage();
 
   if (!selectedPackage) {
     return (
@@ -22,17 +24,22 @@ const RegisterGymPackageCheckout = () => {
     );
   }
 
-  const handlePayment = () => {
-    setIsLoading(true);
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsLoading(false);
+  const handlePayment = async () => {
+    try {
+      await registerPackageMutation.mutateAsync({
+        ...selectedPackage,
+        paymentMethod,
+        registrationDate: new Date().toISOString(),
+      });
+      
       setIsCompleted(true);
-      toast.success('Thanh toán thành công! Gói tập đã được kích hoạt.');
+      
       setTimeout(() => {
         navigate('/member/my-package');
       }, 2000);
-    }, 1500);
+    } catch (error) {
+      toast.error('Đăng ký gói tập thất bại. Vui lòng thử lại.');
+    }
   };
 
   if (isCompleted) {
@@ -116,10 +123,10 @@ const RegisterGymPackageCheckout = () => {
 
             <Button
               onClick={handlePayment}
-              isLoading={isLoading}
+              isLoading={registerPackageMutation.isPending}
               className="w-full h-12 text-lg font-bold rounded-xl"
             >
-              {isLoading ? 'Đang xử lý...' : 'Xác Nhận Thanh Toán'}
+              {registerPackageMutation.isPending ? 'Đang xử lý...' : 'Xác Nhận Thanh Toán'}
             </Button>
           </div>
         </div>

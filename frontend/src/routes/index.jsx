@@ -81,6 +81,8 @@ export const router = createBrowserRouter([
               { path: 'dashboard', element: <MemberDashboard /> },
               { path: 'my-package', element: <PackageInfo /> },
               { path: 'history', element: <TrainingHistory /> },
+              { path: 'register', element: <RegisterGymPackage /> },
+              { path: 'register/checkout', element: <RegisterGymPackageCheckout /> },
               { path: 'renew', element: <RenewPackage /> },
               { path: 'renew/checkout', element: <PaymentCheckout /> },
               { path: 'feedback', element: <SendFeedback /> },

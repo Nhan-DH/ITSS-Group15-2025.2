@@ -17,3 +17,10 @@ export const usePackageDetails = (id) => {
     enabled: !!id,
   });
 };
+
+export const useMemberPackages = () => {
+  return useQuery({
+    queryKey: ['MemberPackages'],
+    queryFn: () => packageService.getMemberPackages(),
+  });
+};
