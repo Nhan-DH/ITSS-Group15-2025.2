@@ -18,10 +18,10 @@ export const menus = {
     { title: "Phản hồi", path: "/manager/feedbacks", icon: "MessageSquare" },
   ],
   [ROLES.TRAINER]: [
-    { title: "Tổng quan", path: "/trainer/dashboard", icon: "LayoutDashboard" },
-    { title: "Lịch dạy", path: "/trainer/schedule", icon: "CalendarCheck" },
+    { title: "Thông tin cá nhân", path: "/trainer/profile", icon: "User" },
     { title: "Học viên", path: "/trainer/students", icon: "Users" },
-    { title: "Đánh giá", path: "/trainer/evaluation", icon: "CheckSquare" },
+    { title: "Lịch dạy", path: "/trainer/schedule", icon: "CalendarCheck" },
+    { title: "Yêu cầu tập luyện", path: "/trainer/evaluation", icon: "CheckSquare" },
   ],
   [ROLES.MEMBER]: [
     { title: "Tổng quan", path: "/member/dashboard", icon: "LayoutDashboard" },

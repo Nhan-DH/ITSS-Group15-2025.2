@@ -20,7 +20,7 @@ export const useLogin = () => {
       // Điều hướng dựa vào Role
       if (data.user.role === 'owner') navigate('/owner/dashboard');
       else if (data.user.role === 'manager') navigate('/manager/dashboard');
-      else if (data.user.role === 'trainer') navigate('/trainer/dashboard');
+      else if (data.user.role === 'trainer') navigate('/trainer/profile');
       else navigate('/member/dashboard');
     },
   });
