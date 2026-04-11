@@ -15,8 +15,8 @@ type RoleHandler struct {
 	usecase role_usecase.RoleUsecase
 }
 
-func NewRoleHandler(usecase usecase.RoleUsecase) *RoleHandler {
-	return &RoleHandler{usecase: usecase}
+func NewRoleHandler(u role_usecase.RoleUsecase) *RoleHandler {
+	return &RoleHandler{usecase: u}
 }
 
 func (h *RoleHandler) Create(w http.ResponseWriter, r *http.Request) {

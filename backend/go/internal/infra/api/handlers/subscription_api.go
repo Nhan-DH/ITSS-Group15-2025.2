@@ -15,8 +15,8 @@ type SubscriptionHandler struct {
 	usecase subscription_usecase.SubscriptionUsecase
 }
 
-func NewSubscriptionHandler(usecase usecase.SubscriptionUsecase) *SubscriptionHandler {
-	return &SubscriptionHandler{usecase: usecase}
+func NewSubscriptionHandler(u subscription_usecase.SubscriptionUsecase) *SubscriptionHandler {
+	return &SubscriptionHandler{usecase: u}
 }
 
 func (h *SubscriptionHandler) Create(w http.ResponseWriter, r *http.Request) {

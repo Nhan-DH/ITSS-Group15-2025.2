@@ -15,8 +15,8 @@ type FacilityHandler struct {
 	usecase facility_usecase.FacilityUsecase
 }
 
-func NewFacilityHandler(usecase usecase.FacilityUsecase) *FacilityHandler {
-	return &FacilityHandler{usecase: usecase}
+func NewFacilityHandler(u facility_usecase.FacilityUsecase) *FacilityHandler {
+	return &FacilityHandler{usecase: u}
 }
 
 func (h *FacilityHandler) Create(w http.ResponseWriter, r *http.Request) {

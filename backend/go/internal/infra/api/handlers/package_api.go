@@ -15,8 +15,8 @@ type PackageHandler struct {
 	usecase package_usecase.PackageUsecase
 }
 
-func NewPackageHandler(usecase usecase.PackageUsecase) *PackageHandler {
-	return &PackageHandler{usecase: usecase}
+func NewPackageHandler(u package_usecase.PackageUsecase) *PackageHandler {
+	return &PackageHandler{usecase: u}
 }
 
 func (h *PackageHandler) Create(w http.ResponseWriter, r *http.Request) {

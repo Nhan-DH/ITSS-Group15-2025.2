@@ -6,18 +6,18 @@ import (
 	"gym-management/internal/domain/entity"
 )
 
-type IListFacilitysUseCase interface {
+type IListFacilitiesUseCase interface {
 	Execute(ctx context.Context) ([]*entity.Facility, error)
 }
 
-type ListFacilitysUseCase struct {
+type ListFacilitiesUseCase struct {
 	repo adapter.FacilityRepository
 }
 
-func NewListFacilitysUseCase(repo adapter.FacilityRepository) IListFacilitysUseCase {
-	return &ListFacilitysUseCase{repo: repo}
+func NewListFacilitiesUseCase(repo adapter.FacilityRepository) IListFacilitiesUseCase {
+	return &ListFacilitiesUseCase{repo: repo}
 }
 
-func (u *ListFacilitysUseCase) Execute(ctx context.Context) ([]*entity.Facility, error) {
+func (u *ListFacilitiesUseCase) Execute(ctx context.Context) ([]*entity.Facility, error) {
 	return u.repo.GetAll()
 }

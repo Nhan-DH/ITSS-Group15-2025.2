@@ -15,8 +15,8 @@ type FeedbackHandler struct {
 	usecase feedback_usecase.FeedbackUsecase
 }
 
-func NewFeedbackHandler(usecase usecase.FeedbackUsecase) *FeedbackHandler {
-	return &FeedbackHandler{usecase: usecase}
+func NewFeedbackHandler(u feedback_usecase.FeedbackUsecase) *FeedbackHandler {
+	return &FeedbackHandler{usecase: u}
 }
 
 func (h *FeedbackHandler) Create(w http.ResponseWriter, r *http.Request) {

@@ -6,18 +6,18 @@ import (
 	"gym-management/internal/domain/entity"
 )
 
-type IListServiceCategorysUseCase interface {
+type IListServiceCategoriesUseCase interface {
 	Execute(ctx context.Context) ([]*entity.ServiceCategory, error)
 }
 
-type ListServiceCategorysUseCase struct {
+type ListServiceCategoriesUseCase struct {
 	repo adapter.ServiceCategoryRepository
 }
 
-func NewListServiceCategorysUseCase(repo adapter.ServiceCategoryRepository) IListServiceCategorysUseCase {
-	return &ListServiceCategorysUseCase{repo: repo}
+func NewListServiceCategoriesUseCase(repo adapter.ServiceCategoryRepository) IListServiceCategoriesUseCase {
+	return &ListServiceCategoriesUseCase{repo: repo}
 }
 
-func (u *ListServiceCategorysUseCase) Execute(ctx context.Context) ([]*entity.ServiceCategory, error) {
+func (u *ListServiceCategoriesUseCase) Execute(ctx context.Context) ([]*entity.ServiceCategory, error) {
 	return u.repo.GetAll()
 }

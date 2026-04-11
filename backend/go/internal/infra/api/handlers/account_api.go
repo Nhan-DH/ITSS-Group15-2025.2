@@ -15,8 +15,8 @@ type AccountHandler struct {
 	usecase account_usecase.AccountUsecase
 }
 
-func NewAccountHandler(usecase usecase.AccountUsecase) *AccountHandler {
-	return &AccountHandler{usecase: usecase}
+func NewAccountHandler(u account_usecase.AccountUsecase) *AccountHandler {
+	return &AccountHandler{usecase: u}
 }
 
 func (h *AccountHandler) Create(w http.ResponseWriter, r *http.Request) {

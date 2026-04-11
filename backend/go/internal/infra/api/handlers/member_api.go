@@ -15,8 +15,8 @@ type MemberHandler struct {
 	usecase member_usecase.MemberUsecase
 }
 
-func NewMemberHandler(usecase usecase.MemberUsecase) *MemberHandler {
-	return &MemberHandler{usecase: usecase}
+func NewMemberHandler(u member_usecase.MemberUsecase) *MemberHandler {
+	return &MemberHandler{usecase: u}
 }
 
 func (h *MemberHandler) Create(w http.ResponseWriter, r *http.Request) {

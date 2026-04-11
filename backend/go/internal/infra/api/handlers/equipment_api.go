@@ -15,8 +15,8 @@ type EquipmentHandler struct {
 	usecase equipment_usecase.EquipmentUsecase
 }
 
-func NewEquipmentHandler(usecase usecase.EquipmentUsecase) *EquipmentHandler {
-	return &EquipmentHandler{usecase: usecase}
+func NewEquipmentHandler(u equipment_usecase.EquipmentUsecase) *EquipmentHandler {
+	return &EquipmentHandler{usecase: u}
 }
 
 func (h *EquipmentHandler) Create(w http.ResponseWriter, r *http.Request) {

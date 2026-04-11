@@ -9,7 +9,7 @@ import (
 type ServiceCategoryUsecase interface {
 	CreateServiceCategory(serviceCategory *entity.ServiceCategory) error
 	GetServiceCategoryByID(id int) (*entity.ServiceCategory, error)
-	GetAllServiceCategorys() ([]*entity.ServiceCategory, error)
+	GetAllServiceCategories() ([]*entity.ServiceCategory, error)
 	UpdateServiceCategory(serviceCategory *entity.ServiceCategory) error
 	DeleteServiceCategory(id int) error
 }
@@ -17,7 +17,7 @@ type ServiceCategoryUsecase interface {
 type serviceCategoryUsecase struct {
 	create ICreateServiceCategoryUseCase
 	get    IGetServiceCategoryUseCase
-	list   IListServiceCategorysUseCase
+	list   IListServiceCategoriesUseCase
 	update IUpdateServiceCategoryUseCase
 	delete IDeleteServiceCategoryUseCase
 }
@@ -26,7 +26,7 @@ func NewServiceCategoryUsecase(repo adapter.ServiceCategoryRepository) ServiceCa
 	return &serviceCategoryUsecase{
 		create: NewCreateServiceCategoryUseCase(repo),
 		get:    NewGetServiceCategoryUseCase(repo),
-		list:   NewListServiceCategorysUseCase(repo),
+		list:   NewListServiceCategoriesUseCase(repo),
 		update: NewUpdateServiceCategoryUseCase(repo),
 		delete: NewDeleteServiceCategoryUseCase(repo),
 	}
@@ -45,7 +45,7 @@ func (u *serviceCategoryUsecase) GetServiceCategoryByID(id int) (*entity.Service
 	return u.get.Execute(context.Background(), id)
 }
 
-func (u *serviceCategoryUsecase) GetAllServiceCategorys() ([]*entity.ServiceCategory, error) {
+func (u *serviceCategoryUsecase) GetAllServiceCategories() ([]*entity.ServiceCategory, error) {
 	return u.list.Execute(context.Background())
 }
 

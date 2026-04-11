@@ -15,8 +15,8 @@ type PTDetailHandler struct {
 	usecase pt_detail_usecase.PTDetailUsecase
 }
 
-func NewPTDetailHandler(usecase usecase.PTDetailUsecase) *PTDetailHandler {
-	return &PTDetailHandler{usecase: usecase}
+func NewPTDetailHandler(u pt_detail_usecase.PTDetailUsecase) *PTDetailHandler {
+	return &PTDetailHandler{usecase: u}
 }
 
 func (h *PTDetailHandler) Create(w http.ResponseWriter, r *http.Request) {

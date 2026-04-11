@@ -15,8 +15,8 @@ type TrainingBookingHandler struct {
 	usecase training_booking_usecase.TrainingBookingUsecase
 }
 
-func NewTrainingBookingHandler(usecase usecase.TrainingBookingUsecase) *TrainingBookingHandler {
-	return &TrainingBookingHandler{usecase: usecase}
+func NewTrainingBookingHandler(u training_booking_usecase.TrainingBookingUsecase) *TrainingBookingHandler {
+	return &TrainingBookingHandler{usecase: u}
 }
 
 func (h *TrainingBookingHandler) Create(w http.ResponseWriter, r *http.Request) {

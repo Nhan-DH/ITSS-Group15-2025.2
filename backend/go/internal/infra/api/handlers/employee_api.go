@@ -15,8 +15,8 @@ type EmployeeHandler struct {
 	usecase employee_usecase.EmployeeUsecase
 }
 
-func NewEmployeeHandler(usecase usecase.EmployeeUsecase) *EmployeeHandler {
-	return &EmployeeHandler{usecase: usecase}
+func NewEmployeeHandler(u employee_usecase.EmployeeUsecase) *EmployeeHandler {
+	return &EmployeeHandler{usecase: u}
 }
 
 func (h *EmployeeHandler) Create(w http.ResponseWriter, r *http.Request) {

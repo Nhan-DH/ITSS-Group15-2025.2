@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"gym-management/internal/domain/entity"
-	"gym-management/internal/domain/usecase"
 	"gym-management/internal/domain/usecase/training_session_usecase"
 
 	"github.com/gorilla/mux"
@@ -16,8 +15,8 @@ type TrainingSessionHandler struct {
 	usecase training_session_usecase.TrainingSessionUsecase
 }
 
-func NewTrainingSessionHandler(usecase usecase.TrainingSessionUsecase) *TrainingSessionHandler {
-	return &TrainingSessionHandler{usecase: usecase}
+func NewTrainingSessionHandler(u training_session_usecase.TrainingSessionUsecase) *TrainingSessionHandler {
+	return &TrainingSessionHandler{usecase: u}
 }
 
 func (h *TrainingSessionHandler) Create(w http.ResponseWriter, r *http.Request) {

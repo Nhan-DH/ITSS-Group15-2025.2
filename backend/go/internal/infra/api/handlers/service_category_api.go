@@ -15,8 +15,8 @@ type ServiceCategoryHandler struct {
 	usecase service_category_usecase.ServiceCategoryUsecase
 }
 
-func NewServiceCategoryHandler(usecase usecase.ServiceCategoryUsecase) *ServiceCategoryHandler {
-	return &ServiceCategoryHandler{usecase: usecase}
+func NewServiceCategoryHandler(u service_category_usecase.ServiceCategoryUsecase) *ServiceCategoryHandler {
+	return &ServiceCategoryHandler{usecase: u}
 }
 
 func (h *ServiceCategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
