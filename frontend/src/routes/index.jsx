@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import MainLayout from '@/components/Layout/MainLayout';
+import TrainerLayout from '@/components/Layout/TrainerLayout';
 import PrivateRoute from './PrivateRoute';
 import RoleBasedRoute from './RoleBasedRoute';
 
@@ -36,6 +37,7 @@ import ManagerFeedbackList from '@/pages/Manager/FeedbackManagement/FeedbackList
 import ManagerPackageList from '@/pages/Manager/PackageManagement/PackageListView';
 
 import TrainerDashboard from '@/pages/Trainer/TrainerDashboard';
+import TrainerProfile from '@/pages/Trainer/TrainerProfile';
 import StudentList from '@/pages/Trainer/StudentManagement/StudentList';
 import TrackProgress from '@/pages/Trainer/StudentManagement/TrackProgress';
 import ScheduleList from '@/pages/Trainer/Schedule/ScheduleList';
@@ -69,14 +71,33 @@ export const router = createBrowserRouter([
         path: '/',
         element: <Navigate to="/member/dashboard" replace />,
       },
-      // Bọc Layout chính (Sidebar + Header)
+      // 2. Trainer Area - SEPARATE LAYOUT (Not inside MainLayout)
+      {
+        path: 'trainer',
+        element: <TrainerLayout />,
+        children: [
+          {
+            path: '',
+            element: <RoleBasedRoute allowedRoles={['trainer']} />,
+            children: [
+              { path: 'profile', element: <TrainerProfile /> },
+              { path: 'dashboard', element: <TrainerDashboard /> },
+              { path: 'students', element: <StudentList /> },
+              { path: 'students/:id/progress', element: <TrackProgress /> },
+              { path: 'schedule', element: <ScheduleList /> },
+              { path: 'evaluation', element: <EvaluationForm /> }
+            ]
+          }
+        ]
+      },
+      // 3. Other Roles - Use MainLayout
       {
         element: <MainLayout />,
         children: [
-          // 2. Member Normal Dashboard
+          // Member Dashboard
           {
             path: 'member',
-            element: <RoleBasedRoute allowedRoles={['member', 'owner', 'manager', 'trainer']} />,
+            element: <RoleBasedRoute allowedRoles={['member', 'owner', 'manager']} />,
             children: [
               { path: 'dashboard', element: <MemberDashboard /> },
               { path: 'my-package', element: <PackageInfo /> },
@@ -90,7 +111,7 @@ export const router = createBrowserRouter([
               { path: 'profile/edit', element: <EditProfile /> }
             ]
           },
-          // 3. System Owner Area (Chỉ Chủ Cửa Hàng)
+          // System Owner Area
           {
             path: 'owner',
             element: <RoleBasedRoute allowedRoles={['owner']} />,
@@ -120,7 +141,7 @@ export const router = createBrowserRouter([
               { path: 'reports/staff', element: <StaffPerformanceReport /> }
             ]
           },
-          // 4. Manager Area (Quản lý thu ngân)
+          // Manager Area
           {
             path: 'manager',
             element: <RoleBasedRoute allowedRoles={['manager', 'owner']} />,
@@ -133,18 +154,6 @@ export const router = createBrowserRouter([
               { path: 'members/renew', element: <ManagerRenewPackage /> },
               { path: 'packages', element: <ManagerPackageList /> },
               { path: 'feedbacks', element: <ManagerFeedbackList /> }
-            ]
-          },
-          // 5. Trainer Area (Huấn luyện viên)
-          {
-            path: 'trainer',
-            element: <RoleBasedRoute allowedRoles={['trainer']} />,
-            children: [
-              { path: 'dashboard', element: <TrainerDashboard /> },
-              { path: 'students', element: <StudentList /> },
-              { path: 'students/:id/progress', element: <TrackProgress /> },
-              { path: 'schedule', element: <ScheduleList /> },
-              { path: 'evaluation', element: <EvaluationForm /> }
             ]
           }
         ]
