@@ -7,12 +7,13 @@ import (
 
 	"gym-management/internal/domain/entity"
 	"gym-management/internal/domain/usecase"
+	"gym-management/internal/domain/usecase/training_session_usecase"
 
 	"github.com/gorilla/mux"
 )
 
 type TrainingSessionHandler struct {
-	usecase usecase.TrainingSessionUsecase
+	usecase training_session_usecase.TrainingSessionUsecase
 }
 
 func NewTrainingSessionHandler(usecase usecase.TrainingSessionUsecase) *TrainingSessionHandler {

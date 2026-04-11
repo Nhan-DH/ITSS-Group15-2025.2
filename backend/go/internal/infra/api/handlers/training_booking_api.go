@@ -6,13 +6,13 @@ import (
 	"strconv"
 
 	"gym-management/internal/domain/entity"
-	"gym-management/internal/domain/usecase"
+	"gym-management/internal/domain/usecase/training_booking_usecase"
 
 	"github.com/gorilla/mux"
 )
 
 type TrainingBookingHandler struct {
-	usecase usecase.TrainingBookingUsecase
+	usecase training_booking_usecase.TrainingBookingUsecase
 }
 
 func NewTrainingBookingHandler(usecase usecase.TrainingBookingUsecase) *TrainingBookingHandler {

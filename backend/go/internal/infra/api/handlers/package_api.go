@@ -6,16 +6,16 @@ import (
 	"strconv"
 
 	"gym-management/internal/domain/entity"
-	"gym-management/internal/domain/usecase"
+	"gym-management/internal/domain/usecase/package_usecase"
 
 	"github.com/gorilla/mux"
 )
 
 type PackageHandler struct {
-	usecase usecase.MembershipPackageUsecase
+	usecase package_usecase.PackageUsecase
 }
 
-func NewPackageHandler(usecase usecase.MembershipPackageUsecase) *PackageHandler {
+func NewPackageHandler(usecase usecase.PackageUsecase) *PackageHandler {
 	return &PackageHandler{usecase: usecase}
 }
 

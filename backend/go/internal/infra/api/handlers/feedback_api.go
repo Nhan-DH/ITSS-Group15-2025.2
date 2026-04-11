@@ -6,13 +6,13 @@ import (
 	"strconv"
 
 	"gym-management/internal/domain/entity"
-	"gym-management/internal/domain/usecase"
+	"gym-management/internal/domain/usecase/feedback_usecase"
 
 	"github.com/gorilla/mux"
 )
 
 type FeedbackHandler struct {
-	usecase usecase.FeedbackUsecase
+	usecase feedback_usecase.FeedbackUsecase
 }
 
 func NewFeedbackHandler(usecase usecase.FeedbackUsecase) *FeedbackHandler {

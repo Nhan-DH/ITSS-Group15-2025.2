@@ -6,13 +6,13 @@ import (
 	"strconv"
 
 	"gym-management/internal/domain/entity"
-	"gym-management/internal/domain/usecase"
+	"gym-management/internal/domain/usecase/facility_usecase"
 
 	"github.com/gorilla/mux"
 )
 
 type FacilityHandler struct {
-	usecase usecase.FacilityUsecase
+	usecase facility_usecase.FacilityUsecase
 }
 
 func NewFacilityHandler(usecase usecase.FacilityUsecase) *FacilityHandler {

@@ -6,13 +6,13 @@ import (
 	"strconv"
 
 	"gym-management/internal/domain/entity"
-	"gym-management/internal/domain/usecase"
+	"gym-management/internal/domain/usecase/account_usecase"
 
 	"github.com/gorilla/mux"
 )
 
 type AccountHandler struct {
-	usecase usecase.AccountUsecase
+	usecase account_usecase.AccountUsecase
 }
 
 func NewAccountHandler(usecase usecase.AccountUsecase) *AccountHandler {

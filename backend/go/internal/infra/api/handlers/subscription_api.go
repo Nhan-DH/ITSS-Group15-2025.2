@@ -6,13 +6,13 @@ import (
 	"strconv"
 
 	"gym-management/internal/domain/entity"
-	"gym-management/internal/domain/usecase"
+	"gym-management/internal/domain/usecase/subscription_usecase"
 
 	"github.com/gorilla/mux"
 )
 
 type SubscriptionHandler struct {
-	usecase usecase.SubscriptionUsecase
+	usecase subscription_usecase.SubscriptionUsecase
 }
 
 func NewSubscriptionHandler(usecase usecase.SubscriptionUsecase) *SubscriptionHandler {

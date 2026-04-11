@@ -6,13 +6,13 @@ import (
 	"strconv"
 
 	"gym-management/internal/domain/entity"
-	"gym-management/internal/domain/usecase"
+	"gym-management/internal/domain/usecase/service_category_usecase"
 
 	"github.com/gorilla/mux"
 )
 
 type ServiceCategoryHandler struct {
-	usecase usecase.ServiceCategoryUsecase
+	usecase service_category_usecase.ServiceCategoryUsecase
 }
 
 func NewServiceCategoryHandler(usecase usecase.ServiceCategoryUsecase) *ServiceCategoryHandler {

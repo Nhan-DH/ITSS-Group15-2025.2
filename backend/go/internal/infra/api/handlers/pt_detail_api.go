@@ -6,13 +6,13 @@ import (
 	"strconv"
 
 	"gym-management/internal/domain/entity"
-	"gym-management/internal/domain/usecase"
+	"gym-management/internal/domain/usecase/pt_detail_usecase"
 
 	"github.com/gorilla/mux"
 )
 
 type PTDetailHandler struct {
-	usecase usecase.PTDetailUsecase
+	usecase pt_detail_usecase.PTDetailUsecase
 }
 
 func NewPTDetailHandler(usecase usecase.PTDetailUsecase) *PTDetailHandler {
