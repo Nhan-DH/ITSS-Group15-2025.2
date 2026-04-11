@@ -46,6 +46,8 @@ import PackageInfo from '@/pages/Member/MyPackage/PackageInfo';
 import TrainingHistory from '@/pages/Member/MyPackage/TrainingHistory';
 import RenewPackage from '@/pages/Member/RenewPackage/RenewPackage';
 import PaymentCheckout from '@/pages/Member/RenewPackage/PaymentCheckout';
+import RegisterGymPackage from '@/pages/Member/RegisterPackage/RegisterGymPackage';
+import RegisterGymPackageCheckout from '@/pages/Member/RegisterPackage/RegisterGymPackageCheckout';
 import SendFeedback from '@/pages/Member/Feedback/SendFeedback';
 import ProfileInfo from '@/pages/Member/Profile/ProfileInfo';
 import EditProfile from '@/pages/Member/Profile/EditProfile';
@@ -79,6 +81,8 @@ export const router = createBrowserRouter([
               { path: 'dashboard', element: <MemberDashboard /> },
               { path: 'my-package', element: <PackageInfo /> },
               { path: 'history', element: <TrainingHistory /> },
+              { path: 'register', element: <RegisterGymPackage /> },
+              { path: 'register/checkout', element: <RegisterGymPackageCheckout /> },
               { path: 'renew', element: <RenewPackage /> },
               { path: 'renew/checkout', element: <PaymentCheckout /> },
               { path: 'feedback', element: <SendFeedback /> },
