@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"gym-management/internal/domain/entity"
 	"gym-management/internal/domain/usecase/account_usecase"
+	"gym-management/internal/infra/api/dto"
+	"gym-management/internal/infra/api/mappers"
 
 	"github.com/gorilla/mux"
 )
@@ -20,20 +21,22 @@ func NewAccountHandler(u account_usecase.AccountUsecase) *AccountHandler {
 }
 
 func (h *AccountHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var account entity.Account
-	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
+	var req dto.AccountRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := h.usecase.CreateAccount(&account); err != nil {
+	account := mappers.AccountRequestToEntity(&req)
+
+	if err := h.usecase.CreateAccount(account); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(account)
+	json.NewEncoder(w).Encode(mappers.AccountEntityToResponse(account))
 }
 
 func (h *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +54,7 @@ func (h *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(account)
+	json.NewEncoder(w).Encode(mappers.AccountEntityToResponse(account))
 }
 
 func (h *AccountHandler) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +65,13 @@ func (h *AccountHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(accounts)
+
+	responses := make([]*dto.AccountResponse, 0, len(accounts))
+	for _, account := range accounts {
+		responses = append(responses, mappers.AccountEntityToResponse(account))
+	}
+
+	json.NewEncoder(w).Encode(responses)
 }
 
 func (h *AccountHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -73,20 +82,22 @@ func (h *AccountHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var account entity.Account
-	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
+	var req dto.AccountRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	account := mappers.AccountRequestToEntity(&req)
 	account.ID = id
 
-	if err := h.usecase.UpdateAccount(&account); err != nil {
+	if err := h.usecase.UpdateAccount(account); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(account)
+	json.NewEncoder(w).Encode(mappers.AccountEntityToResponse(account))
 }
 
 func (h *AccountHandler) Delete(w http.ResponseWriter, r *http.Request) {

@@ -55,12 +55,11 @@ import ProfileInfo from '@/pages/Member/Profile/ProfileInfo';
 import EditProfile from '@/pages/Member/Profile/EditProfile';
 
 export const router = createBrowserRouter([
-  // Public Route: Bất kỳ ai cũng vào được (Login)
+  // Public Route: Bất kỳ ai cũng vào được (Login, Register)
   {
     path: '/login',
     element: <Login />,
   },
-  
   // Private Routes: Phải có Token JWT (Bọc bởi PrivateRoute)
   {
     path: '/',

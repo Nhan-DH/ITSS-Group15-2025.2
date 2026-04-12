@@ -12,7 +12,7 @@ export const useLogin = () => {
     mutationFn: (credentials) => authService.login(credentials),
     onSuccess: (data) => {
       // Lưu token + user vào Zustand (Local Storage)
-      loginAction(data.user, data.token);
+      loginAction(data.user, data.token, data.refreshToken);
 
       // Cập nhật lại state cache của query hiện tại
       queryClient.setQueryData(['currentUser'], data.user);
@@ -23,11 +23,5 @@ export const useLogin = () => {
       else if (data.user.role === 'trainer') navigate('/trainer/profile');
       else navigate('/member/dashboard');
     },
-  });
-};
-
-export const useRegister = () => {
-  return useMutation({
-    mutationFn: (data) => authService.register(data),
   });
 };
