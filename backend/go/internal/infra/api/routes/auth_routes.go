@@ -8,7 +8,6 @@ import (
 )
 
 func RegisterAuthRoutes(r *mux.Router, authHandler *handlers.AuthHandler) {
-	r.HandleFunc("/auth/register", authHandler.Register).Methods("POST")
 	r.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
 	r.HandleFunc("/auth/refresh", authHandler.Refresh).Methods("POST")
 	r.HandleFunc("/auth/logout", authHandler.Logout).Methods("POST")

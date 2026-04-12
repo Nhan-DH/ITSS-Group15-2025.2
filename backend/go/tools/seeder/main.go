@@ -32,9 +32,10 @@ type AccountSeed struct {
 
 var accounts = []AccountSeed{
 	// {Username: "owner", Password: "Admin@123", RoleName: "OWNER"},
-	{Username: "manager01", Password: "Manager@123", RoleName: "MANAGER"},
+	// {Username: "manager01", Password: "Manager@123", RoleName: "MANAGER"},
+	// {Username: "pt01", Password: "Trainer@123", RoleName: "PT"},
+	// {Username: "member01", Password: "Member@123", RoleName: "MEMBER"},
 	{Username: "pt01", Password: "Trainer@123", RoleName: "PT"},
-	{Username: "member01", Password: "Member@123", RoleName: "MEMBER"},
 }
 
 // ============================================================

@@ -19,27 +19,6 @@ func NewAuthHandler(u auth_usecase.AuthUsecase) *AuthHandler {
 	return &AuthHandler{usecase: u}
 }
 
-func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
-	var req dto.RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	result, err := h.usecase.Register(r.Context(), auth_usecase.RegisterInput{
-		Username: pickUsername(req.Username, req.Email),
-		Password: req.Password,
-	})
-	if err != nil {
-		writeAuthError(w, err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(toAuthResponse(result))
-}
-
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req dto.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

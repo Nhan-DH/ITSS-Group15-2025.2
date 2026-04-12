@@ -18,11 +18,6 @@ var (
 	ErrConflict           = errors.New("resource already exists")
 )
 
-type RegisterInput struct {
-	Username string
-	Password string
-}
-
 type LoginInput struct {
 	Username string
 	Password string
@@ -48,7 +43,6 @@ type AuthResult struct {
 }
 
 type AuthUsecase interface {
-	Register(ctx context.Context, input RegisterInput) (*AuthResult, error)
 	Login(ctx context.Context, input LoginInput) (*AuthResult, error)
 	Refresh(ctx context.Context, input RefreshInput) (*AuthResult, error)
 	Logout(ctx context.Context, input LogoutInput) error
