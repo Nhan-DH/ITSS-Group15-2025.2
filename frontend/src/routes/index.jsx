@@ -29,6 +29,12 @@ import ReportsOverview from '@/pages/Owner/Reports/ReportsOverview';
 
 import ManagerDashboard from '@/pages/Manager/ManagerDashboard';
 import ManagerMemberList from '@/pages/Manager/MemberManagement/MemberList';
+import MemberListView from '@/pages/Manager/Members/MemberListView';
+import MemberDetailView from '@/pages/Manager/Members/MemberDetailView';
+import TransactionsView from '@/pages/Manager/Transactions/TransactionsView';
+import ScheduleCalendarView from '@/pages/Manager/Schedule/ScheduleCalendarView';
+import ComplaintsView from '@/pages/Manager/Complaints/ComplaintsView';
+import ReportsView from '@/pages/Manager/Reports/ReportsView';
 import RegisterMember from '@/pages/Manager/MemberManagement/RegisterMember';
 import ManagerMemberDetail from '@/pages/Manager/MemberManagement/MemberDetail';
 import ManagerMemberFormPage from '@/pages/Manager/MemberManagement/MemberForm';
@@ -146,12 +152,25 @@ export const router = createBrowserRouter([
             element: <RoleBasedRoute allowedRoles={['manager', 'owner']} />,
             children: [
               { path: 'dashboard', element: <ManagerDashboard /> },
-              { path: 'members', element: <ManagerMemberList /> },
-              { path: 'members/:id', element: <ManagerMemberDetail /> },
-              { path: 'members/:id/edit', element: <ManagerMemberFormPage /> },
-              { path: 'members/register', element: <RegisterMember /> },
-              { path: 'members/renew', element: <ManagerRenewPackage /> },
+              // Members Management
+              { path: 'members', element: <MemberListView /> },
+              { path: 'members/:id', element: <MemberDetailView /> },
+              // Transactions
+              { path: 'transactions', element: <TransactionsView /> },
+              // Schedule
+              { path: 'schedule', element: <ScheduleCalendarView /> },
+              // Complaints
+              { path: 'complaints', element: <ComplaintsView /> },
+              // Reports
+              { path: 'report', element: <ReportsView /> },
+              // Packages (View Only)
               { path: 'packages', element: <ManagerPackageList /> },
+              // Legacy endpoints (kept for backward compatibility)
+              { path: 'members-old', element: <ManagerMemberList /> },
+              { path: 'members-old/:id', element: <ManagerMemberDetail /> },
+              { path: 'members-old/:id/edit', element: <ManagerMemberFormPage /> },
+              { path: 'members-old/register', element: <RegisterMember /> },
+              { path: 'members-old/renew', element: <ManagerRenewPackage /> },
               { path: 'feedbacks', element: <ManagerFeedbackList /> }
             ]
           }
