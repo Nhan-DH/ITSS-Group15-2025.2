@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/joho/godotenv"
+
 	"gym-management/internal/domain/usecase/account_usecase"
 	"gym-management/internal/domain/usecase/auth_usecase"
 	"gym-management/internal/domain/usecase/employee_usecase"
@@ -58,6 +60,11 @@ func corsMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
+	// Load .env file
+	if err := godotenv.Load(".env"); err != nil {
+		log.Println("Warning: .env not found, using system env vars")
+	}
+
 	// Initialize database
 	db := postgresql.NewDB()
 
