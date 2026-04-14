@@ -59,6 +59,7 @@ import RegisterGymPackageCheckout from '@/pages/Member/RegisterPackage/RegisterG
 import SendFeedback from '@/pages/Member/Feedback/SendFeedback';
 import ProfileInfo from '@/pages/Member/Profile/ProfileInfo';
 import EditProfile from '@/pages/Member/Profile/EditProfile';
+import Schedule from '@/pages/Member/Schedule/Schedule';
 
 export const router = createBrowserRouter([
   // Public Route: Bất kỳ ai cũng vào được (Login, Register)
@@ -105,6 +106,7 @@ export const router = createBrowserRouter([
             element: <RoleBasedRoute allowedRoles={['member', 'owner', 'manager']} />,
             children: [
               { path: 'dashboard', element: <MemberDashboard /> },
+              { path: 'schedule', element: <Schedule /> },
               { path: 'my-package', element: <PackageInfo /> },
               { path: 'history', element: <TrainingHistory /> },
               { path: 'register', element: <RegisterGymPackage /> },

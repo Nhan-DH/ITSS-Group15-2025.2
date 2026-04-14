@@ -28,8 +28,9 @@ export const menus = {
   ],
   [ROLES.MEMBER]: [
     { title: "Tổng quan", path: "/member/dashboard", icon: "LayoutDashboard" },
-    { title: "Đăng ký Gói tập", path: "/member/register", icon: "ShoppingCart" },
+    { title: "Đăng ký gói tập mới", path: "/member/register", icon: "ShoppingCart" },
     { title: "Gói tập của tôi", path: "/member/my-package", icon: "Package" },
+    { title: "Lịch tập", path: "/member/schedule", icon: "Calendar" },
     { title: "Gia hạn", path: "/member/renew", icon: "CreditCard" },
     { title: "Gửi phản hồi", path: "/member/feedback", icon: "MessageCircle" },
     { title: "Hồ sơ cá nhân", path: "/member/profile", icon: "User" },
