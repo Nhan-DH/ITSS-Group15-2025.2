@@ -1,20 +1,12 @@
-import React, { useState } from 'react';
-import { CreditCard, CheckCircle2, Package, Trash2 } from 'lucide-react';
+import React from 'react';
+import { CreditCard, CheckCircle2, Package } from 'lucide-react';
 import { useMemberPackages } from '@/hooks/queries/usePackages';
-import { useDeletePackage } from '@/hooks/mutations/usePackageMutations';
 import Loading from '@/components/Common/Loading';
 import { useNavigate } from 'react-router-dom';
 
 const PackageInfo = () => {
   const { data: packages = [], isLoading, error } = useMemberPackages();
-  const deletePackageMutation = useDeletePackage();
   const navigate = useNavigate();
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
-
-  const handleDeletePackage = async (packageId) => {
-    await deletePackageMutation.mutateAsync(packageId);
-    setDeleteConfirm(null);
-  };
 
   if (isLoading) {
     return <Loading />;
@@ -147,17 +139,6 @@ const PackageInfo = () => {
                 <CreditCard className={`h-10 w-10 ${
                   isActive ? 'text-emerald-400' : 'text-gray-400'
                 }`} />
-                <button
-                  onClick={() => setDeleteConfirm(pkg.id)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    isActive
-                      ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
-                      : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                  title="Xóa gói tập"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
               </div>
             </div>
           </div>
@@ -174,33 +155,6 @@ const PackageInfo = () => {
           Đăng Ký Gói Tập Mới
         </button>
       </div>
-
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Xóa gói tập?</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Bạn chắc chắn muốn xóa gói tập này? Hành động này không thể được hoàn tác.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white font-medium hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={() => handleDeletePackage(deleteConfirm)}
-                disabled={deletePackageMutation.isPending}
-                className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
-              >
-                {deletePackageMutation.isPending ? 'Đang xóa...' : 'Xóa'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

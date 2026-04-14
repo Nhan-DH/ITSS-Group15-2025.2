@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import {
+  ArrowLeft,
+  CreditCard,
+  Wallet,
+  Smartphone,
+  ShieldCheck,
+  CheckCircle2,
+  Landmark,
+} from 'lucide-react';
 import Button from '@/components/Common/Button';
 import { toast } from '@/utils/toast';
 import { useRegisterPackage } from '@/hooks/mutations/usePackageMutations';
@@ -9,10 +17,15 @@ const RegisterGymPackageCheckout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedPackage = location.state?.package;
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('vnpay');
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const registerPackageMutation = useRegisterPackage();
+
+  // Xử lý tính toán giá tiền
+  const priceValue = parseInt(selectedPackage?.price?.replace(/[^\d]/g, "") || "0", 10) || 0;
+  const vat = priceValue * 0.1; // VAT 10%
+  const totalAmount = priceValue + vat;
 
   if (!selectedPackage) {
     return (
@@ -25,171 +38,394 @@ const RegisterGymPackageCheckout = () => {
   }
 
   const handlePayment = async () => {
+    setIsProcessing(true);
+    
     try {
+      // Simulate payment processing for new registrations
+      await new Promise(resolve => setTimeout(resolve, 1500));
       await registerPackageMutation.mutateAsync({
         ...selectedPackage,
         paymentMethod,
         registrationDate: new Date().toISOString(),
       });
       
-      setIsCompleted(true);
-      
-      setTimeout(() => {
-        navigate('/member/my-package');
-      }, 2000);
+      toast.success("Thanh toán thành công! Gói tập đã được kích hoạt.");
+      navigate("/member/my-package");
     } catch (error) {
+      console.error('Checkout error:', error);
       toast.error('Đăng ký gói tập thất bại. Vui lòng thử lại.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  if (isCompleted) {
-    return (
-      <div className="max-w-2xl mx-auto py-12 px-4">
-        <div className="rounded-2xl border border-green-200 bg-green-50 p-8 dark:border-green-900/30 dark:bg-green-900/10 text-center">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
-            <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-green-900 dark:text-green-300 mb-2">Đăng Ký Thành Công!</h2>
-          <p className="text-green-700 dark:text-green-400 mb-6">
-            Gói tập của bạn đã được kích hoạt. Bạn sẽ được chuyển hướng đến trang quản lý gói tập.
+  return (
+    <div className="max-w-5xl mx-auto pb-20">
+      <div className="flex items-center gap-4 mb-8">
+        <Link to="/member/register">
+          <Button variant="outline" size="icon" className="shrink-0 h-10 w-10">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Thanh toán gói tập
+          </h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Vui lòng kiểm tra thông tin đơn hàng và chọn phương thức thanh toán.
           </p>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="max-w-4xl mx-auto pb-20">
-      <div className="mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Quay lại
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Order Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Payment Methods */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm dark:border-gray-800 dark:bg-gray-950">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Thông Tin Thanh Toán</h2>
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
+              Chọn phương thức thanh toán
+            </h2>
 
-            <div className="space-y-4 mb-8">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Chọn phương thức thanh toán</h3>
-              
-              <div className="space-y-3">
-                {[
-                  { id: 'card', label: 'Thẻ Ngân Hàng', desc: 'Visa, Mastercard' },
-                  { id: 'momo', label: 'Ví MoMo', desc: 'Thanh toán qua MoMo' },
-                  { id: 'vnpay', label: 'VNPay', desc: 'Thanh toán qua VNPay' },
-                  { id: 'bank', label: 'Chuyển Khoản Ngân Hàng', desc: 'Chuyển tiền trực tiếp' }
-                ].map(method => (
-                  <label
-                    key={method.id}
-                    className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      paymentMethod === method.id
-                        ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20'
-                        : 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 hover:border-blue-300'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="payment"
-                      value={method.id}
-                      checked={paymentMethod === method.id}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="h-4 w-4"
-                    />
-                    <div>
-                      <p className="font-semibold text-gray-900 dark:text-white">{method.label}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{method.desc}</p>
+            <div className="space-y-4">
+              {/* VNPay Option */}
+              <label
+                className={`relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none dark:bg-gray-950 ${
+                  paymentMethod === "vnpay"
+                    ? "border-blue-500 ring-1 ring-blue-500"
+                    : "border-gray-300 dark:border-gray-800"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="vnpay"
+                  className="sr-only"
+                  checked={paymentMethod === "vnpay"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <div className="flex w-full items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="text-sm flex items-center gap-3">
+                      <div className="h-10 w-10 rounded bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                        <Smartphone className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          Thanh toán qua VNPAY-QR
+                        </p>
+                        <p className="text-gray-500 text-xs">
+                          Quét mã QR qua ứng dụng ngân hàng
+                        </p>
+                      </div>
                     </div>
-                  </label>
-                ))}
-              </div>
+                  </div>
+                  {paymentMethod === "vnpay" && (
+                    <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                  )}
+                </div>
+              </label>
+
+              {/* MoMo Option */}
+              <label
+                className={`relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none dark:bg-gray-950 ${
+                  paymentMethod === "momo"
+                    ? "border-pink-500 ring-1 ring-pink-500"
+                    : "border-gray-300 dark:border-gray-800"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="momo"
+                  className="sr-only"
+                  checked={paymentMethod === "momo"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <div className="flex w-full items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="text-sm flex items-center gap-3">
+                      <div className="h-10 w-10 rounded bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center text-pink-600">
+                        <Wallet className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          Ví điện tử MoMo
+                        </p>
+                        <p className="text-gray-500 text-xs">
+                          Thanh toán liền tay bằng ứng dụng MoMo
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {paymentMethod === "momo" && (
+                    <CheckCircle2 className="h-5 w-5 text-pink-600" />
+                  )}
+                </div>
+              </label>
+
+              {/* Credit Card Option */}
+              <label
+                className={`relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none dark:bg-gray-950 ${
+                  paymentMethod === "card"
+                    ? "border-indigo-500 ring-1 ring-indigo-500"
+                    : "border-gray-300 dark:border-gray-800"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="card"
+                  className="sr-only"
+                  checked={paymentMethod === "card"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <div className="flex w-full items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="text-sm flex items-center gap-3">
+                      <div className="h-10 w-10 rounded bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600">
+                        <CreditCard className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          Thẻ tín dụng / Thẻ ghi nợ
+                        </p>
+                        <p className="text-gray-500 text-xs">
+                          Hỗ trợ VISA, MasterCard, JCB
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {paymentMethod === "card" && (
+                    <CheckCircle2 className="h-5 w-5 text-indigo-600" />
+                  )}
+                </div>
+              </label>
+
+              {/* Online Banking Option */}
+              <label
+                className={`relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none dark:bg-gray-950 ${
+                  paymentMethod === "bank"
+                    ? "border-green-500 ring-1 ring-green-500"
+                    : "border-gray-300 dark:border-gray-800"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="bank"
+                  className="sr-only"
+                  checked={paymentMethod === "bank"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <div className="flex w-full items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="text-sm flex items-center gap-3">
+                      <div className="h-10 w-10 rounded bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-green-600">
+                        <Landmark className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          Chuyển khoản Ngân Hàng
+                        </p>
+                        <p className="text-gray-500 text-xs">
+                          Chuyển tiền vào tài khoản ngân hàng
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {paymentMethod === "bank" && (
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  )}
+                </div>
+              </label>
             </div>
 
-            <div className="rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 p-4 mb-6">
-              <div className="flex gap-3">
-                <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
-                <div className="text-sm text-blue-800 dark:text-blue-300">
-                  <p className="font-semibold mb-1">Lưu ý bảo mật</p>
-                  <p>Mọi giao dịch đều được bảo mật tuyệt đối. Thông tin cá nhân của bạn sẽ không được chia sẻ cho bên thứ ba.</p>
+            {/* Dynamic UI depending on selection (Mock QR / Form) */}
+            <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center">
+              {paymentMethod === "vnpay" && (
+                <div className="text-center space-y-4">
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg"
+                    alt="VNPay QR"
+                    className="w-40 h-40 mx-auto bg-white p-2 rounded-lg shadow-sm"
+                  />
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Mã QR VNPAY (Demo)
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Dùng ứng dụng ngân hàng quét mã để thanh toán ngay.
+                  </p>
                 </div>
+              )}
+              {paymentMethod === "momo" && (
+                <div className="text-center space-y-4">
+                  <div className="w-40 h-40 mx-auto bg-pink-100 dark:bg-pink-900/20 rounded-xl flex items-center justify-center border-2 border-pink-200 dark:border-pink-800 shadow-sm p-2">
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg"
+                      alt="MoMo QR"
+                      className="w-full h-full rounded-lg mix-blend-multiply"
+                    />
+                  </div>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Mã QR MoMo (Demo)
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Mở ứng dụng MoMo và chọn mục Quét Mã.
+                  </p>
+                </div>
+              )}
+              {paymentMethod === "card" && (
+                <div className="w-full max-w-sm space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 flex justify-between">
+                      <span>Số thẻ</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="0000 0000 0000 0000"
+                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-800 p-2 border"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                        Ngày hết hạn
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="MM/YY"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-800 p-2 border"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                        CVC/CVV
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="123"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-800 p-2 border"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                      Tên in trên thẻ
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="NGUYEN VAN A"
+                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-800 p-2 border uppercase"
+                    />
+                  </div>
+                </div>
+              )}
+              {paymentMethod === "bank" && (
+                <div className="w-full max-w-sm space-y-4 text-center">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border-2 border-green-200 dark:border-green-900/30 space-y-4">
+                    <p className="font-semibold text-gray-900 dark:text-white">Thông tin chuyển khoản</p>
+                    <div className="space-y-3 text-sm bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Tên ngân hàng:</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">VietComBank</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Số tài khoản:</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">0123456789</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Chủ tài khoản:</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">Active Gym</span>
+                      </div>
+                      <div className="border-t border-gray-200 dark:border-gray-700 pt-3 flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Nội dung chuyển:</span>
+                        <span className="font-semibold text-gray-900 dark:text-white text-xs">GYM-[Mã HV]</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                      Vui lòng nhập mã hội viên vào nội dung chuyển để xác nhân thanh toán
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Order Summary */}
+        <div className="lg:col-span-1">
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900 sticky top-24">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6 border-b pb-4 dark:border-gray-800">
+              Tóm tắt đơn hàng
+            </h2>
+
+            <div className="space-y-4 text-sm mb-6">
+              <div className="flex justify-between items-start">
+                <span className="text-gray-600 dark:text-gray-400 font-medium">
+                  Gói tập:
+                </span>
+                <span className="font-bold text-gray-900 dark:text-white text-right break-words w-1/2">
+                  {selectedPackage?.name}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">
+                  Loại gói:
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {selectedPackage?.type === 'vip' ? 'Gói VIP' : 'Gói Cơ Bản'}
+                </span>
+              </div>
+              
+              {selectedPackage?.gender === 'female' && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Loại hành động:
+                  </span>
+                  <span className="text-sm px-2 py-1 rounded bg-pink-100 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 font-semibold">Khu vực nữ</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">
+                  Tạm tính:
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {priceValue.toLocaleString("vi-VN")} đ
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">
+                  Thuế (VAT 10%):
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {vat.toLocaleString("vi-VN")} đ
+                </span>
+              </div>
+              <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                <span className="text-base font-bold text-gray-900 dark:text-white">
+                  Tổng thanh toán:
+                </span>
+                <span className="text-xl font-black text-blue-600 dark:text-blue-400">
+                  {totalAmount.toLocaleString("vi-VN")} đ
+                </span>
               </div>
             </div>
 
             <Button
+              className="w-full font-bold shadow-lg"
+              size="lg"
               onClick={handlePayment}
-              isLoading={registerPackageMutation.isPending}
-              className="w-full h-12 text-lg font-bold rounded-xl"
+              disabled={isProcessing || registerPackageMutation.isPending}
+              leftIcon={
+                isProcessing || registerPackageMutation.isPending ? undefined : <ShieldCheck className="h-5 w-5" />
+              }
             >
-              {registerPackageMutation.isPending ? 'Đang xử lý...' : 'Xác Nhận Thanh Toán'}
+              {isProcessing || registerPackageMutation.isPending ? "Đang xử lý..." : "Xác nhận & Hoàn tất"}
             </Button>
-          </div>
-        </div>
 
-        {/* Right: Order Summary Card */}
-        <div>
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950 sticky top-24">
-            <h3 className="font-bold text-gray-900 dark:text-white mb-6">Tóm tắt đơn hàng</h3>
-
-            <div className="space-y-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Gói tập</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{selectedPackage.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Loại gói</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {selectedPackage.type === 'vip' ? 'Gói VIP' : 'Gói Cơ Bản'}
-                </span>
-              </div>
-              
-              {selectedPackage.gender === 'female' && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Loại hành động</span>
-                  <span className="text-sm px-2 py-1 rounded bg-pink-100 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 font-semibold">Khu vực nữ</span>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2 mb-6">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Giá gốc</span>
-                <span className="text-gray-900 dark:text-white font-semibold">{selectedPackage.price}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Phí xử lý</span>
-                <span className="text-gray-900 dark:text-white">Miễn phí</span>
-              </div>
-            </div>
-
-            <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4 mb-6 border border-blue-200 dark:border-blue-900/30">
-              <div className="flex justify-between mb-1">
-                <span className="font-semibold text-gray-900 dark:text-white">Tổng thanh toán</span>
-                <span className="text-xl font-bold text-blue-600 dark:text-blue-400">{selectedPackage.price}</span>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">Quyền lợi chi tiết:</h4>
-              <ul className="space-y-2">
-                {selectedPackage.facilities.slice(0, 3).map((fac, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
-                    <CheckCircle2 className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
-                    {fac}
-                  </li>
-                ))}
-                {selectedPackage.facilities.length > 3 && (
-                  <li className="text-xs text-gray-500 dark:text-gray-500 italic">
-                    + {selectedPackage.facilities.length - 3} quyền lợi khác...
-                  </li>
-                )}
-              </ul>
-            </div>
+            <p className="text-xs text-center text-gray-500 mt-4 leading-relaxed">
+              Bằng việc nhấn "Xác nhận & Hoàn tất", bạn đồng ý với Điều khoản
+              dịch vụ & Chính sách bảo mật của chúng tôi.
+            </p>
           </div>
         </div>
       </div>
