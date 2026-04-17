@@ -1,14 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { LineChart } from 'lucide-react';
+import { LineChart, ChevronRight } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
+import useTrainerStore from '@/store/useTrainerStore';
 
 const StudentList = () => {
-  const students = [
-    { id: 1, name: "Nguyễn Tuấn A", phone: "0901xxx", goal: "Giảm mỡ", package: "PT 1:1 - 36 Buổi", remaining: 12 },
-    { id: 2, name: "Lê Thị B", phone: "0902xxx", goal: "Tăng cơ, độ mông", package: "PT 1:1 - 12 Buổi", remaining: 3 },
-  ];
+  const students = useTrainerStore((s) => s.students);
 
   return (
     <div className="px-6 py-6 max-w-7xl mx-auto">
@@ -21,7 +19,7 @@ const StudentList = () => {
             </p>
           </div>
         </div>
-        
+
         <div className="rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 dark:bg-gray-950 dark:ring-gray-800">
           <Table>
             <TableHeader>
@@ -35,20 +33,38 @@ const StudentList = () => {
             </TableHeader>
             <TableBody>
               {students.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell className="font-semibold text-gray-900 dark:text-gray-100">{student.name} <div className="text-xs text-gray-500 font-normal">{student.phone}</div></TableCell>
+                <TableRow key={student.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-900/50 transition-colors">
+                  <TableCell>
+                    {/* Clickable name → StudentDetail */}
+                    <Link
+                      to={`/trainer/students/${student.id}`}
+                      className="group flex items-center gap-2 w-fit"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700 flex-shrink-0">
+                        {student.avatar || student.name.split(' ').slice(-2).map(w => w[0]).join('')}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-blue-600 group-hover:text-blue-800 group-hover:underline transition-colors text-sm flex items-center gap-1">
+                          {student.name}
+                          <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <div className="text-xs text-gray-500 font-normal">{student.phone}</div>
+                      </div>
+                    </Link>
+                  </TableCell>
                   <TableCell>{student.goal}</TableCell>
                   <TableCell>{student.package}</TableCell>
                   <TableCell>
                     <span className={`font-bold ${student.remaining <= 3 ? 'text-red-500' : 'text-blue-600'}`}>
                       {student.remaining}
+                      {student.remaining <= 3 && <span className="ml-1 text-xs text-red-400 font-normal">⚠ Sắp hết</span>}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Link to={`/trainer/students/${student.id}/progress`}>
+                      <Link to={`/trainer/students/${student.id}`}>
                         <Button variant="outline" size="sm" leftIcon={<LineChart className="h-4 w-4" />}>
-                          Inbody
+                          InBody
                         </Button>
                       </Link>
                     </div>
@@ -62,4 +78,5 @@ const StudentList = () => {
     </div>
   );
 };
+
 export default StudentList;
