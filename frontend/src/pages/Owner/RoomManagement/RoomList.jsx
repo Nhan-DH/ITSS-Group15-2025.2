@@ -1,16 +1,48 @@
-import React from 'react';
-import { Plus, Users, MapPin, Edit, Eye, Trash2 } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Plus, Users, MapPin, Edit, Eye, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useFacilities } from '@/hooks/queries/useFacilities';
 import Button from '@/components/Common/Button';
 import { toast } from '@/utils/toast';
 
 const RoomList = () => {
-  const rooms = [
-    { id: 1, name: "Khu vực Cardio (Tầng 1)", capacity: 30, current: 15, status: "active", icon: "🏃" },
-    { id: 2, name: "Phòng Tập Tạ (Tầng 2)", capacity: 50, current: 40, status: "active", icon: "🏋️" },
-    { id: 3, name: "Phòng Yoga Cao Cấp", capacity: 20, current: 0, status: "maintenance", icon: "🧘" },
-    { id: 4, name: "Sân Boxing & MMA", capacity: 15, current: 5, status: "active", icon: "🥊" },
-  ];
+  const [page, setPage] = useState(1);
+  const limit = 6;
+
+  const { data: facilityResponse, isLoading } = useFacilities(page, limit);
+
+  // Handle API response
+  const rooms = useMemo(() => {
+    if (!facilityResponse) return [];
+    if (Array.isArray(facilityResponse)) return facilityResponse;
+    return facilityResponse.data || facilityResponse || [];
+  }, [facilityResponse]);
+
+  const totalItems = useMemo(() => {
+    if (!facilityResponse) return 0;
+    if (Array.isArray(facilityResponse)) return facilityResponse.length;
+    return facilityResponse.total_items || 0;
+  }, [facilityResponse]);
+
+  const totalPages = useMemo(() => {
+    if (!facilityResponse) return 1;
+    if (Array.isArray(facilityResponse)) return 1;
+    return facilityResponse.total_pages || Math.ceil(totalItems / limit) || 1;
+  }, [facilityResponse, totalItems]);
+
+  // Map API data to display format
+  const displayRooms = useMemo(() => {
+    return rooms.map(room => ({
+      id: room.id || room.facility_id,
+      name: room.facility_name || room.facilityName || room.name || 'N/A',
+      capacity: room.capacity || 0,
+      current: room.current_occupancy || 0,
+      status: room.status || 'active',
+      icon: room.facility_type === 'cardio' ? '🏃' : 
+            room.facility_type === 'weights' ? '🏋️' : 
+            room.facility_type === 'yoga' ? '🧘' : '🏢',
+    }));
+  }, [rooms]);
 
   return (
     <div className="space-y-6">
@@ -28,8 +60,11 @@ const RoomList = () => {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {rooms.map((room) => (
+      {isLoading ? (
+        <div className="text-center py-8 text-gray-500">Đang tải...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {displayRooms.map((room) => (
           <div key={room.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col hover:border-blue-400 transition-colors dark:border-gray-800 dark:bg-gray-950 dark:hover:border-blue-500">
             <div className="text-4xl mb-4 bg-gray-50 h-16 w-16 flex items-center justify-center rounded-2xl dark:bg-gray-900">
               {room.icon}
@@ -93,8 +128,36 @@ const RoomList = () => {
               </div>
             </div>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            Trang {page} / {totalPages} (Tổng: {totalItems} phòng)
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

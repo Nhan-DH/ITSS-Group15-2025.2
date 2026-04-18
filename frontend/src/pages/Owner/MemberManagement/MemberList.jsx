@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Eye, Edit } from 'lucide-react';
+import { Plus, Eye, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMembers } from '@/hooks/queries/useMembers';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
@@ -8,13 +8,35 @@ import Input from '@/components/Common/Input';
 
 const MemberList = () => {
   const navigate = useNavigate();
-  const { data: members, isLoading, isError } = useMembers();
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const limit = 6;
+
+  const { data: memberResponse, isLoading, isError } = useMembers(page, limit);
+
+  // Handle API response
+  const members = useMemo(() => {
+    if (!memberResponse) return [];
+    if (Array.isArray(memberResponse)) return memberResponse;
+    return memberResponse.data || memberResponse || [];
+  }, [memberResponse]);
+
+  const totalMemberItems = useMemo(() => {
+    if (!memberResponse) return 0;
+    if (Array.isArray(memberResponse)) return memberResponse.length;
+    return memberResponse.total_items || 0;
+  }, [memberResponse]);
+
+  const totalMemberPages = useMemo(() => {
+    if (!memberResponse) return 1;
+    if (Array.isArray(memberResponse)) return 1;
+    return memberResponse.total_pages || Math.ceil(totalMemberItems / limit) || 1;
+  }, [memberResponse, totalMemberItems]);
 
   const sortedMembers = useMemo(() => {
     return (members || []).slice().sort((a, b) => {
-      const dateA = new Date(a.createdAt || a.registeredAt || a.expiredAt || 0).getTime();
-      const dateB = new Date(b.createdAt || b.registeredAt || b.expiredAt || 0).getTime();
+      const dateA = new Date(a.created_at || a.createdAt || a.registeredAt || a.expiredAt || 0).getTime();
+      const dateB = new Date(b.created_at || b.createdAt || b.registeredAt || b.expiredAt || 0).getTime();
       return dateB - dateA;
     });
   }, [members]);
@@ -22,10 +44,10 @@ const MemberList = () => {
   const filteredMembers = useMemo(() => {
     const value = searchTerm.toLowerCase();
     return sortedMembers.filter((member) =>
-      member.name.toLowerCase().includes(value) ||
-      member.package?.toLowerCase().includes(value) ||
-      member.phone?.includes(value) ||
-      member.email?.toLowerCase().includes(value)
+      (member.full_name || member.FullName || member.name || '').toLowerCase().includes(value) ||
+      (member.package_name || member.packageName || member.package || '').toLowerCase().includes(value) ||
+      (member.phone || member.Phone || '').includes(value) ||
+      (member.email || member.Email || '').toLowerCase().includes(value)
     );
   }, [searchTerm, sortedMembers]);
 
@@ -91,17 +113,25 @@ const MemberList = () => {
                       className="hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer"
                       onClick={() => navigate(`/owner/members/${member.id}`)}
                     >
-                      <TableCell className="font-semibold text-gray-900 dark:text-gray-100">{member.name}</TableCell>
-                      <TableCell className="text-gray-600 dark:text-gray-300">{member.package}</TableCell>
-                      <TableCell>{member.phone}</TableCell>
-                      <TableCell>{new Date(member.createdAt || member.expiredAt).toLocaleDateString('vi-VN')}</TableCell>
+                      <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
+                        {member.full_name || member.FullName || member.name || 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-gray-600 dark:text-gray-300">
+                        {member.package_name || member.packageName || member.package || 'N/A'}
+                      </TableCell>
+                      <TableCell>{member.phone || member.Phone || 'N/A'}</TableCell>
+                      <TableCell>
+                        {member.created_at || member.createdAt || member.registeredAt 
+                          ? new Date(member.created_at || member.createdAt || member.registeredAt).toLocaleDateString('vi-VN')
+                          : 'N/A'}
+                      </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${
-                          member.status === 'active'
+                          member.status === 'active' || member.Status === 'active'
                             ? 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
                             : 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
                         }`}>
-                          {member.status === 'active' ? 'Đang tập' : 'Hết hạn'}
+                          {member.status === 'active' || member.Status === 'active' ? 'Đang tập' : 'Hết hạn'}
                         </span>
                       </TableCell>
                       <TableCell className="text-right pr-4">
@@ -125,6 +155,33 @@ const MemberList = () => {
             </Table>
           )}
         </div>
+
+        {/* Pagination */}
+        {totalMemberPages > 1 && (
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Trang {page} / {totalMemberPages} (Tổng: {totalMemberItems} hội viên)
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.min(totalMemberPages, p + 1))}
+                disabled={page === totalMemberPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

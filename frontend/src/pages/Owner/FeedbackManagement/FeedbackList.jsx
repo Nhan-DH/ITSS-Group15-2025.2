@@ -1,29 +1,48 @@
 import React, { useMemo, useState } from 'react';
-import { Star, MessageSquare } from 'lucide-react';
+import { Star, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFeedbacks } from '@/hooks/queries/useFeedbacks';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Input from '@/components/Common/Input';
 import Button from '@/components/Common/Button';
 
 const FeedbackList = () => {
-  const { data: feedbacks, isLoading, isError } = useFeedbacks();
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [ratingFilter, setRatingFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('');
+  const limit = 6;
 
-  const mockFeedbacks = feedbacks || [
-    { id: 1, memberName: 'Nguyễn Văn A', type: 'trainer', content: 'PT nhiệt tình, chuyên môn cao', rating: 5, date: '2026-03-20', status: 'resolved' },
-    { id: 2, memberName: 'Trần Thị B', type: 'equipment', content: 'Máy chạy số 3 bị kẹt thảm', rating: 2, date: '2026-03-22', status: 'pending' },
-    { id: 3, memberName: 'Lê Văn C', type: 'service', content: 'Phòng thay đồ mùi ẩm mốc', rating: 3, date: '2026-03-21', status: 'processing' },
-  ];
+  const { data: feedbackResponse, isLoading, isError } = useFeedbacks(page, limit, statusFilter);
+
+  // Handle API response
+  const feedbacks = useMemo(() => {
+    if (!feedbackResponse) return [];
+    if (Array.isArray(feedbackResponse)) return feedbackResponse;
+    return feedbackResponse.data || feedbackResponse || [];
+  }, [feedbackResponse]);
+
+  const totalItems = useMemo(() => {
+    if (!feedbackResponse) return 0;
+    if (Array.isArray(feedbackResponse)) return feedbackResponse.length;
+    return feedbackResponse.total_items || 0;
+  }, [feedbackResponse]);
+
+  const totalPages = useMemo(() => {
+    if (!feedbackResponse) return 1;
+    if (Array.isArray(feedbackResponse)) return 1;
+    return feedbackResponse.total_pages || Math.ceil(totalItems / limit) || 1;
+  }, [feedbackResponse, totalItems]);
 
   const filteredFeedbacks = useMemo(() => {
     const query = searchTerm.toLowerCase();
     const now = new Date();
-    return mockFeedbacks.filter((fb) => {
-      const matchSearch = fb.memberName.toLowerCase().includes(query) || fb.content.toLowerCase().includes(query);
-      const matchRating = ratingFilter === 'all' || fb.rating.toString() === ratingFilter;
-      const feedbackDate = new Date(fb.date);
+    return feedbacks.filter((fb) => {
+      const matchSearch = 
+        (fb.member_name || fb.memberName || '').toLowerCase().includes(query) || 
+        (fb.content || fb.Content || '').toLowerCase().includes(query);
+      const matchRating = ratingFilter === 'all' || (fb.rating || fb.Rating || 0).toString() === ratingFilter;
+      const feedbackDate = new Date(fb.created_at || fb.createdAt || fb.date || '2024-01-01');
       let matchDate = true;
 
       if (dateFilter === 'last7') {
@@ -45,7 +64,7 @@ const FeedbackList = () => {
 
       return matchSearch && matchRating && matchDate;
     });
-  }, [mockFeedbacks, searchTerm, ratingFilter, dateFilter]);
+  }, [feedbacks, searchTerm, ratingFilter, dateFilter]);
 
   const renderStars = (rating) => {
     return (
@@ -72,7 +91,7 @@ const FeedbackList = () => {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
             <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Lọc theo đánh giá</label>
             <select
@@ -86,6 +105,22 @@ const FeedbackList = () => {
               <option value="3">3 sao</option>
               <option value="2">2 sao</option>
               <option value="1">1 sao</option>
+            </select>
+          </div>
+          <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Lọc theo trạng thái</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-slate-400 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
+            >
+              <option value="">Tất cả</option>
+              <option value="pending">Chờ xử lý</option>
+              <option value="processing">Đang xử lý</option>
+              <option value="resolved">Đã xử lý</option>
             </select>
           </div>
           <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
@@ -104,7 +139,7 @@ const FeedbackList = () => {
           </div>
           <div className="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
             <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Tổng phản hồi</label>
-            <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{filteredFeedbacks.length}</p>
+            <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{totalItems}</p>
           </div>
         </div>
       </div>
@@ -112,7 +147,7 @@ const FeedbackList = () => {
       <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
         {isLoading ? (
           <div className="p-8 text-center text-gray-500">Đang tải đánh giá...</div>
-        ) : isError && !feedbacks ? (
+        ) : isError ? (
           <div className="p-8 text-center text-red-500">Lỗi không thể tải dữ liệu đánh giá.</div>
         ) : (
           <Table>
@@ -134,25 +169,56 @@ const FeedbackList = () => {
               ) : (
                 filteredFeedbacks.map((fb) => (
                   <TableRow key={fb.id}>
-                    <TableCell className="font-semibold text-gray-900 dark:text-gray-100">{fb.memberName}</TableCell>
+                    <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
+                      {fb.member_name || fb.memberName || 'N/A'}
+                    </TableCell>
                     <TableCell>
                       <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded dark:bg-blue-900/30 dark:text-blue-400 mb-2 inline-block">
-                        {fb.type === 'trainer' ? 'Huấn luyện viên' : fb.type === 'equipment' ? 'Thiết bị' : fb.type === 'service' ? 'Dịch vụ' : fb.type}
+                        {fb.feedback_type || fb.feedbackType || fb.type === 'trainer' ? 'Huấn luyện viên' : fb.type === 'equipment' ? 'Thiết bị' : fb.type === 'service' ? 'Dịch vụ' : fb.type || 'Khác'}
                       </span>
-                      {renderStars(fb.rating)}
+                      {renderStars(fb.rating || fb.Rating || 0)}
                     </TableCell>
                     <TableCell className="text-gray-600 dark:text-gray-300">
                       <div className="flex items-start gap-2">
                         <MessageSquare className="h-4 w-4 mt-0.5 text-gray-400" />
-                        <span className="line-clamp-2 leading-relaxed">{fb.content}</span>
+                        <span className="line-clamp-2 leading-relaxed">{fb.content || fb.Content || 'N/A'}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right text-sm text-gray-500">{fb.date}</TableCell>
+                    <TableCell className="text-right text-sm text-gray-500">
+                      {fb.created_at || fb.createdAt || fb.date || 'N/A'}
+                    </TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
           </Table>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Trang {page} / {totalPages} (Tổng: {totalItems} phản hồi)
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>

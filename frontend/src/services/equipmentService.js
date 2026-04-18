@@ -1,6 +1,6 @@
 import axios from '@/lib/axios';
 
-const IS_MOCK = true;
+const IS_MOCK = false; // Set to false to use real API
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const MOCK_EQUIPMENTS = [
@@ -10,12 +10,13 @@ const MOCK_EQUIPMENTS = [
 ];
 
 export const equipmentService = {
-  getEquipments: async () => {
+  getEquipments: async (page = 1, limit = 6) => {
     if (IS_MOCK) {
       await delay(400);
-      return MOCK_EQUIPMENTS;
+      return { data: MOCK_EQUIPMENTS, total: MOCK_EQUIPMENTS.length, page, limit };
     }
-    return axios.get('/equipments');
+    const response = await axios.get(`/equipments?page=${page}&limit=${limit}`);
+    return response;
   },
 
   createEquipment: async (data) => {

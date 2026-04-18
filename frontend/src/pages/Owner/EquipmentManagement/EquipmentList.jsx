@@ -1,31 +1,46 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Edit, Trash2, PenTool } from 'lucide-react';
+import { Plus, Edit, Trash2, PenTool, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEquipment } from '@/hooks/queries/useEquipment';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
 
 const EquipmentList = () => {
-  const { data: equipment, isLoading, isError } = useEquipment();
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const limit = 6;
 
-  const mockEquipment = equipment || [
-    { id: 1, name: 'Máy chạy bộ Proform', category: 'Cardio', status: 'active', condition: 'Tốt', nextMaintenance: '15/05/2026' },
-    { id: 2, name: 'Ghế đẩy ngực Incline', category: 'Free Weights', status: 'active', condition: 'Tốt', nextMaintenance: '20/06/2026' },
-    { id: 3, name: 'Máy kéo xô lưng đùi', category: 'Machines', status: 'maintenance', condition: 'Đang sửa', nextMaintenance: 'Đang tiến hành' },
-    { id: 4, name: 'Tạ đòn Olympic 20kg', category: 'Free Weights', status: 'active', condition: 'Cũ', nextMaintenance: '30/12/2026' },
-  ];
+  const { data: response, isLoading, isError } = useEquipment(page, limit);
+  
+  // Handle API response - extract data from pagination response
+  const equipment = useMemo(() => {
+    if (!response) return [];
+    if (Array.isArray(response)) return response; // Mock data format
+    return response.data || response || []; // API pagination format
+  }, [response]);
+
+  const totalItems = useMemo(() => {
+    if (!response) return 0;
+    if (Array.isArray(response)) return response.length;
+    return response.total_items || 0;
+  }, [response]);
+
+  const totalPages = useMemo(() => {
+    if (!response) return 1;
+    if (Array.isArray(response)) return 1;
+    return response.total_pages || Math.ceil(totalItems / limit) || 1;
+  }, [response, totalItems]);
 
   const filteredEquipment = useMemo(() => {
     const query = searchTerm.toLowerCase();
-    return mockEquipment.filter((item) =>
-      item.name?.toLowerCase().includes(query) ||
-      item.category?.toLowerCase().includes(query) ||
-      item.condition?.toLowerCase().includes(query) ||
+    return equipment.filter((item) =>
+      item.equipment_name?.toLowerCase().includes(query) ||
+      item.equipmentName?.toLowerCase().includes(query) ||
+      item.origin?.toLowerCase().includes(query) ||
       item.status?.toLowerCase().includes(query)
     );
-  }, [mockEquipment, searchTerm]);
+  }, [equipment, searchTerm]);
 
   return (
     <div className="space-y-6 relative">
@@ -87,21 +102,27 @@ const EquipmentList = () => {
                       <TableCell>
                         <div className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                           <PenTool className="h-4 w-4 text-gray-400" />
-                          {item.name}
+                          {item.equipment_name || item.equipmentName || item.EquipmentName || 'N/A'}
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">Tình trạng: {item.condition}</div>
+                        <div className="text-xs text-gray-500 mt-1">Xuất xứ: {item.origin || 'N/A'}</div>
                       </TableCell>
-                      <TableCell className="text-gray-600 dark:text-gray-300">{item.category}</TableCell>
+                      <TableCell className="text-gray-600 dark:text-gray-300">
+                        {item.facility_id || 'N/A'}
+                      </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${
                           item.status === 'active'
                             ? 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
-                            : 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400'
+                            : item.status === 'maintenance'
+                            ? 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400'
+                            : 'bg-gray-50 text-gray-700 ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
                         }`}>
-                          {item.status === 'active' ? 'Hoạt động tốt' : 'Đang bảo trì'}
+                          {item.status === 'active' ? 'Hoạt động tốt' : item.status === 'maintenance' ? 'Đang bảo trì' : item.status || 'N/A'}
                         </span>
                       </TableCell>
-                      <TableCell className="text-sm font-medium text-gray-600 dark:text-gray-300">{item.nextMaintenance}</TableCell>
+                      <TableCell className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                        {item.maintenance_deadline || item.MaintenanceDeadline || 'N/A'}
+                      </TableCell>
                       <TableCell className="text-right pr-4">
                         <div className="flex items-center justify-end gap-1">
                           <Link to={`/owner/equipment/${item.id}/edit`}>
@@ -122,6 +143,33 @@ const EquipmentList = () => {
             </Table>
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Trang {page} / {totalPages} (Tổng: {totalItems} thiết bị)
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
