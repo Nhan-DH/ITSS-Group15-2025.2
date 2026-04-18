@@ -16,22 +16,22 @@ type FacilityUsecase interface {
 }
 
 type facilityUsecase struct {
-	create ICreateFacilityUseCase
-	get    IGetFacilityUseCase
-	list   IListFacilitiesUseCase
+	create        ICreateFacilityUseCase
+	get           IGetFacilityUseCase
+	list          IListFacilitiesUseCase
 	listPaginated IListFacilitiesPaginatedUseCase
-	update IUpdateFacilityUseCase
-	delete IDeleteFacilityUseCase
+	update        IUpdateFacilityUseCase
+	delete        IDeleteFacilityUseCase
 }
 
 func NewFacilityUsecase(repo adapter.FacilityRepository) FacilityUsecase {
 	return &facilityUsecase{
-		create: NewCreateFacilityUseCase(repo),
-		get:    NewGetFacilityUseCase(repo),
-		list:   NewListFacilitiesUseCase(repo),
+		create:        NewCreateFacilityUseCase(repo),
+		get:           NewGetFacilityUseCase(repo),
+		list:          NewListFacilitiesUseCase(repo),
 		listPaginated: NewListFacilitiesPaginatedUseCase(repo),
-		update: NewUpdateFacilityUseCase(repo),
-		delete: NewDeleteFacilityUseCase(repo),
+		update:        NewUpdateFacilityUseCase(repo),
+		delete:        NewDeleteFacilityUseCase(repo),
 	}
 }
 

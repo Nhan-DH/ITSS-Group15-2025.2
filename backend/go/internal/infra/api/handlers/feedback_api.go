@@ -7,6 +7,7 @@ import (
 
 	"gym-management/internal/domain/entity"
 	"gym-management/internal/domain/usecase/feedback_usecase"
+	"gym-management/internal/infra/api/dto"
 
 	"github.com/gorilla/mux"
 )
@@ -43,6 +44,40 @@ func (h *FeedbackHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FeedbackHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	// Check for pagination and filter parameters
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+	status := r.URL.Query().Get("status")
+
+	if pageStr != "" && limitStr != "" {
+		page, err := strconv.Atoi(pageStr)
+		if err != nil || page < 1 {
+			page = 1
+		}
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil || limit < 1 {
+			limit = 6
+		}
+
+		feedbacks, total, err := h.usecase.GetAllFeedbacksPaginated(page, limit, status)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		totalPages := (total + limit - 1) / limit
+		response := dto.PaginationResponse{
+			Data:       feedbacks,
+			Page:       page,
+			Limit:      limit,
+			TotalItems: total,
+			TotalPages: totalPages,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
 	feedbacks, err := h.usecase.GetAllFeedbacks()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

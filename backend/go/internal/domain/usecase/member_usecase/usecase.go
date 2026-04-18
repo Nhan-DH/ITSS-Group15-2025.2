@@ -10,25 +10,28 @@ type MemberUsecase interface {
 	CreateMember(member *entity.Member) error
 	GetMemberByID(id int) (*entity.Member, error)
 	GetAllMembers() ([]*entity.Member, error)
+	GetAllMembersPaginated(page, limit int) ([]*entity.Member, int, error)
 	UpdateMember(member *entity.Member) error
 	DeleteMember(id int) error
 }
 
 type memberUsecase struct {
-	create ICreateMemberUseCase
-	get    IGetMemberUseCase
-	list   IListMembersUseCase
-	update IUpdateMemberUseCase
-	delete IDeleteMemberUseCase
+	create        ICreateMemberUseCase
+	get           IGetMemberUseCase
+	list          IListMembersUseCase
+	listPaginated IListMembersPaginatedUseCase
+	update        IUpdateMemberUseCase
+	delete        IDeleteMemberUseCase
 }
 
 func NewMemberUsecase(repo adapter.MemberRepository) MemberUsecase {
 	return &memberUsecase{
-		create: NewCreateMemberUseCase(repo),
-		get:    NewGetMemberUseCase(repo),
-		list:   NewListMembersUseCase(repo),
-		update: NewUpdateMemberUseCase(repo),
-		delete: NewDeleteMemberUseCase(repo),
+		create:        NewCreateMemberUseCase(repo),
+		get:           NewGetMemberUseCase(repo),
+		list:          NewListMembersUseCase(repo),
+		listPaginated: NewListMembersPaginatedUseCase(repo),
+		update:        NewUpdateMemberUseCase(repo),
+		delete:        NewDeleteMemberUseCase(repo),
 	}
 }
 
@@ -47,6 +50,10 @@ func (u *memberUsecase) GetMemberByID(id int) (*entity.Member, error) {
 
 func (u *memberUsecase) GetAllMembers() ([]*entity.Member, error) {
 	return u.list.Execute(context.Background())
+}
+
+func (u *memberUsecase) GetAllMembersPaginated(page, limit int) ([]*entity.Member, int, error) {
+	return u.listPaginated.Execute(context.Background(), page, limit)
 }
 
 func (u *memberUsecase) UpdateMember(member *entity.Member) error {

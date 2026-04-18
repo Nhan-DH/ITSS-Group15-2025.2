@@ -10,25 +10,28 @@ type EmployeeUsecase interface {
 	CreateEmployee(employee *entity.Employee) error
 	GetEmployeeByID(id int) (*entity.Employee, error)
 	GetAllEmployees() ([]*entity.Employee, error)
+	GetAllEmployeesPaginated(page, limit int) ([]*entity.Employee, int, error)
 	UpdateEmployee(employee *entity.Employee) error
 	DeleteEmployee(id int) error
 }
 
 type employeeUsecase struct {
-	create ICreateEmployeeUseCase
-	get    IGetEmployeeUseCase
-	list   IListEmployeesUseCase
-	update IUpdateEmployeeUseCase
-	delete IDeleteEmployeeUseCase
+	create        ICreateEmployeeUseCase
+	get           IGetEmployeeUseCase
+	list          IListEmployeesUseCase
+	listPaginated IListEmployeesPaginatedUseCase
+	update        IUpdateEmployeeUseCase
+	delete        IDeleteEmployeeUseCase
 }
 
 func NewEmployeeUsecase(repo adapter.EmployeeRepository) EmployeeUsecase {
 	return &employeeUsecase{
-		create: NewCreateEmployeeUseCase(repo),
-		get:    NewGetEmployeeUseCase(repo),
-		list:   NewListEmployeesUseCase(repo),
-		update: NewUpdateEmployeeUseCase(repo),
-		delete: NewDeleteEmployeeUseCase(repo),
+		create:        NewCreateEmployeeUseCase(repo),
+		get:           NewGetEmployeeUseCase(repo),
+		list:          NewListEmployeesUseCase(repo),
+		listPaginated: NewListEmployeesPaginatedUseCase(repo),
+		update:        NewUpdateEmployeeUseCase(repo),
+		delete:        NewDeleteEmployeeUseCase(repo),
 	}
 }
 
@@ -47,6 +50,10 @@ func (u *employeeUsecase) GetEmployeeByID(id int) (*entity.Employee, error) {
 
 func (u *employeeUsecase) GetAllEmployees() ([]*entity.Employee, error) {
 	return u.list.Execute(context.Background())
+}
+
+func (u *employeeUsecase) GetAllEmployeesPaginated(page, limit int) ([]*entity.Employee, int, error) {
+	return u.listPaginated.Execute(context.Background(), page, limit)
 }
 
 func (u *employeeUsecase) UpdateEmployee(employee *entity.Employee) error {
