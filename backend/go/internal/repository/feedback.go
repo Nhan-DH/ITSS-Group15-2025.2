@@ -44,6 +44,56 @@ func (r *feedbackRepository) GetAll() ([]*entity.Feedback, error) {
 	return feedbacks, nil
 }
 
+func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]*entity.Feedback, int, error) {
+	// Build query based on status filter
+	var countQuery, query string
+	var rows *sql.Rows
+	var err error
+	var total int
+
+	if status != "" {
+		// Count with filter
+		countQuery = `SELECT COUNT(*) FROM "Feedback" WHERE status = $1`
+		err = r.db.QueryRow(countQuery, status).Scan(&total)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		// Get paginated data with filter
+		offset := (page - 1) * limit
+		query = `SELECT id, member_id, processor_id, equipment_id, content, sent_at, resolution_note, status FROM "Feedback" WHERE status = $1 ORDER BY id LIMIT $2 OFFSET $3`
+		rows, err = r.db.Query(query, status, limit, offset)
+	} else {
+		// Count without filter
+		countQuery = `SELECT COUNT(*) FROM "Feedback"`
+		err = r.db.QueryRow(countQuery).Scan(&total)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		// Get paginated data without filter
+		offset := (page - 1) * limit
+		query = `SELECT id, member_id, processor_id, equipment_id, content, sent_at, resolution_note, status FROM "Feedback" ORDER BY id LIMIT $1 OFFSET $2`
+		rows, err = r.db.Query(query, limit, offset)
+	}
+
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var feedbacks []*entity.Feedback
+	for rows.Next() {
+		feedback := &entity.Feedback{}
+		err := rows.Scan(&feedback.ID, &feedback.MemberID, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status)
+		if err != nil {
+			return nil, 0, err
+		}
+		feedbacks = append(feedbacks, feedback)
+	}
+	return feedbacks, total, nil
+}
+
 func (r *feedbackRepository) Update(feedback *entity.Feedback) error {
 	query := `UPDATE "Feedback" SET member_id = $1, processor_id = $2, equipment_id = $3, content = $4, sent_at = $5, resolution_note = $6, status = $7 WHERE id = $8`
 	_, err := r.db.Exec(query, feedback.MemberID, feedback.ProcessorID, feedback.EquipmentID, feedback.Content, feedback.SentAt, feedback.ResolutionNote, feedback.Status, feedback.ID)

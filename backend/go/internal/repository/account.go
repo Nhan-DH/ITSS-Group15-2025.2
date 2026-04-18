@@ -60,6 +60,38 @@ func (r *accountRepository) GetAll() ([]*entity.Account, error) {
 	return accounts, nil
 }
 
+func (r *accountRepository) GetAllPaginated(page, limit int) ([]*entity.Account, int, error) {
+	// Count total items
+	var total int
+	countQuery := `SELECT COUNT(*) FROM "Account"`
+	err := r.db.QueryRow(countQuery).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Calculate offset
+	offset := (page - 1) * limit
+
+	// Get paginated data (exclude password from results for security)
+	query := `SELECT id, username, role_id FROM "Account" ORDER BY id LIMIT $1 OFFSET $2`
+	rows, err := r.db.Query(query, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var accounts []*entity.Account
+	for rows.Next() {
+		var account entity.Account
+		err := rows.Scan(&account.ID, &account.Username, &account.RoleID)
+		if err != nil {
+			return nil, 0, err
+		}
+		accounts = append(accounts, &account)
+	}
+	return accounts, total, nil
+}
+
 func (r *accountRepository) Update(account *entity.Account) error {
 	query := `UPDATE "Account" SET username = $1, password = $2, role_id = $3 WHERE id = $4`
 	_, err := r.db.Exec(query, account.Username, account.Password, account.RoleID, account.ID)
