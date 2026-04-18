@@ -60,7 +60,7 @@ CREATE TABLE "MembershipPackage" (
   "category_id" int,
   "package_name" varchar,
   "duration_days" int,
-  "price" decimal
+  "price" decimal,
   "is_active" boolean DEFAULT true
 );
 
