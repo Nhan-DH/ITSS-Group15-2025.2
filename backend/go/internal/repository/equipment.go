@@ -67,7 +67,7 @@ func (r *equipmentRepository) GetAllPaginated(page, limit int) ([]*entity.Equipm
 	var equipments []*entity.Equipment
 	for rows.Next() {
 		equipment := &entity.Equipment{}
-		err := rows.Scan(&equipment.ID, &equipment.FacilityID, &equipment.EquipmentName, &equipment.Origin, &equipment.MaintenanceDeadline, &equipment.Status)
+		err := rows.Scan(&equipment.ID, &equipment.FacilityID, &equipment.EquipmentName, &equipment.SerialNumber, &equipment.Quantity, &equipment.Origin, &equipment.PurchaseDate, &equipment.MaintenanceDeadline, &equipment.Status)
 		if err != nil {
 			return nil, 0, err
 		}

@@ -67,7 +67,7 @@ func (r *employeeRepository) GetAllPaginated(page, limit int) ([]*entity.Employe
 	var employees []*entity.Employee
 	for rows.Next() {
 		employee := &entity.Employee{}
-		err := rows.Scan(&employee.ID, &employee.FullName, &employee.Phone, &employee.Position, &employee.Salary, &employee.AccountID)
+		err := rows.Scan(&employee.ID, &employee.FullName, &employee.Phone, &employee.Position, &employee.Salary, &employee.AccountID, &employee.Gender, &employee.DOB, &employee.Email, &employee.Address)
 		if err != nil {
 			return nil, 0, err
 		}
