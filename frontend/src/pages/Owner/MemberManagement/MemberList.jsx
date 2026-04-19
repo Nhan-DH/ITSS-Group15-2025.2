@@ -213,6 +213,7 @@ const MemberList = () => {
             </div>
           </div>
         )}
+      </div>
 
       {/* Delete Confirmation Modal */}
       <Modal
