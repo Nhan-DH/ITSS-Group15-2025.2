@@ -1,17 +1,34 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Edit, Trash2, PenTool, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit, Trash2, PenTool, ChevronLeft, ChevronRight, Power, PowerOff } from 'lucide-react';
 import { useEquipment } from '@/hooks/queries/useEquipment';
+import { useDeleteEquipment, useUpdateEquipmentStatus } from '@/hooks/mutations/useEquipmentMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
+import Modal from '@/components/Common/Modal';
 
 const EquipmentList = () => {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, equipment: null });
   const limit = 10;
 
   const { data: response, isLoading, isError } = useEquipment(page, limit);
+  const deleteMutation = useDeleteEquipment();
+  const statusMutation = useUpdateEquipmentStatus();
+
+  const handleDelete = () => {
+    if (deleteModal.equipment) {
+      deleteMutation.mutate(deleteModal.equipment.id);
+      setDeleteModal({ isOpen: false, equipment: null });
+    }
+  };
+
+  const handleToggleStatus = (equipment) => {
+    const newStatus = equipment.status === 'active' ? 'maintenance' : 'active';
+    statusMutation.mutate({ id: equipment.id, status: newStatus });
+  };
   
   // Handle API response - extract data from pagination response
   // Fallback to mock data if API fails
@@ -140,12 +157,27 @@ const EquipmentList = () => {
                       </TableCell>
                       <TableCell className="text-right pr-4">
                         <div className="flex items-center justify-end gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title={item.status === 'active' ? 'Bảo trì' : 'Kích hoạt'}
+                            className={`h-8 w-8 ${item.status === 'active' ? 'text-amber-500' : 'text-green-500'} hidden sm:inline-flex`}
+                            onClick={() => handleToggleStatus(item)}
+                          >
+                            {item.status === 'active' ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                          </Button>
                           <Link to={`/owner/equipment/${item.id}/edit`}>
                             <Button variant="ghost" size="icon" title="Chỉnh sửa" className="h-8 w-8 text-blue-500 hidden sm:inline-flex">
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Button variant="ghost" size="icon" title="Xóa" className="h-8 w-8 text-red-500 hidden sm:inline-flex">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Xóa" 
+                            className="h-8 w-8 text-red-500 hidden sm:inline-flex"
+                            onClick={() => setDeleteModal({ isOpen: true, equipment: item })}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                           <div className="sm:hidden text-blue-500 font-medium text-sm underline px-2 py-1">Sửa</div>
@@ -186,6 +218,28 @@ const EquipmentList = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, equipment: null })}
+        title="Xác nhận xóa thiết bị"
+      >
+        <div className="p-4">
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            Bạn có chắc chắn muốn xóa thiết bị <strong>{deleteModal.equipment?.equipment_name}</strong> không?
+          </p>
+          <p className="text-sm text-red-500 mb-4">Hành động này không thể hoàn tác.</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteModal({ isOpen: false, equipment: null })}>
+              Hủy
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

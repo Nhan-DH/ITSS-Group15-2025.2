@@ -1,15 +1,32 @@
 import React, { useMemo, useState } from 'react';
-import { Plus, Users, MapPin, Edit, Eye, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Users, MapPin, Edit, Eye, Trash2, ChevronLeft, ChevronRight, Power, PowerOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useFacilities } from '@/hooks/queries/useFacilities';
+import { useDeleteFacility, useUpdateFacilityStatus } from '@/hooks/mutations/useFacilityMutation';
 import Button from '@/components/Common/Button';
+import Modal from '@/components/Common/Modal';
 import { toast } from '@/utils/toast';
 
 const RoomList = () => {
   const [page, setPage] = useState(1);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, room: null });
   const limit = 10;
 
   const { data: facilityResponse, isLoading } = useFacilities(page, limit);
+  const deleteMutation = useDeleteFacility();
+  const statusMutation = useUpdateFacilityStatus();
+
+  const handleDelete = () => {
+    if (deleteModal.room) {
+      deleteMutation.mutate(deleteModal.room.id);
+      setDeleteModal({ isOpen: false, room: null });
+    }
+  };
+
+  const handleToggleStatus = (room) => {
+    const newStatus = room.status === 'active' ? 'maintenance' : 'active';
+    statusMutation.mutate({ id: room.id, status: newStatus });
+  };
 
   // Mock data fallback
   const mockRooms = [
@@ -108,6 +125,15 @@ const RoomList = () => {
                 {room.status === 'active' ? 'Đang mở cửa' : 'Bảo trì'}
               </span>
               <div className="flex gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`h-8 w-8 ${room.status === 'active' ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/50' : 'text-green-500 hover:bg-green-50 dark:hover:bg-green-900/50'}`}
+                  title={room.status === 'active' ? 'Bảo trì' : 'Kích hoạt'}
+                  onClick={() => handleToggleStatus(room)}
+                >
+                  {room.status === 'active' ? <PowerOff className="h-4 w-4"/> : <Power className="h-4 w-4"/>}
+                </Button>
                 <Link to={`/owner/rooms/${room.id}`}>
                   <Button 
                     variant="ghost" 
@@ -133,7 +159,7 @@ const RoomList = () => {
                   size="icon" 
                   className="h-8 w-8 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/50"
                   title="Xóa"
-                  onClick={() => toast.error('Tính năng xóa đang được phát triển')}
+                  onClick={() => setDeleteModal({ isOpen: true, room })}
                 >
                   <Trash2 className="h-4 w-4"/>
                 </Button>
@@ -170,6 +196,28 @@ const RoomList = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, room: null })}
+        title="Xác nhận xóa phòng tập"
+      >
+        <div className="p-4">
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            Bạn có chắc chắn muốn xóa phòng <strong>{deleteModal.room?.name}</strong> không?
+          </p>
+          <p className="text-sm text-red-500 mb-4">Hành động này không thể hoàn tác.</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteModal({ isOpen: false, room: null })}>
+              Hủy
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

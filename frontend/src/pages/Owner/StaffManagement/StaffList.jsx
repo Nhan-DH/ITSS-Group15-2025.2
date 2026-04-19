@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Edit, Trash2, Shield, UserCog, Eye, EyeOff, Lock, Key, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit, Trash2, Shield, UserCog, Eye, EyeOff, Lock, Key, ChevronLeft, ChevronRight, Power, PowerOff } from 'lucide-react';
 import { useEmployees } from '@/hooks/queries/useEmployees';
+import { useDeleteEmployee, useUpdateEmployeeStatus } from '@/hooks/mutations/useEmployeeMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
@@ -16,9 +17,24 @@ const initialAccounts = [
 const StaffList = () => {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, staff: null });
   const limit = 10;
 
   const { data: employeeResponse, isLoading, isError } = useEmployees(page, limit);
+  const deleteMutation = useDeleteEmployee();
+  const statusMutation = useUpdateEmployeeStatus();
+
+  const handleDelete = () => {
+    if (deleteModal.staff) {
+      deleteMutation.mutate(deleteModal.staff.id);
+      setDeleteModal({ isOpen: false, staff: null });
+    }
+  };
+
+  const handleToggleStatus = (staff) => {
+    const newStatus = staff.status === 'active' ? 'inactive' : 'active';
+    statusMutation.mutate({ id: staff.id, status: newStatus });
+  };
   
   // Mock data fallback
   const mockStaffs = [
@@ -200,6 +216,16 @@ const StaffList = () => {
                           type="button"
                           variant="ghost"
                           size="icon"
+                          title={staff.status === 'active' ? 'Ngừng hoạt động' : 'Kích hoạt'}
+                          className={`h-8 w-8 ${staff.status === 'active' ? 'text-amber-500' : 'text-green-500'}`}
+                          onClick={(e) => { e.stopPropagation(); handleToggleStatus(staff); }}
+                        >
+                          {staff.status === 'active' ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
                           title="Xem chi tiết"
                           className="h-8 w-8 text-blue-500"
                           onClick={(e) => {
@@ -215,7 +241,7 @@ const StaffList = () => {
                           size="icon"
                           title="Xóa"
                           className="h-8 w-8 text-red-500"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => { e.stopPropagation(); setDeleteModal({ isOpen: true, staff }); }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -460,6 +486,28 @@ const StaffList = () => {
           {passwordError && (
             <p className="text-sm text-red-500">{passwordError}</p>
           )}
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, staff: null })}
+        title="Xác nhận xóa nhân viên"
+      >
+        <div className="p-4">
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            Bạn có chắc chắn muốn xóa nhân viên <strong>{deleteModal.staff?.full_name}</strong> không?
+          </p>
+          <p className="text-sm text-red-500 mb-4">Hành động này không thể hoàn tác.</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteModal({ isOpen: false, staff: null })}>
+              Hủy
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

@@ -27,4 +27,8 @@ export const employeeService = {
   getEmployeeById: async (id) => {
     return axios.get(`/employees/${id}`);
   },
+
+  updateEmployeeStatus: async (id, status) => {
+    return axios.put(`/employees/${id}`, { status });
+  },
 };

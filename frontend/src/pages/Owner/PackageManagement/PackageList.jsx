@@ -1,13 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { usePackages } from '@/hooks/queries/usePackages';
+import { useDeletePackage, useUpdatePackageStatus } from '@/hooks/mutations/usePackageMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
+import Modal from '@/components/Common/Modal';
 import { formatPriceVND } from '@/utils/formatters';
 
 const PackageList = () => {
   const { data: packages, isLoading, isError } = usePackages();
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, pkg: null });
+  const deleteMutation = useDeletePackage();
+  const statusMutation = useUpdatePackageStatus();
+
+  const handleDelete = () => {
+    if (deleteModal.pkg) {
+      deleteMutation.mutate(deleteModal.pkg.id);
+      setDeleteModal({ isOpen: false, pkg: null });
+    }
+  };
+
+  const handleToggleStatus = (pkg) => {
+    const newIsActive = !pkg.is_active;
+    statusMutation.mutate({ id: pkg.id, isActive: newIsActive });
+  };
 
   // Tạo mock data fallback cho tình huống usePackages hook chưa có data thật
   const mockPackages = packages || [
@@ -81,12 +98,27 @@ const PackageList = () => {
                     </TableCell>
                     <TableCell className="text-right pr-4">
                       <div className="flex items-center justify-end gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          title={pkg.is_active ? 'Ẩn gói' : 'Hiển thị gói'}
+                          className={`h-8 w-8 ${pkg.is_active ? 'text-green-500' : 'text-amber-500'} hidden sm:inline-flex`}
+                          onClick={() => handleToggleStatus(pkg)}
+                        >
+                          {pkg.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </Button>
                         <Link to={`/owner/packages/${pkg.id}/edit`}>
                           <Button variant="ghost" size="icon" title="Chỉnh sửa" className="h-8 w-8 text-blue-500 hidden sm:inline-flex">
                             <Edit className="h-4 w-4" />
                           </Button>
                         </Link>
-                        <Button variant="ghost" size="icon" title="Xóa" className="h-8 w-8 text-red-500 hidden sm:inline-flex">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          title="Xóa" 
+                          className="h-8 w-8 text-red-500 hidden sm:inline-flex"
+                          onClick={() => setDeleteModal({ isOpen: true, pkg })}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                         {/* Mobile view Action Fallback */}
@@ -100,6 +132,28 @@ const PackageList = () => {
           </Table>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, pkg: null })}
+        title="Xác nhận xóa gói tập"
+      >
+        <div className="p-4">
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            Bạn có chắc chắn muốn xóa gói tập <strong>{deleteModal.pkg?.name}</strong> không?
+          </p>
+          <p className="text-sm text-red-500 mb-4">Hành động này không thể hoàn tác.</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteModal({ isOpen: false, pkg: null })}>
+              Hủy
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

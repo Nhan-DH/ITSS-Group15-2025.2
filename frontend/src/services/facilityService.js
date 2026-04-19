@@ -26,4 +26,8 @@ export const facilityService = {
   getFacilityById: async (id) => {
     return axios.get(`/facilities/${id}`);
   },
+
+  updateFacilityStatus: async (id, status) => {
+    return axios.put(`/facilities/${id}`, { status });
+  },
 };

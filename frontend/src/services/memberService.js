@@ -41,5 +41,9 @@ export const memberService = {
       return { success: true };
     }
     return axios.delete(`/members/${id}`);
-  }
+  },
+
+  updateMemberStatus: async (id, status) => {
+    return axios.put(`/members/${id}`, { status });
+  },
 };
