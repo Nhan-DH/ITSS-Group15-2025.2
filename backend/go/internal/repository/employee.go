@@ -15,19 +15,19 @@ func NewEmployeeRepository(db *sql.DB) adapter.EmployeeRepository {
 }
 
 func (r *employeeRepository) Create(employee *entity.Employee) error {
-	query := `INSERT INTO "Employee" (full_name, phone, position, salary, account_id) VALUES ($1, $2, $3, $4, $5) RETURNING id`
-	return r.db.QueryRow(query, employee.FullName, employee.Phone, employee.Position, employee.Salary, employee.AccountID).Scan(&employee.ID)
+	query := `INSERT INTO "Employee" (full_name, phone, position, salary, account_id, gender, dob, email, address) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`
+	return r.db.QueryRow(query, employee.FullName, employee.Phone, employee.Position, employee.Salary, employee.AccountID, employee.Gender, employee.DOB, employee.Email, employee.Address).Scan(&employee.ID)
 }
 
 func (r *employeeRepository) GetByID(id int) (*entity.Employee, error) {
 	employee := &entity.Employee{}
-	query := `SELECT id, full_name, phone, position, salary, account_id FROM "Employee" WHERE id = $1`
-	err := r.db.QueryRow(query, id).Scan(&employee.ID, &employee.FullName, &employee.Phone, &employee.Position, &employee.Salary, &employee.AccountID)
+	query := `SELECT id, full_name, phone, position, salary, account_id, COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(email, ''), COALESCE(address, '') FROM "Employee" WHERE id = $1`
+	err := r.db.QueryRow(query, id).Scan(&employee.ID, &employee.FullName, &employee.Phone, &employee.Position, &employee.Salary, &employee.AccountID, &employee.Gender, &employee.DOB, &employee.Email, &employee.Address)
 	return employee, err
 }
 
 func (r *employeeRepository) GetAll() ([]*entity.Employee, error) {
-	rows, err := r.db.Query(`SELECT id, full_name, phone, position, salary, account_id FROM "Employee"`)
+	rows, err := r.db.Query(`SELECT id, full_name, phone, position, salary, account_id, COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(email, ''), COALESCE(address, '') FROM "Employee"`)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (r *employeeRepository) GetAll() ([]*entity.Employee, error) {
 	var employees []*entity.Employee
 	for rows.Next() {
 		employee := &entity.Employee{}
-		err := rows.Scan(&employee.ID, &employee.FullName, &employee.Phone, &employee.Position, &employee.Salary, &employee.AccountID)
+		err := rows.Scan(&employee.ID, &employee.FullName, &employee.Phone, &employee.Position, &employee.Salary, &employee.AccountID, &employee.Gender, &employee.DOB, &employee.Email, &employee.Address)
 		if err != nil {
 			return nil, err
 		}
@@ -57,7 +57,7 @@ func (r *employeeRepository) GetAllPaginated(page, limit int) ([]*entity.Employe
 	offset := (page - 1) * limit
 
 	// Get paginated data - simple query
-	query := `SELECT id, full_name, phone, position, salary, account_id FROM "Employee" ORDER BY id DESC LIMIT $1 OFFSET $2`
+	query := `SELECT id, full_name, phone, position, salary, account_id, COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(email, ''), COALESCE(address, '') FROM "Employee" ORDER BY id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -77,8 +77,8 @@ func (r *employeeRepository) GetAllPaginated(page, limit int) ([]*entity.Employe
 }
 
 func (r *employeeRepository) Update(employee *entity.Employee) error {
-	query := `UPDATE "Employee" SET full_name = $1, phone = $2, position = $3, salary = $4, account_id = $5 WHERE id = $6`
-	_, err := r.db.Exec(query, employee.FullName, employee.Phone, employee.Position, employee.Salary, employee.AccountID, employee.ID)
+	query := `UPDATE "Employee" SET full_name = $1, phone = $2, position = $3, salary = $4, account_id = $5, gender = $6, dob = $7, email = $8, address = $9 WHERE id = $10`
+	_, err := r.db.Exec(query, employee.FullName, employee.Phone, employee.Position, employee.Salary, employee.AccountID, employee.Gender, employee.DOB, employee.Email, employee.Address, employee.ID)
 	return err
 }
 
