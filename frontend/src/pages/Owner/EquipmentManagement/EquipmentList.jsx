@@ -14,7 +14,7 @@ const EquipmentList = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, equipment: null });
   const limit = 10;
 
-  const { data: response, isLoading, isError } = useEquipment(page, limit);
+  const { data: response, isLoading, isError, error } = useEquipment(page, limit);
   const deleteMutation = useDeleteEquipment();
   const statusMutation = useUpdateEquipmentStatus();
 
