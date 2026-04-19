@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { X, CheckCircle, AlertTriangle, ChevronLeft, ClipboardList } from 'lucide-react';
+import { X, CheckCircle, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import useTrainerStore from '@/store/useTrainerStore';
 
 // ─── Absence Modal ─────────────────────────────────────────────────────────────
@@ -55,130 +55,26 @@ const AbsenceModal = ({ student, onConfirm, onCancel }) => {
   );
 };
 
-// ─── InBody Metrics Form (Screen 4) ───────────────────────────────────────────
-const MetricsForm = ({ event, onSubmit, onSkip }) => {
-  const [metrics, setMetrics] = useState({
-    weight: '', bodyFat: '', muscle: '',
-    chest: '', waist: '', arm: '', forearm: '', thigh: '', calf: '',
-  });
-
-  const set = (field) => (e) => setMetrics((prev) => ({ ...prev, [field]: e.target.value }));
-
-  const fields = [
-    { key: 'weight', label: 'Cân nặng', unit: 'kg' },
-    { key: 'bodyFat', label: 'Tỷ lệ mỡ (BodyFat)', unit: '%' },
-    { key: 'muscle', label: 'Khối lượng cơ', unit: 'kg' },
-    { key: 'chest', label: 'Ngực', unit: 'cm' },
-    { key: 'waist', label: 'Bụng (Eo)', unit: 'cm' },
-    { key: 'arm', label: 'Bắp tay', unit: 'cm' },
-    { key: 'forearm', label: 'Cẳng tay', unit: 'cm' },
-    { key: 'thigh', label: 'Đùi', unit: 'cm' },
-    { key: 'calf', label: 'Bắp chuối', unit: 'cm' },
-  ];
-
-  const handleSubmit = () => {
-    // At minimum, weight is required
-    if (!metrics.weight) { toast.error('Vui lòng nhập ít nhất cân nặng'); return; }
-    const entry = {};
-    for (const f of fields) {
-      if (metrics[f.key]) entry[f.key] = parseFloat(metrics[f.key]);
-    }
-    onSubmit(entry);
-  };
-
-  return (
-    <div className="flex-1 overflow-y-auto p-7 max-w-3xl mx-auto w-full">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-          <ClipboardList className="w-5 h-5 text-blue-600" />
-        </div>
-        <div>
-          <h2 className="text-lg font-bold text-gray-900">Ghi nhận chỉ số cơ thể</h2>
-          <p className="text-xs text-gray-500">Học viên: {event.student}</p>
-        </div>
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 bg-gray-50">
-          <p className="text-xs text-gray-500">Điền các chỉ số đo được sau buổi tập. Chỉ cần nhập những giá trị đã đo.</p>
-        </div>
-
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-gray-100">
-              <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Chỉ số</th>
-              <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Giá trị</th>
-              <th className="px-5 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide text-right">Đơn vị</th>
-            </tr>
-          </thead>
-          <tbody>
-            {fields.map((f, i) => (
-              <tr key={f.key} className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                <td className="px-5 py-3 font-medium text-gray-700">
-                  {f.label}
-                  {f.key === 'weight' && <span className="text-red-500 ml-1">*</span>}
-                </td>
-                <td className="px-5 py-2">
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={metrics[f.key]}
-                    onChange={set(f.key)}
-                    placeholder="—"
-                    className="w-28 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all text-gray-900"
-                  />
-                </td>
-                <td className="px-5 py-3 text-xs text-gray-400 text-right font-medium">{f.unit}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="px-5 py-4 bg-gray-50 border-t border-gray-100">
-          <p className="text-xs text-gray-400"><span className="text-red-500">*</span> Bắt buộc nhập</p>
-        </div>
-      </div>
-
-      <div className="flex gap-3 mt-4">
-        <button
-          onClick={onSkip}
-          className="flex-1 py-3.5 border-2 border-gray-200 text-gray-600 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-colors"
-        >
-          Bỏ qua
-        </button>
-        <button
-          onClick={handleSubmit}
-          className="flex-2 flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-        >
-          <CheckCircle className="w-4 h-4" />
-          Lưu chỉ số
-        </button>
-      </div>
-    </div>
-  );
-};
-
 // ─── Attendance Status Badge ──────────────────────────────────────────────────
 const AttendanceBadge = ({ ev }) => {
-  if (ev.absent)     return <span className="text-xs font-bold bg-red-50    text-red-700    px-2.5 py-1 rounded whitespace-nowrap">Vắng mặt</span>;
-  if (ev.done)       return <span className="text-xs font-bold bg-green-50  text-green-700  px-2.5 py-1 rounded whitespace-nowrap">Đã xong</span>;
-  if (ev.confirmed)  return <span className="text-xs font-bold bg-teal-50   text-teal-700   px-2.5 py-1 rounded whitespace-nowrap">Đã xác nhận</span>;
-  return               <span className="text-xs font-bold bg-blue-50   text-blue-700   px-2.5 py-1 rounded whitespace-nowrap">Sắp diễn ra</span>;
+  if (ev.absent)    return <span className="text-xs font-bold bg-red-50   text-red-700   px-2.5 py-1 rounded whitespace-nowrap">Vắng mặt</span>;
+  if (ev.done)      return <span className="text-xs font-bold bg-green-50 text-green-700 px-2.5 py-1 rounded whitespace-nowrap">Đã xong</span>;
+  if (ev.confirmed) return <span className="text-xs font-bold bg-teal-50  text-teal-700  px-2.5 py-1 rounded whitespace-nowrap">Đã xác nhận</span>;
+  return              <span className="text-xs font-bold bg-blue-50  text-blue-700  px-2.5 py-1 rounded whitespace-nowrap">Sắp diễn ra</span>;
 };
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const DAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 const DAY_NAMES = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-const YEAR = 2026;
-const MONTH = 3; // April (0-indexed)
+const pad2 = (n) => String(n).padStart(2, '0');
 
-const dateKey = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+const makeDateKey = (y, m, d) => `${y}-${pad2(m + 1)}-${pad2(d)}`;
 
-function buildCalendar() {
-  const first = new Date(YEAR, MONTH, 1).getDay();
-  const offset = first === 0 ? 6 : first - 1;
-  const dim = new Date(YEAR, MONTH + 1, 0).getDate();
-  const prev = new Date(YEAR, MONTH, 0).getDate();
+function buildCalendar(year, month) {
+  const first = new Date(year, month, 1).getDay();
+  const offset = first === 0 ? 6 : first - 1; // Mon-first offset
+  const dim = new Date(year, month + 1, 0).getDate();
+  const prev = new Date(year, month, 0).getDate();
   const days = [];
   for (let i = offset - 1; i >= 0; i--) days.push({ day: prev - i, isCurrentMonth: false });
   for (let d = 1; d <= dim; d++) days.push({ day: d, isCurrentMonth: true });
@@ -188,23 +84,48 @@ function buildCalendar() {
   return days;
 }
 
-const calendarDays = buildCalendar();
+const MONTH_NAMES = [
+  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
+  'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
+  'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+];
 
+// ─── Main Component ───────────────────────────────────────────────────────────
 const TrainerSchedule = () => {
   const scheduleEvents = useTrainerStore((s) => s.scheduleEvents);
   const confirmAttendance = useTrainerStore((s) => s.confirmAttendance);
   const reportAbsence = useTrainerStore((s) => s.reportAbsence);
-  const addInBodyEntry = useTrainerStore((s) => s.addInBodyEntry);
+
+  // Start at April 2026 (demo reference month)
+  const [calYear, setCalYear] = useState(2026);
+  const [calMonth, setCalMonth] = useState(3); // 0-indexed; 3 = April
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  // screen: 1=calendar, 2=session detail (upcoming), 3=session detail (done), 4=metrics form
+  // screen: 1=calendar, 2=session detail (upcoming), 3=session detail (done)
   const [screen, setScreen] = useState(1);
   const [absenceModal, setAbsenceModal] = useState(false);
   const [reviewData, setReviewData] = useState({ review: '', advice: '' });
   const [submitted, setSubmitted] = useState(false);
 
-  const selectDay = (d) => { setSelectedDate(dateKey(YEAR, MONTH, d)); setScreen(1); };
+  const calendarDays = buildCalendar(calYear, calMonth);
+
+  const prevMonth = () => {
+    if (calMonth === 0) { setCalYear(y => y - 1); setCalMonth(11); }
+    else setCalMonth(m => m - 1);
+    setSelectedDate(null);
+  };
+
+  const nextMonth = () => {
+    if (calMonth === 11) { setCalYear(y => y + 1); setCalMonth(0); }
+    else setCalMonth(m => m + 1);
+    setSelectedDate(null);
+  };
+
+  const selectDay = (d) => {
+    setSelectedDate(makeDateKey(calYear, calMonth, d));
+    setScreen(1);
+  };
 
   const openDetail = (key, idx) => {
     const ev = scheduleEvents[key]?.[idx];
@@ -218,7 +139,7 @@ const TrainerSchedule = () => {
     if (!selectedEvent) return;
     confirmAttendance(selectedEvent.key, selectedEvent.idx);
     toast.success('Xác nhận thành công', { description: 'Đã xác nhận tham gia buổi tập' });
-    setScreen(4);
+    setScreen(1);
   };
 
   const handleAbsenceConfirm = (reason) => {
@@ -228,43 +149,53 @@ const TrainerSchedule = () => {
     setScreen(1);
   };
 
-  const handleMetricsSubmit = (entry) => {
-    const ev = scheduleEvents[selectedEvent.key]?.[selectedEvent.idx];
-    if (ev?.studentId) {
-      addInBodyEntry(ev.studentId, entry);
-      toast.success('Đã lưu chỉ số InBody', { description: `Cập nhật cho học viên ${ev.student}` });
-    } else {
-      toast.success('Đã lưu chỉ số', { description: 'Chỉ số buổi tập đã được ghi nhận' });
-    }
-    setScreen(1);
-  };
+  // ── Total stats across all events in the store ────────────────────────────
+  const allEvents = Object.values(scheduleEvents).flat();
+  const totalSessions = allEvents.length;
+  const doneSessions = allEvents.filter(e => e.done || e.confirmed).length;
+  const absentSessions = allEvents.filter(e => e.absent).length;
 
   // ── Screen 1 – Calendar ────────────────────────────────────────────────────
   if (screen === 1) {
-    const totalSessions = Object.values(scheduleEvents).flat().length;
-    const doneSessions = Object.values(scheduleEvents).flat().filter(e => e.done || e.confirmed).length;
-
     return (
       <div className="flex flex-col flex-1 bg-gray-50 p-6 max-w-5xl mx-auto w-full">
         {/* Calendar */}
         <div className="bg-white border border-gray-200 flex flex-col rounded-xl mb-6">
           <div className="p-5">
+            {/* Month navigation */}
             <div className="flex items-center justify-between mb-4">
-              <button className="w-7 h-7 rounded border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50">‹</button>
-              <div className="text-sm font-bold text-gray-800">Tháng 4, 2026</div>
-              <button className="w-7 h-7 rounded border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50">›</button>
+              <button
+                onClick={prevMonth}
+                className="w-7 h-7 rounded border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <div className="text-sm font-bold text-gray-800">
+                {MONTH_NAMES[calMonth]}, {calYear}
+              </div>
+              <button
+                onClick={nextMonth}
+                className="w-7 h-7 rounded border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
+
+            {/* Day headers */}
             <div className="grid grid-cols-7 gap-0 mb-2">
               {DAYS.map((day) => (
                 <div key={day} className="text-xs font-bold text-gray-400 text-center py-2">{day}</div>
               ))}
             </div>
+
+            {/* Calendar grid */}
             <div className="grid grid-cols-7 gap-1">
               {calendarDays.map((dayObj, idx) => {
-                const key = dayObj.isCurrentMonth ? dateKey(YEAR, MONTH, dayObj.day) : null;
+                const key = dayObj.isCurrentMonth ? makeDateKey(calYear, calMonth, dayObj.day) : null;
                 const evs = key ? scheduleEvents[key] || [] : [];
                 const isSelected = selectedDate === key;
-                const isToday = dayObj.isCurrentMonth && dayObj.day === 17;
+                // Mark "today" as April 17 2026 for the demo
+                const isToday = dayObj.isCurrentMonth && calYear === 2026 && calMonth === 3 && dayObj.day === 17;
                 return (
                   <div
                     key={idx}
@@ -279,11 +210,12 @@ const TrainerSchedule = () => {
                     <span className="text-sm font-semibold">{dayObj.day}</span>
                     {evs.length > 0 && (
                       <div className="flex gap-0.5 mt-1">
-                        {evs.map((e, i) => (
+                        {evs.slice(0, 4).map((e, i) => (
                           <div key={i} className={`w-1.5 h-1.5 rounded-full ${
-                            e.absent ? 'bg-red-500' : e.done ? 'bg-green-600' : 'bg-blue-400'
+                            e.absent ? 'bg-red-500' : e.done ? 'bg-green-600' : e.confirmed ? 'bg-teal-500' : 'bg-blue-400'
                           }`} />
                         ))}
+                        {evs.length > 4 && <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />}
                       </div>
                     )}
                   </div>
@@ -292,9 +224,10 @@ const TrainerSchedule = () => {
             </div>
           </div>
 
+          {/* Stats */}
           <div className="border-t border-gray-100 p-4 grid grid-cols-3 gap-3">
             <div className="bg-gray-50 rounded-lg p-3">
-              <div className="text-xs font-bold text-gray-400 uppercase mb-1">Tháng này</div>
+              <div className="text-xs font-bold text-gray-400 uppercase mb-1">Tổng buổi</div>
               <div className="text-xl font-black text-gray-800">{totalSessions} <span className="text-xs text-gray-400">buổi</span></div>
             </div>
             <div className="bg-gray-50 rounded-lg p-3">
@@ -304,14 +237,14 @@ const TrainerSchedule = () => {
             <div className="bg-gray-50 rounded-lg p-3">
               <div className="text-xs font-bold text-gray-400 uppercase mb-1">Vắng mặt</div>
               <div className="text-xl font-black text-red-500">
-                {Object.values(scheduleEvents).flat().filter(e => e.absent).length}
+                {absentSessions}
                 <span className="text-xs text-gray-400"> buổi</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Event list */}
+        {/* Event list for selected date */}
         <div className="flex-1 bg-white border border-gray-200 rounded-xl p-6">
           {!selectedDate ? (
             <div className="flex flex-col items-center justify-center h-full gap-2">
@@ -322,7 +255,8 @@ const TrainerSchedule = () => {
             <div>
               <div className="flex items-center justify-between mb-5">
                 <div className="text-sm font-semibold text-gray-500">
-                  {DAY_NAMES[new Date(YEAR, MONTH, parseInt(selectedDate.split('-')[2])).getDay()]}, {selectedDate.split('-')[2]}/04/2026
+                  {DAY_NAMES[new Date(calYear, calMonth, parseInt(selectedDate.split('-')[2])).getDay()]},{' '}
+                  {selectedDate.split('-')[2]}/{pad2(calMonth + 1)}/{calYear}
                 </div>
                 {scheduleEvents[selectedDate]?.length > 0 && (
                   <div className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
@@ -334,7 +268,7 @@ const TrainerSchedule = () => {
                 <div className="text-sm text-gray-400">Không có buổi tập nào</div>
               ) : (
                 <div>
-                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Lịch hôm nay</div>
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Lịch ngày này</div>
                   {scheduleEvents[selectedDate].map((ev, idx) => (
                     <div
                       key={idx}
@@ -350,7 +284,12 @@ const TrainerSchedule = () => {
                         <div className="text-xs text-gray-400">{ev.end}</div>
                       </div>
                       <div className="flex-1 ml-2">
-                        <div className="text-sm font-bold text-gray-800 mb-2">{ev.name}</div>
+                        <div className="text-sm font-bold text-gray-800 mb-1">{ev.name}</div>
+                        {ev.totalSessions && (
+                          <div className="text-xs text-indigo-600 font-semibold mb-1">
+                            Buổi {ev.sessionNumber}/{ev.totalSessions} · {ev.curriculum}
+                          </div>
+                        )}
                         <div className="flex flex-wrap gap-1.5 mb-2">
                           <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{ev.room}</span>
                           <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">{ev.curriculum}</span>
@@ -374,25 +313,16 @@ const TrainerSchedule = () => {
     );
   }
 
-  // ── Screens 2/3/4 ───────────────────────────────────────────────────────────
+  // ── Screens 2 & 3 ─────────────────────────────────────────────────────────
   if (!selectedEvent) return null;
   const ev = scheduleEvents[selectedEvent.key]?.[selectedEvent.idx];
   if (!ev) return null;
-  const d = parseInt(selectedEvent.key.split('-')[2]);
-  const dayName = DAY_NAMES[new Date(YEAR, MONTH, d).getDay()];
+  const parts = selectedEvent.key.split('-');
+  const evYear = parseInt(parts[0]);
+  const evMonth = parseInt(parts[1]) - 1;
+  const evDay = parseInt(parts[2]);
+  const dayName = DAY_NAMES[new Date(evYear, evMonth, evDay).getDay()];
 
-  // ── Screen 4 – Record metrics ─────────────────────────────────────────────
-  if (screen === 4) {
-    return (
-      <MetricsForm
-        event={ev}
-        onSubmit={handleMetricsSubmit}
-        onSkip={() => setScreen(1)}
-      />
-    );
-  }
-
-  // ── Screens 2 & 3 ─────────────────────────────────────────────────────────
   const isUpcoming = screen === 2;
   return (
     <>
@@ -415,8 +345,15 @@ const TrainerSchedule = () => {
           <div className={`w-8 h-8 rounded flex items-center justify-center text-sm ${ev.absent ? 'bg-red-50' : ev.done ? 'bg-green-50' : 'bg-blue-50'}`}>
             {ev.absent ? '🚫' : ev.done ? '✓' : '📅'}
           </div>
-          <div className="text-sm font-semibold text-gray-700">
-            {ev.absent ? 'Vắng mặt · ' : ev.done ? 'Hoàn thành · ' : ''}{dayName}, {String(d).padStart(2, '0')}/04/2026 · {ev.start} – {ev.end}
+          <div className="flex-1">
+            <div className="text-sm font-semibold text-gray-700">
+              {ev.absent ? 'Vắng mặt · ' : ev.done ? 'Hoàn thành · ' : ''}{dayName}, {pad2(evDay)}/{pad2(evMonth + 1)}/{evYear} · {ev.start} – {ev.end}
+            </div>
+            {ev.totalSessions && (
+              <div className="text-xs text-indigo-600 font-semibold mt-0.5">
+                Buổi {ev.sessionNumber}/{ev.totalSessions} trong chương trình
+              </div>
+            )}
           </div>
           <div className="ml-auto"><AttendanceBadge ev={ev} /></div>
         </div>
@@ -451,6 +388,12 @@ const TrainerSchedule = () => {
                 <div className="text-sm font-bold text-gray-800">{ev.student}</div>
                 <div className="text-xs text-blue-700">PT 1:1 · {ev.curriculum}</div>
               </div>
+              {ev.totalSessions && (
+                <div className="text-right">
+                  <div className="text-lg font-black text-indigo-600">{ev.sessionNumber}</div>
+                  <div className="text-xs text-gray-400">/ {ev.totalSessions} buổi</div>
+                </div>
+              )}
             </div>
           </div>
           {/* Absence reason */}
@@ -462,7 +405,7 @@ const TrainerSchedule = () => {
           )}
         </div>
 
-        {/* Completed session: review form */}
+        {/* Action buttons / review form */}
         {isUpcoming ? (
           <div className="flex gap-3">
             <button

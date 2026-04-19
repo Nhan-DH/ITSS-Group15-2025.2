@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { LineChart, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
 import useTrainerStore from '@/store/useTrainerStore';
@@ -63,8 +63,8 @@ const StudentList = () => {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link to={`/trainer/students/${student.id}`}>
-                        <Button variant="outline" size="sm" leftIcon={<LineChart className="h-4 w-4" />}>
-                          InBody
+                        <Button variant="outline" size="sm">
+                          Xem chi tiết
                         </Button>
                       </Link>
                     </div>

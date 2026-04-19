@@ -78,16 +78,20 @@ const ConflictModal = ({ conflicts, onClose }) => (
       <p className="text-sm text-gray-600 mb-3">
         Lịch mong muốn của học viên trùng với các buổi dạy hiện tại của bạn:
       </p>
-      <div className="space-y-2 mb-5">
+      <div className="space-y-2 mb-5 max-h-60 overflow-y-auto">
         {conflicts.map((c, i) => (
           <div key={i} className="bg-red-50 border border-red-200 rounded-xl p-3">
-            <div className="text-sm font-semibold text-red-800">{c.day} · {c.slot}</div>
+            <div className="text-sm font-semibold text-red-800">
+              {c.sessionNumber ? `Buổi ${c.sessionNumber} · ` : ''}{c.day} · {c.slot}
+              {c.date && <span className="text-xs font-normal ml-1 text-red-400">({c.date})</span>}
+            </div>
             <div className="text-xs text-red-600 mt-0.5">
               Trùng với buổi của <span className="font-bold">{c.existingStudent}</span> lúc {c.existingTime}
             </div>
           </div>
         ))}
       </div>
+
       <button
         onClick={onClose}
         className="w-full py-2.5 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors"
@@ -98,7 +102,7 @@ const ConflictModal = ({ conflicts, onClose }) => (
   </div>
 );
 
-// ─── Schedule Slot Pills (same style as TrainerProfile) ───────────────────────
+// ─── Schedule Slot Pills ─────────────────────────────────────────────────────────────────
 const ScheduleSlotDisplay = ({ preferredSchedule }) => {
   if (!preferredSchedule || preferredSchedule.length === 0) return null;
   return (
@@ -207,7 +211,7 @@ const TrainerRequests = () => {
     const result = acceptRequest(currentRequest.id);
     if (result.ok) {
       toast.success('Đã chấp nhận yêu cầu', {
-        description: `Lịch dạy với ${currentRequest.name} đã được thêm vào lịch của bạn.`,
+        description: `Đã thêm ${result.totalAdded} buổi tập với ${currentRequest.name} vào lịch dạy.`,
       });
     } else {
       setConflictModal({ conflicts: result.conflicts });
@@ -301,8 +305,18 @@ const TrainerRequests = () => {
             {/* Preferred schedule – slot pills */}
             <div>
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Lịch mong muốn hỗ trợ</h4>
+              {currentRequest.totalSessions && (
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span className="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full font-semibold">
+                    🗓 {currentRequest.totalSessions} buổi tập
+                  </span>
+                </div>
+              )}
               <div className="bg-gray-50 p-4 rounded-xl">
-                <ScheduleSlotDisplay preferredSchedule={currentRequest.preferredSchedule} />
+                <p className="text-xs text-gray-400 mb-3">Hệ thống sẽ tự động xếp {currentRequest.totalSessions || '?'} buổi vào lịch dạy của bạn sau khi chấp nhận.</p>
+                <ScheduleSlotDisplay
+                  preferredSchedule={currentRequest.preferredSchedule}
+                />
               </div>
             </div>
 
