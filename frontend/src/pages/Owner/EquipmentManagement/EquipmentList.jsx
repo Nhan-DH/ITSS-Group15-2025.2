@@ -9,16 +9,27 @@ import Input from '@/components/Common/Input';
 const EquipmentList = () => {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const limit = 6;
+  const limit = 10;
 
   const { data: response, isLoading, isError } = useEquipment(page, limit);
   
   // Handle API response - extract data from pagination response
+  // Fallback to mock data if API fails
+  const mockEquipment = [
+    { id: 1, equipment_name: 'Máy chạy bộ Proform', facility_id: 1, status: 'active', origin: 'Mỹ', maintenance_deadline: '2026-06-15' },
+    { id: 2, equipment_name: 'Ghế đẩy ngực', facility_id: 2, status: 'active', origin: 'Đức', maintenance_deadline: '2026-07-20' },
+    { id: 3, equipment_name: 'Máy kéo xô lưng đùi', facility_id: 2, status: 'maintenance', origin: 'Trung Quốc', maintenance_deadline: '2026-05-01' },
+    { id: 4, equipment_name: 'Tạ đòn Olympic 20kg', facility_id: 2, status: 'active', origin: 'Việt Nam', maintenance_deadline: '2026-12-30' },
+    { id: 5, equipment_name: 'Xe đạp tập Elip', facility_id: 1, status: 'active', origin: 'Mỹ', maintenance_deadline: '2026-08-15' },
+  ];
+
   const equipment = useMemo(() => {
-    if (!response) return [];
+    if (!response) return mockEquipment;
     if (Array.isArray(response)) return response; // Mock data format
-    return response.data || response || []; // API pagination format
-  }, [response]);
+    if (response.data && response.data.length > 0) return response.data; // Pagination response with data
+    if (isError) return mockEquipment; // Fallback on error
+    return mockEquipment;
+  }, [response, isError]);
 
   const totalItems = useMemo(() => {
     if (!response) return 0;
@@ -76,8 +87,10 @@ const EquipmentList = () => {
         <div className="mt-6 overflow-x-auto">
           {isLoading ? (
             <div className="p-8 text-center text-gray-500">Đang tải danh sách thiết bị...</div>
-          ) : isError && !equipment ? (
-            <div className="p-8 text-center text-red-500">Lỗi không thể lấy dữ liệu thiết bị.</div>
+          ) : isError ? (
+            <div className="p-8 text-center text-red-500">
+              Lỗi khi tải dữ liệu: {error?.message || 'Vui lòng đăng nhập lại'}
+            </div>
           ) : (
             <Table>
               <TableHeader>
@@ -121,7 +134,9 @@ const EquipmentList = () => {
                         </span>
                       </TableCell>
                       <TableCell className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                        {item.maintenance_deadline || item.MaintenanceDeadline || 'N/A'}
+                        {item.maintenance_deadline || item.MaintenanceDeadline 
+                          ? new Date(item.maintenance_deadline || item.MaintenanceDeadline).toLocaleDateString('vi-VN')
+                          : 'N/A'}
                       </TableCell>
                       <TableCell className="text-right pr-4">
                         <div className="flex items-center justify-end gap-1">

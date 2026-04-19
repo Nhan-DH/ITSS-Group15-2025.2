@@ -10,25 +10,28 @@ type PackageUsecase interface {
 	CreatePackage(membershipPackage *entity.MembershipPackage) error
 	GetPackageByID(id int) (*entity.MembershipPackage, error)
 	GetAllPackages() ([]*entity.MembershipPackage, error)
+	GetAllPackagesPaginated(page, limit int) ([]*entity.MembershipPackage, int, error)
 	UpdatePackage(membershipPackage *entity.MembershipPackage) error
 	DeletePackage(id int) error
 }
 
 type membershipPackageUsecase struct {
-	create ICreatePackageUseCase
-	get    IGetPackageUseCase
-	list   IListPackagesUseCase
-	update IUpdatePackageUseCase
-	delete IDeletePackageUseCase
+	create        ICreatePackageUseCase
+	get           IGetPackageUseCase
+	list          IListPackagesUseCase
+	listPaginated IListPackagesPaginatedUseCase
+	update        IUpdatePackageUseCase
+	delete        IDeletePackageUseCase
 }
 
 func NewPackageUsecase(repo adapter.MembershipPackageRepository) PackageUsecase {
 	return &membershipPackageUsecase{
-		create: NewCreatePackageUseCase(repo),
-		get:    NewGetPackageUseCase(repo),
-		list:   NewListPackagesUseCase(repo),
-		update: NewUpdatePackageUseCase(repo),
-		delete: NewDeletePackageUseCase(repo),
+		create:        NewCreatePackageUseCase(repo),
+		get:           NewGetPackageUseCase(repo),
+		list:          NewListPackagesUseCase(repo),
+		listPaginated: NewListPackagesPaginatedUseCase(repo),
+		update:        NewUpdatePackageUseCase(repo),
+		delete:        NewDeletePackageUseCase(repo),
 	}
 }
 
@@ -47,6 +50,10 @@ func (u *membershipPackageUsecase) GetPackageByID(id int) (*entity.MembershipPac
 
 func (u *membershipPackageUsecase) GetAllPackages() ([]*entity.MembershipPackage, error) {
 	return u.list.Execute(context.Background())
+}
+
+func (u *membershipPackageUsecase) GetAllPackagesPaginated(page, limit int) ([]*entity.MembershipPackage, int, error) {
+	return u.listPaginated.Execute(context.Background(), page, limit)
 }
 
 func (u *membershipPackageUsecase) UpdatePackage(membershipPackage *entity.MembershipPackage) error {

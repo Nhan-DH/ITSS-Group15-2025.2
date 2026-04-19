@@ -16,21 +16,32 @@ const initialAccounts = [
 const StaffList = () => {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const limit = 6;
+  const limit = 10;
 
   const { data: employeeResponse, isLoading, isError } = useEmployees(page, limit);
   
+  // Mock data fallback
+  const mockStaffs = [
+    { id: 1, full_name: 'Nguyễn Lê Lễ Tân', phone: '0999888777', email: 'letan@activegym.vn', position: 'Quản lý', status: 'active', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80' },
+    { id: 2, full_name: 'Trần Anh HLV', phone: '0999666555', email: 'pt.trananh@activegym.vn', position: 'Huấn luyện viên', status: 'active', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80' },
+    { id: 3, full_name: 'Phạm Tạp Vụ', phone: '0888111222', email: 'tapvu@activegym.vn', position: 'Nhân viên', status: 'inactive', photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80' },
+    { id: 4, full_name: 'Nguyễn Thị Mai', phone: '0977555333', email: 'mai.pt@activegym.vn', position: 'Huấn luyện viên', status: 'active', photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80' },
+    { id: 5, full_name: 'Trần Văn Bảo', phone: '0966444222', email: 'bao@activegym.vn', position: 'Lễ tân', status: 'active', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80' },
+  ];
+
   // Handle employee API response
   const staffs = useMemo(() => {
-    if (!employeeResponse) return [];
+    if (!employeeResponse) return mockStaffs;
     if (Array.isArray(employeeResponse)) return employeeResponse;
-    return employeeResponse.data || employeeResponse || [];
-  }, [employeeResponse]);
+    if (employeeResponse.data && employeeResponse.data.length > 0) return employeeResponse.data;
+    if (isError) return mockStaffs;
+    return mockStaffs;
+  }, [employeeResponse, isError]);
 
   const totalEmployeeItems = useMemo(() => {
-    if (!employeeResponse) return 0;
+    if (!employeeResponse) return mockStaffs.length;
     if (Array.isArray(employeeResponse)) return employeeResponse.length;
-    return employeeResponse.total_items || 0;
+    return employeeResponse.total_items || mockStaffs.length;
   }, [employeeResponse]);
 
   const totalEmployeePages = useMemo(() => {

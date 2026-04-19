@@ -45,7 +45,7 @@ func (r *feedbackRepository) GetAll() ([]*entity.Feedback, error) {
 }
 
 func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]*entity.Feedback, int, error) {
-	// Build query based on status filter
+	// Build query based on status filter - join with Member to get member name
 	var countQuery, query string
 	var rows *sql.Rows
 	var err error
@@ -59,9 +59,15 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 			return nil, 0, err
 		}
 
-		// Get paginated data with filter
+		// Get paginated data with filter - join with Member table
 		offset := (page - 1) * limit
-		query = `SELECT id, member_id, processor_id, equipment_id, content, sent_at, resolution_note, status FROM "Feedback" WHERE status = $1 ORDER BY id LIMIT $2 OFFSET $3`
+		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0), 
+			CASE WHEN f.equipment_id IS NOT NULL AND f.equipment_id > 0 THEN 'equipment' WHEN f.processor_id IS NOT NULL AND f.processor_id > 0 THEN 'trainer' ELSE 'service' END
+			FROM "Feedback" f
+			LEFT JOIN "Member" m ON f.member_id = m.id
+			WHERE f.status = $1 
+			ORDER BY f.id DESC 
+			LIMIT $2 OFFSET $3`
 		rows, err = r.db.Query(query, status, limit, offset)
 	} else {
 		// Count without filter
@@ -71,9 +77,14 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 			return nil, 0, err
 		}
 
-		// Get paginated data without filter
+		// Get paginated data without filter - join with Member table
 		offset := (page - 1) * limit
-		query = `SELECT id, member_id, processor_id, equipment_id, content, sent_at, resolution_note, status FROM "Feedback" ORDER BY id LIMIT $1 OFFSET $2`
+		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0),
+			CASE WHEN f.equipment_id IS NOT NULL AND f.equipment_id > 0 THEN 'equipment' WHEN f.processor_id IS NOT NULL AND f.processor_id > 0 THEN 'trainer' ELSE 'service' END
+			FROM "Feedback" f
+			LEFT JOIN "Member" m ON f.member_id = m.id
+			ORDER BY f.id DESC 
+			LIMIT $1 OFFSET $2`
 		rows, err = r.db.Query(query, limit, offset)
 	}
 
@@ -85,7 +96,7 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 	var feedbacks []*entity.Feedback
 	for rows.Next() {
 		feedback := &entity.Feedback{}
-		err := rows.Scan(&feedback.ID, &feedback.MemberID, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status)
+		err := rows.Scan(&feedback.ID, &feedback.MemberID, &feedback.MemberName, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status, &feedback.Rating, &feedback.FeedbackType)
 		if err != nil {
 			return nil, 0, err
 		}

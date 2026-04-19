@@ -27,7 +27,7 @@ func (r *facilityRepository) GetByID(id int) (*entity.Facility, error) {
 }
 
 func (r *facilityRepository) GetAll() ([]*entity.Facility, error) {
-	rows, err := r.db.Query(`SELECT id, facility_name, facility_type, status FROM "Facility"`)
+	rows, err := r.db.Query(`SELECT id, facility_name, facility_type, status, COALESCE(max_capacity, 0), COALESCE(current_capacity, 0), COALESCE(description, '') FROM "Facility"`)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (r *facilityRepository) GetAll() ([]*entity.Facility, error) {
 	var facilities []*entity.Facility
 	for rows.Next() {
 		facility := &entity.Facility{}
-		err := rows.Scan(&facility.ID, &facility.FacilityName, &facility.FacilityType, &facility.Status)
+		err := rows.Scan(&facility.ID, &facility.FacilityName, &facility.FacilityType, &facility.Status, &facility.MaxCapacity, &facility.CurrentCapacity, &facility.Description)
 		if err != nil {
 			return nil, err
 		}
@@ -56,8 +56,8 @@ func (r *facilityRepository) GetAllPaginated(page, limit int) ([]*entity.Facilit
 	// Calculate offset
 	offset := (page - 1) * limit
 
-	// Get paginated data
-	query := `SELECT id, facility_name, facility_type, status FROM "Facility" ORDER BY id LIMIT $1 OFFSET $2`
+	// Get paginated data with capacity
+	query := `SELECT id, facility_name, facility_type, status, COALESCE(max_capacity, 0), COALESCE(current_capacity, 0), COALESCE(description, '') FROM "Facility" ORDER BY id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -67,7 +67,7 @@ func (r *facilityRepository) GetAllPaginated(page, limit int) ([]*entity.Facilit
 	var facilities []*entity.Facility
 	for rows.Next() {
 		facility := &entity.Facility{}
-		err := rows.Scan(&facility.ID, &facility.FacilityName, &facility.FacilityType, &facility.Status)
+		err := rows.Scan(&facility.ID, &facility.FacilityName, &facility.FacilityType, &facility.Status, &facility.MaxCapacity, &facility.CurrentCapacity, &facility.Description)
 		if err != nil {
 			return nil, 0, err
 		}
