@@ -10,25 +10,28 @@ type FacilityUsecase interface {
 	CreateFacility(facility *entity.Facility) error
 	GetFacilityByID(id int) (*entity.Facility, error)
 	GetAllFacilities() ([]*entity.Facility, error)
+	GetAllFacilitiesPaginated(page, limit int) ([]*entity.Facility, int, error)
 	UpdateFacility(facility *entity.Facility) error
 	DeleteFacility(id int) error
 }
 
 type facilityUsecase struct {
-	create ICreateFacilityUseCase
-	get    IGetFacilityUseCase
-	list   IListFacilitiesUseCase
-	update IUpdateFacilityUseCase
-	delete IDeleteFacilityUseCase
+	create        ICreateFacilityUseCase
+	get           IGetFacilityUseCase
+	list          IListFacilitiesUseCase
+	listPaginated IListFacilitiesPaginatedUseCase
+	update        IUpdateFacilityUseCase
+	delete        IDeleteFacilityUseCase
 }
 
 func NewFacilityUsecase(repo adapter.FacilityRepository) FacilityUsecase {
 	return &facilityUsecase{
-		create: NewCreateFacilityUseCase(repo),
-		get:    NewGetFacilityUseCase(repo),
-		list:   NewListFacilitiesUseCase(repo),
-		update: NewUpdateFacilityUseCase(repo),
-		delete: NewDeleteFacilityUseCase(repo),
+		create:        NewCreateFacilityUseCase(repo),
+		get:           NewGetFacilityUseCase(repo),
+		list:          NewListFacilitiesUseCase(repo),
+		listPaginated: NewListFacilitiesPaginatedUseCase(repo),
+		update:        NewUpdateFacilityUseCase(repo),
+		delete:        NewDeleteFacilityUseCase(repo),
 	}
 }
 
@@ -47,6 +50,10 @@ func (u *facilityUsecase) GetFacilityByID(id int) (*entity.Facility, error) {
 
 func (u *facilityUsecase) GetAllFacilities() ([]*entity.Facility, error) {
 	return u.list.Execute(context.Background())
+}
+
+func (u *facilityUsecase) GetAllFacilitiesPaginated(page, limit int) ([]*entity.Facility, int, error) {
+	return u.listPaginated.Execute(context.Background(), page, limit)
 }
 
 func (u *facilityUsecase) UpdateFacility(facility *entity.Facility) error {

@@ -44,6 +44,38 @@ func (r *equipmentRepository) GetAll() ([]*entity.Equipment, error) {
 	return equipments, nil
 }
 
+func (r *equipmentRepository) GetAllPaginated(page, limit int) ([]*entity.Equipment, int, error) {
+	// Count total items
+	var total int
+	countQuery := `SELECT COUNT(*) FROM "Equipment"`
+	err := r.db.QueryRow(countQuery).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Calculate offset
+	offset := (page - 1) * limit
+
+	// Get paginated data
+	query := `SELECT id, facility_id, equipment_name, origin, maintenance_deadline, status FROM "Equipment" ORDER BY id LIMIT $1 OFFSET $2`
+	rows, err := r.db.Query(query, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var equipments []*entity.Equipment
+	for rows.Next() {
+		equipment := &entity.Equipment{}
+		err := rows.Scan(&equipment.ID, &equipment.FacilityID, &equipment.EquipmentName, &equipment.Origin, &equipment.MaintenanceDeadline, &equipment.Status)
+		if err != nil {
+			return nil, 0, err
+		}
+		equipments = append(equipments, equipment)
+	}
+	return equipments, total, nil
+}
+
 func (r *equipmentRepository) Update(equipment *entity.Equipment) error {
 	query := `UPDATE "Equipment" SET facility_id = $1, equipment_name = $2, origin = $3, maintenance_deadline = $4, status = $5 WHERE id = $6`
 	_, err := r.db.Exec(query, equipment.FacilityID, equipment.EquipmentName, equipment.Origin, equipment.MaintenanceDeadline, equipment.Status, equipment.ID)

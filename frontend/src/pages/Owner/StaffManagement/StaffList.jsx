@@ -1,52 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Edit, Trash2, Shield, UserCog, Eye, EyeOff, Lock, Key } from 'lucide-react';
+import { Plus, Edit, Trash2, Shield, UserCog, Eye, EyeOff, Lock, Key, ChevronLeft, ChevronRight, Power, PowerOff } from 'lucide-react';
+import { useEmployees } from '@/hooks/queries/useEmployees';
+import { useDeleteEmployee, useUpdateEmployeeStatus } from '@/hooks/mutations/useEmployeeMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
 import Modal from '@/components/Common/Modal';
-
-const initialStaffs = [
-  {
-    id: 1,
-    fullName: 'Nguyễn Lê Lễ Tân',
-    role: 'manager',
-    position: 'Quản lý / Lễ tân',
-    phone: '0999888777',
-    email: 'letan@activegym.vn',
-    gender: 'Nữ',
-    dob: '22/05/1992',
-    status: 'active',
-    address: '123 Đường Bình Thạnh, TP.HCM',
-    photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80',
-  },
-  {
-    id: 2,
-    fullName: 'Trần Anh HLV',
-    role: 'trainer',
-    position: 'Huấn luyện viên cá nhân',
-    phone: '0999666555',
-    email: 'pt.trananh@activegym.vn',
-    gender: 'Nam',
-    dob: '10/11/1990',
-    status: 'active',
-    address: '45 Nguyễn Thị Minh Khai, Quận 1',
-    photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
-  },
-  {
-    id: 3,
-    fullName: 'Phạm Tạp Vụ',
-    role: 'staff',
-    position: 'Nhân sự chăm sóc khách hàng',
-    phone: '0888111222',
-    email: 'tapvu@activegym.vn',
-    gender: 'Nam',
-    dob: '15/04/1995',
-    status: 'inactive',
-    address: '78 Lê Văn Sỹ, Phú Nhuận',
-    photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
-  },
-];
 
 const initialAccounts = [
   { id: 1, username: 'manager1', staff: 'Nguyễn Lê Lễ Tân', role: 'manager', password: 'L3Tan@123', status: 'active' },
@@ -55,8 +15,57 @@ const initialAccounts = [
 ];
 
 const StaffList = () => {
-  const [staffs, setStaffs] = useState(initialStaffs);
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, staff: null });
+  const limit = 10;
+
+  const { data: employeeResponse, isLoading, isError } = useEmployees(page, limit);
+  const deleteMutation = useDeleteEmployee();
+  const statusMutation = useUpdateEmployeeStatus();
+
+  const handleDelete = () => {
+    if (deleteModal.staff) {
+      deleteMutation.mutate(deleteModal.staff.id);
+      setDeleteModal({ isOpen: false, staff: null });
+    }
+  };
+
+  const handleToggleStatus = (staff) => {
+    const newStatus = staff.status === 'active' ? 'inactive' : 'active';
+    statusMutation.mutate({ id: staff.id, status: newStatus });
+  };
+  
+  // Mock data fallback
+  const mockStaffs = [
+    { id: 1, full_name: 'Nguyễn Lê Lễ Tân', phone: '0999888777', email: 'letan@activegym.vn', position: 'Quản lý', status: 'active', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80' },
+    { id: 2, full_name: 'Trần Anh HLV', phone: '0999666555', email: 'pt.trananh@activegym.vn', position: 'Huấn luyện viên', status: 'active', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80' },
+    { id: 3, full_name: 'Phạm Tạp Vụ', phone: '0888111222', email: 'tapvu@activegym.vn', position: 'Nhân viên', status: 'inactive', photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80' },
+    { id: 4, full_name: 'Nguyễn Thị Mai', phone: '0977555333', email: 'mai.pt@activegym.vn', position: 'Huấn luyện viên', status: 'active', photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80' },
+    { id: 5, full_name: 'Trần Văn Bảo', phone: '0966444222', email: 'bao@activegym.vn', position: 'Lễ tân', status: 'active', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80' },
+  ];
+
+  // Handle employee API response
+  const staffs = useMemo(() => {
+    if (!employeeResponse) return mockStaffs;
+    if (Array.isArray(employeeResponse)) return employeeResponse;
+    if (employeeResponse.data && employeeResponse.data.length > 0) return employeeResponse.data;
+    if (isError) return mockStaffs;
+    return mockStaffs;
+  }, [employeeResponse, isError]);
+
+  const totalEmployeeItems = useMemo(() => {
+    if (!employeeResponse) return mockStaffs.length;
+    if (Array.isArray(employeeResponse)) return employeeResponse.length;
+    return employeeResponse.total_items || mockStaffs.length;
+  }, [employeeResponse]);
+
+  const totalEmployeePages = useMemo(() => {
+    if (!employeeResponse) return 1;
+    if (Array.isArray(employeeResponse)) return 1;
+    return employeeResponse.total_pages || Math.ceil(totalEmployeeItems / limit) || 1;
+  }, [employeeResponse, totalEmployeeItems]);
+
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -70,10 +79,10 @@ const StaffList = () => {
   const filteredStaffs = useMemo(() => {
     const value = searchTerm.toLowerCase();
     return staffs.filter((staff) =>
-      staff.fullName.toLowerCase().includes(value) ||
-      staff.email.toLowerCase().includes(value) ||
-      staff.phone.includes(value) ||
-      staff.position.toLowerCase().includes(value)
+      (staff.full_name || staff.FullName || staff.fullName || '').toLowerCase().includes(value) ||
+      (staff.email || staff.Email || '').toLowerCase().includes(value) ||
+      (staff.phone || staff.Phone || '').includes(value) ||
+      (staff.position || staff.Position || '').toLowerCase().includes(value)
     );
   }, [searchTerm, staffs]);
 
@@ -166,7 +175,13 @@ const StaffList = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredStaffs.length === 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-gray-500 h-24">
+                    Đang tải...
+                  </TableCell>
+                </TableRow>
+              ) : filteredStaffs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-gray-500 h-24">
                     Không tìm thấy nhân sự phù hợp.
@@ -177,26 +192,36 @@ const StaffList = () => {
                   <TableRow key={staff.id} className="hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer" onClick={() => handleOpenStaffDetail(staff)}>
                     <TableCell className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-3">
                       <div className="h-9 w-9 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-                        <img src={staff.photo} alt={staff.fullName} className="h-full w-full object-cover" />
+                        <img src={staff.photo || staff.Photo || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80'} alt={staff.full_name || staff.FullName || staff.fullName} className="h-full w-full object-cover" />
                       </div>
-                      {staff.fullName}
+                      {staff.full_name || staff.FullName || staff.fullName || 'N/A'}
                     </TableCell>
-                    <TableCell>{staff.position}</TableCell>
+                    <TableCell>{staff.position || staff.Position || staff.role_id || 'N/A'}</TableCell>
                     <TableCell>
-                      <div className="text-sm text-gray-900 dark:text-gray-100">{staff.phone}</div>
-                      <div className="text-xs text-gray-500">{staff.email}</div>
+                      <div className="text-sm text-gray-900 dark:text-gray-100">{staff.phone || staff.Phone || 'N/A'}</div>
+                      <div className="text-xs text-gray-500">{staff.email || staff.Email || 'N/A'}</div>
                     </TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${
-                        staff.status === 'active'
+                        staff.status === 'active' || staff.Status === 'active'
                           ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-400'
                           : 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-900/30 dark:text-rose-400'
                       }`}>
-                        {staff.status === 'active' ? 'Hoạt động' : 'Ngừng'}
+                        {staff.status === 'active' || staff.Status === 'active' ? 'Hoạt động' : 'Ngừng'}
                       </span>
                     </TableCell>
                     <TableCell className="text-right pr-4">
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          title={staff.status === 'active' ? 'Ngừng hoạt động' : 'Kích hoạt'}
+                          className={`h-8 w-8 ${staff.status === 'active' ? 'text-amber-500' : 'text-green-500'}`}
+                          onClick={(e) => { e.stopPropagation(); handleToggleStatus(staff); }}
+                        >
+                          {staff.status === 'active' ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                        </Button>
                         <Button
                           type="button"
                           variant="ghost"
@@ -216,7 +241,7 @@ const StaffList = () => {
                           size="icon"
                           title="Xóa"
                           className="h-8 w-8 text-red-500"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => { e.stopPropagation(); setDeleteModal({ isOpen: true, staff }); }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -228,6 +253,33 @@ const StaffList = () => {
             </TableBody>
           </Table>
         </div>
+
+        {/* Employee Pagination */}
+        {totalEmployeePages > 1 && (
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Trang {page} / {totalEmployeePages} (Tổng: {totalEmployeeItems} nhân viên)
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.min(totalEmployeePages, p + 1))}
+                disabled={page === totalEmployeePages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
@@ -434,6 +486,28 @@ const StaffList = () => {
           {passwordError && (
             <p className="text-sm text-red-500">{passwordError}</p>
           )}
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, staff: null })}
+        title="Xác nhận xóa nhân viên"
+      >
+        <div className="p-4">
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            Bạn có chắc chắn muốn xóa nhân viên <strong>{deleteModal.staff?.full_name}</strong> không?
+          </p>
+          <p className="text-sm text-red-500 mb-4">Hành động này không thể hoàn tác.</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteModal({ isOpen: false, staff: null })}>
+              Hủy
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

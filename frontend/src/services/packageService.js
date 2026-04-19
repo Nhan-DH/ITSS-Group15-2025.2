@@ -77,6 +77,10 @@ export const packageService = {
     return axios.delete(`/packages/${id}`);
   },
 
+  updatePackageStatus: async (id, isActive) => {
+    return axios.put(`/packages/${id}`, { is_active: isActive });
+  },
+
   registerPackage: async (packageData) => {
     if (IS_MOCK) {
       await delay(1200); // Simulate payment processing time

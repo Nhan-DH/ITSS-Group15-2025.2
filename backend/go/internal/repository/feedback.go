@@ -44,6 +44,67 @@ func (r *feedbackRepository) GetAll() ([]*entity.Feedback, error) {
 	return feedbacks, nil
 }
 
+func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]*entity.Feedback, int, error) {
+	// Build query based on status filter - join with Member to get member name
+	var countQuery, query string
+	var rows *sql.Rows
+	var err error
+	var total int
+
+	if status != "" {
+		// Count with filter
+		countQuery = `SELECT COUNT(*) FROM "Feedback" WHERE status = $1`
+		err = r.db.QueryRow(countQuery, status).Scan(&total)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		// Get paginated data with filter - join with Member table
+		offset := (page - 1) * limit
+		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0), 
+			CASE WHEN f.equipment_id IS NOT NULL AND f.equipment_id > 0 THEN 'equipment' WHEN f.processor_id IS NOT NULL AND f.processor_id > 0 THEN 'trainer' ELSE 'service' END
+			FROM "Feedback" f
+			LEFT JOIN "Member" m ON f.member_id = m.id
+			WHERE f.status = $1 
+			ORDER BY f.id DESC 
+			LIMIT $2 OFFSET $3`
+		rows, err = r.db.Query(query, status, limit, offset)
+	} else {
+		// Count without filter
+		countQuery = `SELECT COUNT(*) FROM "Feedback"`
+		err = r.db.QueryRow(countQuery).Scan(&total)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		// Get paginated data without filter - join with Member table
+		offset := (page - 1) * limit
+		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0),
+			CASE WHEN f.equipment_id IS NOT NULL AND f.equipment_id > 0 THEN 'equipment' WHEN f.processor_id IS NOT NULL AND f.processor_id > 0 THEN 'trainer' ELSE 'service' END
+			FROM "Feedback" f
+			LEFT JOIN "Member" m ON f.member_id = m.id
+			ORDER BY f.id DESC 
+			LIMIT $1 OFFSET $2`
+		rows, err = r.db.Query(query, limit, offset)
+	}
+
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var feedbacks []*entity.Feedback
+	for rows.Next() {
+		feedback := &entity.Feedback{}
+		err := rows.Scan(&feedback.ID, &feedback.MemberID, &feedback.MemberName, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status, &feedback.Rating, &feedback.FeedbackType)
+		if err != nil {
+			return nil, 0, err
+		}
+		feedbacks = append(feedbacks, feedback)
+	}
+	return feedbacks, total, nil
+}
+
 func (r *feedbackRepository) Update(feedback *entity.Feedback) error {
 	query := `UPDATE "Feedback" SET member_id = $1, processor_id = $2, equipment_id = $3, content = $4, sent_at = $5, resolution_note = $6, status = $7 WHERE id = $8`
 	_, err := r.db.Exec(query, feedback.MemberID, feedback.ProcessorID, feedback.EquipmentID, feedback.Content, feedback.SentAt, feedback.ResolutionNote, feedback.Status, feedback.ID)

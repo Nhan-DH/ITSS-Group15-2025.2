@@ -10,25 +10,28 @@ type AccountUsecase interface {
 	CreateAccount(account *entity.Account) error
 	GetAccountByID(id int) (*entity.Account, error)
 	GetAllAccounts() ([]*entity.Account, error)
+	GetAllAccountsPaginated(page, limit int) ([]*entity.Account, int, error)
 	UpdateAccount(account *entity.Account) error
 	DeleteAccount(id int) error
 }
 
 type accountUsecase struct {
-	create ICreateAccountUseCase
-	get    IGetAccountUseCase
-	list   IListAccountsUseCase
-	update IUpdateAccountUseCase
-	delete IDeleteAccountUseCase
+	create        ICreateAccountUseCase
+	get           IGetAccountUseCase
+	list          IListAccountsUseCase
+	listPaginated IListAccountsPaginatedUseCase
+	update        IUpdateAccountUseCase
+	delete        IDeleteAccountUseCase
 }
 
 func NewAccountUsecase(repo adapter.AccountRepository) AccountUsecase {
 	return &accountUsecase{
-		create: NewCreateAccountUseCase(repo),
-		get:    NewGetAccountUseCase(repo),
-		list:   NewListAccountsUseCase(repo),
-		update: NewUpdateAccountUseCase(repo),
-		delete: NewDeleteAccountUseCase(repo),
+		create:        NewCreateAccountUseCase(repo),
+		get:           NewGetAccountUseCase(repo),
+		list:          NewListAccountsUseCase(repo),
+		listPaginated: NewListAccountsPaginatedUseCase(repo),
+		update:        NewUpdateAccountUseCase(repo),
+		delete:        NewDeleteAccountUseCase(repo),
 	}
 }
 
@@ -47,6 +50,10 @@ func (u *accountUsecase) GetAccountByID(id int) (*entity.Account, error) {
 
 func (u *accountUsecase) GetAllAccounts() ([]*entity.Account, error) {
 	return u.list.Execute(context.Background())
+}
+
+func (u *accountUsecase) GetAllAccountsPaginated(page, limit int) ([]*entity.Account, int, error) {
+	return u.listPaginated.Execute(context.Background(), page, limit)
 }
 
 func (u *accountUsecase) UpdateAccount(account *entity.Account) error {

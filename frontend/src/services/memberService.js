@@ -1,6 +1,6 @@
 import axios from '@/lib/axios';
 
-const IS_MOCK = true;
+const IS_MOCK = false; // Set to false to use real API
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const MOCK_MEMBERS = [
@@ -10,12 +10,13 @@ const MOCK_MEMBERS = [
 ];
 
 export const memberService = {
-  getMembers: async () => {
+  getMembers: async (page = 1, limit = 6) => {
     if (IS_MOCK) {
       await delay(600);
-      return MOCK_MEMBERS;
+      return { data: MOCK_MEMBERS, total: MOCK_MEMBERS.length, page, limit };
     }
-    return axios.get('/members');
+    const response = await axios.get(`/members?page=${page}&limit=${limit}`);
+    return response;
   },
 
   createMember: async (data) => {
@@ -40,5 +41,9 @@ export const memberService = {
       return { success: true };
     }
     return axios.delete(`/members/${id}`);
-  }
+  },
+
+  updateMemberStatus: async (id, status) => {
+    return axios.put(`/members/${id}`, { status });
+  },
 };

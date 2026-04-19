@@ -10,6 +10,10 @@ type IListAccountsUseCase interface {
 	Execute(ctx context.Context) ([]*entity.Account, error)
 }
 
+type IListAccountsPaginatedUseCase interface {
+	Execute(ctx context.Context, page, limit int) ([]*entity.Account, int, error)
+}
+
 type ListAccountsUseCase struct {
 	repo adapter.AccountRepository
 }
@@ -20,4 +24,16 @@ func NewListAccountsUseCase(repo adapter.AccountRepository) IListAccountsUseCase
 
 func (u *ListAccountsUseCase) Execute(ctx context.Context) ([]*entity.Account, error) {
 	return u.repo.GetAll()
+}
+
+type ListAccountsPaginatedUseCase struct {
+	repo adapter.AccountRepository
+}
+
+func NewListAccountsPaginatedUseCase(repo adapter.AccountRepository) IListAccountsPaginatedUseCase {
+	return &ListAccountsPaginatedUseCase{repo: repo}
+}
+
+func (u *ListAccountsPaginatedUseCase) Execute(ctx context.Context, page, limit int) ([]*entity.Account, int, error) {
+	return u.repo.GetAllPaginated(page, limit)
 }

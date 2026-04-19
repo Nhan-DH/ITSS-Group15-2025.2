@@ -27,7 +27,7 @@ func (r *facilityRepository) GetByID(id int) (*entity.Facility, error) {
 }
 
 func (r *facilityRepository) GetAll() ([]*entity.Facility, error) {
-	rows, err := r.db.Query(`SELECT id, facility_name, facility_type, status FROM "Facility"`)
+	rows, err := r.db.Query(`SELECT id, facility_name, facility_type, status, COALESCE(max_capacity, 0), COALESCE(current_capacity, 0), COALESCE(description, '') FROM "Facility"`)
 	if err != nil {
 		return nil, err
 	}
@@ -35,13 +35,45 @@ func (r *facilityRepository) GetAll() ([]*entity.Facility, error) {
 	var facilities []*entity.Facility
 	for rows.Next() {
 		facility := &entity.Facility{}
-		err := rows.Scan(&facility.ID, &facility.FacilityName, &facility.FacilityType, &facility.Status)
+		err := rows.Scan(&facility.ID, &facility.FacilityName, &facility.FacilityType, &facility.Status, &facility.MaxCapacity, &facility.CurrentCapacity, &facility.Description)
 		if err != nil {
 			return nil, err
 		}
 		facilities = append(facilities, facility)
 	}
 	return facilities, nil
+}
+
+func (r *facilityRepository) GetAllPaginated(page, limit int) ([]*entity.Facility, int, error) {
+	// Count total items
+	var total int
+	countQuery := `SELECT COUNT(*) FROM "Facility"`
+	err := r.db.QueryRow(countQuery).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Calculate offset
+	offset := (page - 1) * limit
+
+	// Get paginated data with capacity
+	query := `SELECT id, facility_name, facility_type, status, COALESCE(max_capacity, 0), COALESCE(current_capacity, 0), COALESCE(description, '') FROM "Facility" ORDER BY id DESC LIMIT $1 OFFSET $2`
+	rows, err := r.db.Query(query, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var facilities []*entity.Facility
+	for rows.Next() {
+		facility := &entity.Facility{}
+		err := rows.Scan(&facility.ID, &facility.FacilityName, &facility.FacilityType, &facility.Status, &facility.MaxCapacity, &facility.CurrentCapacity, &facility.Description)
+		if err != nil {
+			return nil, 0, err
+		}
+		facilities = append(facilities, facility)
+	}
+	return facilities, total, nil
 }
 
 func (r *facilityRepository) Update(facility *entity.Facility) error {
