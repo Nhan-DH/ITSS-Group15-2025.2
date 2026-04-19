@@ -46,23 +46,34 @@ func (r *feedbackRepository) GetAll() ([]*entity.Feedback, error) {
 
 func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]*entity.Feedback, int, error) {
 	// Build query based on status filter - join with Member to get member name
-	var countQuery, query string
-	var rows *sql.Rows
-	var err error
+	var countQuery string
 	var total int
 
+	// Count query
 	if status != "" {
-		// Count with filter
 		countQuery = `SELECT COUNT(*) FROM "Feedback" WHERE status = $1`
-		err = r.db.QueryRow(countQuery, status).Scan(&total)
+		err := r.db.QueryRow(countQuery, status).Scan(&total)
 		if err != nil {
 			return nil, 0, err
 		}
+	} else {
+		countQuery = `SELECT COUNT(*) FROM "Feedback"`
+		err := r.db.QueryRow(countQuery).Scan(&total)
+		if err != nil {
+			return nil, 0, err
+		}
+	}
 
-		// Get paginated data with filter - join with Member table
-		offset := (page - 1) * limit
-		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0), 
-			CASE WHEN f.equipment_id IS NOT NULL AND f.equipment_id > 0 THEN 'equipment' WHEN f.processor_id IS NOT NULL AND f.processor_id > 0 THEN 'trainer' ELSE 'service' END
+	// Calculate offset
+	offset := (page - 1) * limit
+
+	// Get paginated data - simple query without complex CASE
+	var query string
+	var rows *sql.Rows
+	var err error
+
+	if status != "" {
+		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0), 'service'
 			FROM "Feedback" f
 			LEFT JOIN "Member" m ON f.member_id = m.id
 			WHERE f.status = $1 
@@ -70,17 +81,7 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 			LIMIT $2 OFFSET $3`
 		rows, err = r.db.Query(query, status, limit, offset)
 	} else {
-		// Count without filter
-		countQuery = `SELECT COUNT(*) FROM "Feedback"`
-		err = r.db.QueryRow(countQuery).Scan(&total)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		// Get paginated data without filter - join with Member table
-		offset := (page - 1) * limit
-		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0),
-			CASE WHEN f.equipment_id IS NOT NULL AND f.equipment_id > 0 THEN 'equipment' WHEN f.processor_id IS NOT NULL AND f.processor_id > 0 THEN 'trainer' ELSE 'service' END
+		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0), 'service'
 			FROM "Feedback" f
 			LEFT JOIN "Member" m ON f.member_id = m.id
 			ORDER BY f.id DESC 

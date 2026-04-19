@@ -56,8 +56,8 @@ func (r *employeeRepository) GetAllPaginated(page, limit int) ([]*entity.Employe
 	// Calculate offset
 	offset := (page - 1) * limit
 
-	// Get paginated data
-	query := `SELECT id, full_name, phone, position, salary, account_id FROM "Employee" ORDER BY id LIMIT $1 OFFSET $2`
+	// Get paginated data - simple query
+	query := `SELECT id, full_name, phone, position, salary, account_id FROM "Employee" ORDER BY id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err

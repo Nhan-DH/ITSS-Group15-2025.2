@@ -25,6 +25,7 @@ func NewRouter(
 ) *mux.Router {
 	r := mux.NewRouter()
 	r.Use(middleware.LoggingMiddleware)
+	r.Use(middleware.RecoveryMiddleware)
 	RegisterAuthRoutes(r, authHandler)
 
 	authenticated := r.PathPrefix("").Subrouter()
@@ -81,8 +82,13 @@ func NewRouter(
 	ownerManager.HandleFunc("/packages/{id}", packageHandler.Delete).Methods("DELETE")
 
 	ownerManager.HandleFunc("/members", memberHandler.Create).Methods("POST")
+	ownerManager.HandleFunc("/members", memberHandler.GetAll).Methods("GET")
 	ownerManager.HandleFunc("/members/{id}", memberHandler.Update).Methods("PUT")
 	ownerManager.HandleFunc("/members/{id}", memberHandler.Delete).Methods("DELETE")
+
+	ownerManager.HandleFunc("/feedbacks", feedbackHandler.GetAll).Methods("GET")
+	ownerManager.HandleFunc("/feedbacks/{id}", feedbackHandler.Update).Methods("PUT")
+	ownerManager.HandleFunc("/feedbacks/{id}", feedbackHandler.Delete).Methods("DELETE")
 
 	ownerManager.HandleFunc("/subscriptions", subscriptionHandler.Create).Methods("POST")
 	ownerManager.HandleFunc("/subscriptions/{id}", subscriptionHandler.Update).Methods("PUT")

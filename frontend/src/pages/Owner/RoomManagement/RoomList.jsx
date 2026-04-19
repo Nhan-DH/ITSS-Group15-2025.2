@@ -24,17 +24,18 @@ const RoomList = () => {
   };
 
   const handleToggleStatus = (room) => {
-    const newStatus = room.status === 'active' ? 'maintenance' : 'active';
+    // Toggle between "Operating" and "Maintenance" to match database values
+    const newStatus = room.status === 'active' || room.status === 'Operating' ? 'Maintenance' : 'Operating';
     statusMutation.mutate({ id: room.id, status: newStatus });
   };
 
-  // Mock data fallback
+  // Mock data fallback - use "Operating" to match database
   const mockRooms = [
-    { id: 1, facility_name: 'Khu vực Cardio (Tầng 1)', facility_type: 'cardio', status: 'active', max_capacity: 30, current_capacity: 15, description: 'Khu vực máy chạy bộ, xe đạp' },
-    { id: 2, facility_name: 'Phòng Tập Tạ (Tầng 2)', facility_type: 'weights', status: 'active', max_capacity: 50, current_capacity: 40, description: 'Khu vực tạ tự do và máy tập' },
-    { id: 3, facility_name: 'Phòng Yoga Cao Cấp', facility_type: 'yoga', status: 'maintenance', max_capacity: 20, current_capacity: 0, description: 'Phòng yoga với trang thiết bị cao cấp' },
-    { id: 4, facility_name: 'Sân Boxing & MMA', facility_type: 'boxing', status: 'active', max_capacity: 15, current_capacity: 5, description: 'Khu vực võ thuật' },
-    { id: 5, facility_name: 'Khu vực thay đồ', facility_type: 'locker', status: 'active', max_capacity: 100, current_capacity: 30, description: 'Tủ khóa và phòng thay đồ' },
+    { id: 1, facility_name: 'Khu vực Cardio (Tầng 1)', facility_type: 'cardio', status: 'Operating', max_capacity: 30, current_capacity: 15, description: 'Khu vực máy chạy bộ, xe đạp' },
+    { id: 2, facility_name: 'Phòng Tập Tạ (Tầng 2)', facility_type: 'weights', status: 'Operating', max_capacity: 50, current_capacity: 40, description: 'Khu vực tạ tự do và máy tập' },
+    { id: 3, facility_name: 'Phòng Yoga Cao Cấp', facility_type: 'yoga', status: 'Maintenance', max_capacity: 20, current_capacity: 0, description: 'Phòng yoga với trang thiết bị cao cấp' },
+    { id: 4, facility_name: 'Sân Boxing & MMA', facility_type: 'boxing', status: 'Operating', max_capacity: 15, current_capacity: 5, description: 'Khu vực võ thuật' },
+    { id: 5, facility_name: 'Khu vực thay đồ', facility_type: 'locker', status: 'Operating', max_capacity: 100, current_capacity: 30, description: 'Tủ khóa và phòng thay đồ' },
   ];
 
   // Handle API response
@@ -60,17 +61,23 @@ const RoomList = () => {
 
   // Map API data to display format
   const displayRooms = useMemo(() => {
-    return rooms.map(room => ({
-      id: room.id || room.facility_id,
-      name: room.facility_name || room.facilityName || room.name || 'N/A',
-      capacity: room.max_capacity || room.MaxCapacity || room.capacity || 0,
-      current: room.current_capacity || room.CurrentCapacity || 0,
-      status: room.status || 'active',
-      description: room.description || '',
-      icon: room.facility_type === 'cardio' ? '🏃' : 
-            room.facility_type === 'weights' ? '🏋️' : 
-            room.facility_type === 'yoga' ? '🧘' : '🏢',
-    }));
+    return rooms.map(room => {
+      // Normalize status: "Operating" -> "active", "Maintenance" -> "maintenance"
+      const rawStatus = room.status || 'active';
+      const normalizedStatus = rawStatus.toLowerCase() === 'operating' ? 'active' : 
+                              rawStatus.toLowerCase() === 'maintenance' ? 'maintenance' : rawStatus;
+      return {
+        id: room.id || room.facility_id,
+        name: room.facility_name || room.facilityName || room.name || 'N/A',
+        capacity: room.max_capacity || room.MaxCapacity || room.capacity || 0,
+        current: room.current_capacity || room.CurrentCapacity || 0,
+        status: normalizedStatus,
+        description: room.description || '',
+        icon: room.facility_type === 'cardio' ? '🏃' : 
+              room.facility_type === 'weights' ? '🏋️' : 
+              room.facility_type === 'yoga' ? '🧘' : '🏢',
+      };
+    });
   }, [rooms]);
 
   return (
@@ -120,9 +127,11 @@ const RoomList = () => {
               <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset ${
                 room.status === 'active' 
                   ? 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400' 
-                  : 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400'
+                  : room.status === 'maintenance'
+                  ? 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400'
+                  : 'bg-gray-50 text-gray-700 ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
               }`}>
-                {room.status === 'active' ? 'Đang mở cửa' : 'Bảo trì'}
+                {room.status === 'active' ? 'Đang mở cửa' : room.status === 'maintenance' ? 'Bảo trì' : room.status}
               </span>
               <div className="flex gap-1">
                 <Button 

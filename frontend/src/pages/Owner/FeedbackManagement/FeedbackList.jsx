@@ -53,7 +53,7 @@ const FeedbackList = () => {
         (fb.member_name || fb.memberName || '').toLowerCase().includes(query) || 
         (fb.content || fb.Content || '').toLowerCase().includes(query);
       const matchRating = ratingFilter === 'all' || (fb.rating || fb.Rating || 0).toString() === ratingFilter;
-      const feedbackDate = new Date(fb.created_at || fb.createdAt || fb.date || '2024-01-01');
+      const feedbackDate = new Date(fb.sent_at || fb.created_at || fb.createdAt || fb.date || '2024-01-01');
       let matchDate = true;
 
       if (dateFilter === 'last7') {
@@ -166,14 +166,15 @@ const FeedbackList = () => {
               <TableRow>
                 <TableHead>Hội viên</TableHead>
                 <TableHead>Loại phản hồi / Đánh giá</TableHead>
-                <TableHead className="w-[45%]">Nội dung</TableHead>
+                <TableHead className="w-[35%]">Nội dung</TableHead>
+                <TableHead>Trạng thái</TableHead>
                 <TableHead className="text-right">Ngày gửi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredFeedbacks.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-gray-500 h-24">
+                  <TableCell colSpan={5} className="text-center text-gray-500 h-24">
                     Không tìm thấy phản hồi phù hợp.
                   </TableCell>
                 </TableRow>
@@ -195,8 +196,22 @@ const FeedbackList = () => {
                         <span className="line-clamp-2 leading-relaxed">{fb.content || fb.Content || 'N/A'}</span>
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset ${
+                        fb.status === 'Resolved' || fb.status === 'resolved'
+                          ? 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+                          : fb.status === 'Pending' || fb.status === 'pending'
+                          ? 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400'
+                          : 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
+                      }`}>
+                        {fb.status === 'Resolved' || fb.status === 'resolved' ? 'Đã xử lý' : 
+                         fb.status === 'Pending' || fb.status === 'pending' ? 'Chờ xử lý' : 
+                         fb.status === 'Processing' || fb.status === 'processing' ? 'Đang xử lý' : fb.status || 'N/A'}
+                      </span>
+                    </TableCell>
                     <TableCell className="text-right text-sm text-gray-500">
-                      {fb.created_at || fb.createdAt || fb.date || 'N/A'}
+                      {fb.sent_at ? new Date(fb.sent_at).toLocaleDateString('vi-VN') : 
+                       fb.created_at || fb.createdAt || fb.date || 'N/A'}
                     </TableCell>
                   </TableRow>
                 ))

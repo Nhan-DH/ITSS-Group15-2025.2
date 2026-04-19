@@ -56,16 +56,8 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 	// Calculate offset
 	offset := (page - 1) * limit
 
-	// Get paginated data - join with Subscription and Package to get package name and status
-	query := `SELECT m.id, m.full_name, m.phone, m.email, m.gender, m.dob, m.address, m.account_id, 
-		COALESCE(mp.package_name, 'Chưa đăng ký') as package_name,
-		COALESCE(s.status, 'inactive') as status,
-		s.registration_date
-		FROM "Member" m
-		LEFT JOIN "Subscription" s ON m.id = s.member_id AND s.status = 'active'
-		LEFT JOIN "MembershipPackage" mp ON s.package_id = mp.id
-		ORDER BY m.id DESC
-		LIMIT $1 OFFSET $2`
+	// Get paginated data - simple query first to debug
+	query := `SELECT id, full_name, phone, email, gender, dob, address, account_id FROM "Member" ORDER BY id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -75,10 +67,13 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 	var members []*entity.Member
 	for rows.Next() {
 		member := &entity.Member{}
-		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.PackageName, &member.Status, &member.RegisteredAt)
+		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID)
 		if err != nil {
 			return nil, 0, err
 		}
+		// Set default values
+		member.PackageName = "Chưa đăng ký"
+		member.Status = "inactive"
 		members = append(members, member)
 	}
 	return members, total, nil

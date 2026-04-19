@@ -91,6 +91,14 @@ INSERT INTO "TrainingSession" ("booking_id", "facility_id", "session_time", "att
 (2, 1, CURRENT_TIMESTAMP, 'Present', 'Cần cải thiện kỹ thuật squat'),
 (3, 2, CURRENT_TIMESTAMP, 'Present', 'Đã hoàn thành tốt bài tập');
 
-INSERT INTO "Feedback" ("member_id", "processor_id", "equipment_id", "content", "sent_at", "status", "rating") VALUES
-(1, 1, 1, 'Máy tập rất xịn', CURRENT_TIMESTAMP, 'Resolved', 5),
-(2, 8, 2, 'Phòng tập hơi nóng', CURRENT_TIMESTAMP, 'Pending', 3);
+INSERT INTO "Feedback" ("member_id", "processor_id", "equipment_id", "content", "sent_at", "resolution_note", "status", "rating") VALUES
+(1, 1, 1, 'Máy chạy bộ số 1 hay bị kẹt băng tải', '2026-04-10 08:30:00', 'Đã bảo trì xong, máy chạy mượt', 'Resolved', 4),
+(2, 4, 2, 'Tạ đơn 10kg bị rỉ sét phần tay cầm', '2026-04-11 09:15:00', 'Đang đợi thay mới', 'Pending', 2),
+(3, 8, 3, 'Thảm tập Yoga bị rách ở góc', '2026-04-12 10:00:00', 'Đã thay thảm mới cho hội viên', 'Resolved', 5),
+(4, 1, 4, 'Hệ thống lọc nước kêu to quá', '2026-04-13 14:20:00', 'Kiểm tra motor, bôi trơn lại', 'Resolved', 3),
+(5, 4, 5, 'Lưới tennis bị chùng, khó chơi', '2026-04-14 15:45:00', 'Đã căng lại lưới', 'Resolved', 4),
+(6, 8, 6, 'Phòng xông hơi khô không đủ nóng', '2026-04-15 16:10:00', 'Chỉnh lại cảm biến nhiệt', 'Resolved', 4),
+(7, 1, 7, 'Máy xông ướt bị rò nước ra sàn', '2026-04-16 09:00:00', 'Đang chờ linh kiện sửa chữa', 'Pending', 1),
+(8, 4, 8, 'Bao cát Boxing bị móp một bên', '2026-04-17 11:30:00', 'Sẽ bọc lại da và thêm bông', 'Pending', 3),
+(9, 8, 9, 'Xe đạp Impulse phát tiếng kêu lạ', '2026-04-18 10:00:00', 'Đã vệ sinh và tra dầu', 'Resolved', 5),
+(10, 1, 10, 'Máy chèo thuyền bị lỏng ốc vít', '2026-04-19 08:45:00', 'Đã siết chặt lại toàn bộ ốc', 'Resolved', 5);
