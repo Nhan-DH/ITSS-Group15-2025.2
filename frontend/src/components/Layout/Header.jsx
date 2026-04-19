@@ -47,9 +47,6 @@ const Header = () => {
         </button>
         
         {/* Tên màn hình / Ứng dụng ở góc trái Header */}
-        <h1 className="hidden text-lg font-bold tracking-tight lg:block md:text-xl text-gray-900 dark:text-white">
-          Trang Quản Trị
-        </h1>
       </div>
 
       <div className="flex items-center gap-4">
