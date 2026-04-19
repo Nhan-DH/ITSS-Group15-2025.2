@@ -40,7 +40,7 @@ const SendFeedback = () => {
         </div>
 
         <Button className="w-full h-12 rounded-xl text-md font-bold" leftIcon={<Send className="h-5 w-5" />}>
-          Gửi Định Giá Ngay
+          Gửi Phản Hồi
         </Button>
       </form>
     </div>
