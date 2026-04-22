@@ -18,7 +18,6 @@ const Schedule = () => {
     phoneNumber: '',
     email: '',
     address: '',
-    goals: '',
     notes: ''
   });
 
@@ -110,7 +109,7 @@ const Schedule = () => {
           phoneNumber: '090 123 4567',
           email: 'tuana@gym.com',
           address: 'Số 123 Đường B, Phường C, Quận 1, TPHCM',
-          goals: 'weight_loss',
+          curriculum: 'Zumba',
           notes: 'Muốn tham gia lớp buổi tối sau giờ làm.'
         }
       }
@@ -131,7 +130,7 @@ const Schedule = () => {
           phoneNumber: '090 123 4567',
           email: 'tuana@gym.com',
           address: 'Số 123 Đường B, Phường C, Quận 1, TPHCM',
-          goals: 'flexibility',
+          curriculum: 'Pilates',
           notes: 'Cần buổi tập nhẹ để cải thiện độ linh hoạt.'
         }
       }
@@ -153,7 +152,7 @@ const Schedule = () => {
           phoneNumber: '090 123 4567',
           email: 'tuana@gym.com',
           address: 'Số 123 Đường B, Phường C, Quận 1, TPHCM',
-          goals: 'muscle_gain',
+          curriculum: 'Personal Training',
           notes: 'Ưu tiên buổi chiều để tiện theo lịch làm việc.'
         }
       }
@@ -336,7 +335,6 @@ const Schedule = () => {
       phoneNumber: '',
       email: '',
       address: '',
-      goals: '',
       notes: ''
     });
   };
@@ -362,15 +360,6 @@ const Schedule = () => {
   const requestDates = Object.keys(memberRequests).sort();
   const defaultRequestDate = requestDates[0] || selectedDate;
   const selectedDateObject = selectedDate ? new Date(`${selectedDate}T00:00:00`) : null;
-
-  const goalLabels = {
-    weight_loss: 'Giảm cân',
-    muscle_gain: 'Tăng cơ bắp',
-    endurance: 'Cải thiện sức bền',
-    flexibility: 'Tăng tính linh hoạt',
-    health: 'Cải thiện sức khỏe',
-    other: 'Khác'
-  };
 
   const getCalendarDotClass = (item) => {
     if (activeTab === 'scheduled') {
@@ -430,7 +419,10 @@ const Schedule = () => {
       trainer: bookingForm.trainer,
       status: 'Chờ xác nhận',
       submittedAt: new Date().toISOString().slice(0, 10),
-      requestDetails: { ...formData }
+      requestDetails: {
+        ...formData,
+        curriculum: bookingForm.type
+      }
     };
 
     setMemberRequests((prev) => ({
@@ -777,11 +769,15 @@ const Schedule = () => {
       {selectedWorkout && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40 p-4">
           <div
-            className={`bg-white dark:bg-gray-950 rounded-xl w-full border border-gray-200 dark:border-gray-800 ${
-              activeTab === 'requests' ? 'max-w-sm' : 'max-w-md'
+            className={`bg-white dark:bg-gray-950 rounded-xl w-full border border-gray-200 dark:border-gray-800 flex flex-col ${
+              activeTab === 'requests' ? 'max-w-xs max-h-[78vh]' : 'max-w-md'
             }`}
           >
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
+            <div
+              className={`flex items-center justify-between border-b border-gray-200 dark:border-gray-800 ${
+                activeTab === 'requests' ? 'p-4' : 'p-6'
+              }`}
+            >
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 {activeTab === 'requests' ? 'Chi tiết yêu cầu' : 'Chi tiết buổi tập'}
               </h2>
@@ -793,7 +789,11 @@ const Schedule = () => {
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div
+              className={`overflow-y-auto ${
+                activeTab === 'requests' ? 'p-4 space-y-3 text-sm' : 'p-6 space-y-4'
+              }`}
+            >
               <div>
                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Tên buổi tập</div>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">{selectedWorkout.name}</p>
@@ -811,7 +811,7 @@ const Schedule = () => {
               </div>
 
               <div>
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Loại tập</div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Giáo trình</div>
                 <p className="text-sm text-gray-900 dark:text-white bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-2 rounded-lg inline-block">
                   {selectedWorkout.type}
                 </p>
@@ -857,11 +857,11 @@ const Schedule = () => {
                 </div>
               )}
 
-              {activeTab === 'requests' && selectedWorkout.requestDetails?.goals && (
+              {activeTab === 'requests' && selectedWorkout.requestDetails?.curriculum && (
                 <div>
-                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Mục tiêu tập luyện</div>
+                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Giáo trình mong muốn</div>
                   <p className="text-sm text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
-                    {goalLabels[selectedWorkout.requestDetails.goals] || selectedWorkout.requestDetails.goals}
+                    {selectedWorkout.requestDetails.curriculum}
                   </p>
                 </div>
               )}
@@ -874,8 +874,13 @@ const Schedule = () => {
                   </p>
                 </div>
               )}
+            </div>
 
-              <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <div
+              className={`flex gap-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 ${
+                activeTab === 'requests' ? 'p-4' : 'pt-4 p-6'
+              }`}
+            >
                 <button
                   onClick={() => setSelectedWorkout(null)}
                   className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
@@ -904,7 +909,6 @@ const Schedule = () => {
                     Đặt lịch
                   </button>
                 )}
-              </div>
             </div>
           </div>
         </div>
@@ -1039,21 +1043,13 @@ const Schedule = () => {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Mục tiêu tập luyện *</label>
-                <select
-                  value={formData.goals}
-                  onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
-                  required
-                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
-                >
-                  <option value="">Chọn mục tiêu...</option>
-                  <option value="weight_loss">Giảm cân</option>
-                  <option value="muscle_gain">Tăng cơ bắp</option>
-                  <option value="endurance">Cải thiện sức bền</option>
-                  <option value="flexibility">Tăng tính linh hoạt</option>
-                  <option value="health">Cải thiện sức khỏe</option>
-                  <option value="other">Khác</option>
-                </select>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Giáo trình mong muốn</label>
+                <input
+                  type="text"
+                  value={bookingForm.type}
+                  readOnly
+                  className="h-10 rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-200"
+                />
               </div>
 
               <div className="flex flex-col gap-1.5">

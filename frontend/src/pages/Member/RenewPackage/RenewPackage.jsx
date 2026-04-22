@@ -203,9 +203,6 @@ const RenewPackage = () => {
                   </span>
                 </div>
               </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 italic">
-                *Giá gia hạn được tính ngẫu nhiên cho mục đích minh họa
-              </p>
             </div>
           )}
 
