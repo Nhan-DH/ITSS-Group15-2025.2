@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"gym-management/internal/domain/adapter"
 	"gym-management/internal/domain/entity"
+	"gym-management/internal/infra/api/dto"
 )
 
 type memberRepository struct {
@@ -89,4 +90,105 @@ func (r *memberRepository) Update(member *entity.Member) error {
 func (r *memberRepository) Delete(id int) error {
 	_, err := r.db.Exec(`DELETE FROM "Member" WHERE id = $1`, id)
 	return err
+}
+
+// GetAllMembersWithDetails - lấy danh sách members với thông tin đầy đủ từ các bảng join
+func (r *memberRepository) GetAllMembersWithDetails() ([]*dto.MemberListItemDTO, error) {
+	// SQL query join Member với Subscription và MembershipPackage
+	// Tính sessionsRemaining = số ngày còn lại từ end_date - today
+	query := `
+	SELECT DISTINCT
+		m.id,
+		m.full_name,
+		m.phone,
+		COALESCE(mp.package_name, 'Chưa đăng ký') as package_name,
+		CASE WHEN m.is_active = true THEN 'active' ELSE 'inactive' END as status,
+		COALESCE(TO_CHAR(s.end_date, 'YYYY-MM-DD'), TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD')) as end_date,
+		COALESCE(TO_CHAR(s.start_date, 'YYYY-MM-DD'), TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD')) as start_date,
+		COALESCE((s.end_date - CURRENT_DATE)::int, 0) as sessions_remaining
+	FROM "Member" m
+	LEFT JOIN "Subscription" s ON m.id = s.member_id AND s.status NOT IN ('Expired', 'Cancelled')
+	LEFT JOIN "MembershipPackage" mp ON s.package_id = mp.id
+	ORDER BY m.id DESC
+	`
+
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var members []*dto.MemberListItemDTO
+	for rows.Next() {
+		var id int
+		var fullName, phone, packageName, status, endDate, startDate string
+		var sessionsRemaining int
+
+		err := rows.Scan(&id, &fullName, &phone, &packageName, &status, &endDate, &startDate, &sessionsRemaining)
+		if err != nil {
+			return nil, err
+		}
+
+		member := &dto.MemberListItemDTO{
+			ID:                id,
+			Name:              fullName,
+			Phone:             phone,
+			Package:           packageName,
+			Status:            status,
+			ExpiryDate:        endDate,
+			JoinDate:          startDate,
+			SessionsRemaining: sessionsRemaining,
+		}
+
+		members = append(members, member)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return members, nil
+}
+
+// GetMemberByIDWithDetails - lấy chi tiết member theo ID
+func (r *memberRepository) GetMemberByIDWithDetails(id int) (*dto.MemberDetailDTO, error) {
+	memberDetail := &dto.MemberDetailDTO{}
+
+	query := `
+	SELECT DISTINCT
+		m.id,
+		m.full_name,
+		m.phone,
+		COALESCE(m.email, '') as email,
+		COALESCE(m.gender, '') as gender,
+		COALESCE(TO_CHAR(m.dob, 'YYYY-MM-DD'), '') as dob,
+		COALESCE(m.address, '') as address,
+		COALESCE(mp.package_name, 'Chưa đăng ký') as package_name,
+		CASE WHEN m.is_active = true THEN 'active' ELSE 'inactive' END as status,
+		COALESCE(TO_CHAR(s.end_date, 'YYYY-MM-DD'), '') as end_date,
+		COALESCE(TO_CHAR(s.start_date, 'YYYY-MM-DD'), '') as start_date,
+		m.is_active
+	FROM "Member" m
+	LEFT JOIN "Subscription" s ON m.id = s.member_id AND s.status NOT IN ('Expired', 'Cancelled')
+	LEFT JOIN "MembershipPackage" mp ON s.package_id = mp.id
+	WHERE m.id = $1
+	LIMIT 1
+	`
+
+	err := r.db.QueryRow(query, id).Scan(
+		&memberDetail.ID,
+		&memberDetail.FullName,
+		&memberDetail.Phone,
+		&memberDetail.Email,
+		&memberDetail.Gender,
+		&memberDetail.DOB,
+		&memberDetail.Address,
+		&memberDetail.Package,
+		&memberDetail.Status,
+		&memberDetail.ExpiryDate,
+		&memberDetail.JoinDate,
+		&memberDetail.IsActive,
+	)
+
+	return memberDetail, err
 }

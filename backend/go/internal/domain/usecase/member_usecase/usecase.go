@@ -4,6 +4,7 @@ import (
 	"context"
 	"gym-management/internal/domain/adapter"
 	"gym-management/internal/domain/entity"
+	"gym-management/internal/infra/api/dto"
 )
 
 type MemberUsecase interface {
@@ -11,11 +12,14 @@ type MemberUsecase interface {
 	GetMemberByID(id int) (*entity.Member, error)
 	GetAllMembers() ([]*entity.Member, error)
 	GetAllMembersPaginated(page, limit int) ([]*entity.Member, int, error)
+	GetAllMembersWithDetails() ([]*dto.MemberListItemDTO, error)
+	GetMemberByIDWithDetails(id int) (*dto.MemberDetailDTO, error)
 	UpdateMember(member *entity.Member) error
 	DeleteMember(id int) error
 }
 
 type memberUsecase struct {
+	repo          adapter.MemberRepository
 	create        ICreateMemberUseCase
 	get           IGetMemberUseCase
 	list          IListMembersUseCase
@@ -26,6 +30,7 @@ type memberUsecase struct {
 
 func NewMemberUsecase(repo adapter.MemberRepository) MemberUsecase {
 	return &memberUsecase{
+		repo:          repo,
 		create:        NewCreateMemberUseCase(repo),
 		get:           NewGetMemberUseCase(repo),
 		list:          NewListMembersUseCase(repo),
@@ -54,6 +59,14 @@ func (u *memberUsecase) GetAllMembers() ([]*entity.Member, error) {
 
 func (u *memberUsecase) GetAllMembersPaginated(page, limit int) ([]*entity.Member, int, error) {
 	return u.listPaginated.Execute(context.Background(), page, limit)
+}
+
+func (u *memberUsecase) GetAllMembersWithDetails() ([]*dto.MemberListItemDTO, error) {
+	return u.repo.GetAllMembersWithDetails()
+}
+
+func (u *memberUsecase) GetMemberByIDWithDetails(id int) (*dto.MemberDetailDTO, error) {
+	return u.repo.GetMemberByIDWithDetails(id)
 }
 
 func (u *memberUsecase) UpdateMember(member *entity.Member) error {

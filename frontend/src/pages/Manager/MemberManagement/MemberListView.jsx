@@ -4,121 +4,91 @@ import { Search, Filter, ChevronRight } from 'lucide-react';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
 import Badge from '@/components/Common/Badge';
-
-// Mock Data
-const membersMockData = [
-    {
-        id: 1,
-        name: 'Nguyễn Văn A',
-        phone: '0901234567',
-        package: 'Gói VIP',
-        status: 'active',
-        expiryDate: '2026-06-10',
-        joinDate: '2024-06-10',
-        sessionsRemaining: 24
-    },
-    {
-        id: 2,
-        name: 'Trần Thị B',
-        phone: '0912345678',
-        package: 'Gói Cơ Bản',
-        status: 'active',
-        expiryDate: '2026-05-15',
-        joinDate: '2024-05-15',
-        sessionsRemaining: 12
-    },
-    {
-        id: 3,
-        name: 'Lê Văn C',
-        phone: '0923456789',
-        package: 'Lớp Nhóm',
-        status: 'paused',
-        expiryDate: '2026-07-20',
-        joinDate: '2024-01-20',
-        sessionsRemaining: 8
-    },
-    {
-        id: 4,
-        name: 'Phạm Minh D',
-        phone: '0934567890',
-        package: 'Gói Nâng Cao',
-        status: 'active',
-        expiryDate: '2026-04-30',
-        joinDate: '2024-04-30',
-        sessionsRemaining: 18
-    },
-    {
-        id: 5,
-        name: 'Hoàng Thị E',
-        phone: '0945678901',
-        package: 'Gói Cơ Bản',
-        status: 'expired',
-        expiryDate: '2025-12-15',
-        joinDate: '2024-12-15',
-        sessionsRemaining: 0
-    },
-    {
-        id: 6,
-        name: 'Vũ Văn F',
-        phone: '0956789012',
-        package: 'Gói VIP',
-        status: 'active',
-        expiryDate: '2026-08-10',
-        joinDate: '2024-08-10',
-        sessionsRemaining: 28
-    },
-    {
-        id: 7,
-        name: 'Đỗ Thị G',
-        phone: '0967890123',
-        package: 'Lớp Nhóm',
-        status: 'active',
-        expiryDate: '2026-09-05',
-        joinDate: '2024-09-05',
-        sessionsRemaining: 15
-    },
-    {
-        id: 8,
-        name: 'Bùi Văn H',
-        phone: '0978901234',
-        package: 'Gói Nâng Cao',
-        status: 'paused',
-        expiryDate: '2026-10-20',
-        joinDate: '2024-02-20',
-        sessionsRemaining: 5
-    },
-];
+import { useMembers } from '@/hooks/queries/useMembers';
 
 const statusConfig = {
     active: { label: 'Đang hoạt động', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
     paused: { label: 'Tạm dừng', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
-    expired: { label: 'Hết hạn', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' }
+    expired: { label: 'Hết hạn', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
+    inactive: { label: 'Không hoạt động', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400' }
 };
 
 const MemberListView = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // Fetch data from API
+    const { data: apiResponse = {}, isLoading, isError } = useMembers(currentPage, 10);
+
+    // Handle both paginated response and direct array
+    const members = Array.isArray(apiResponse.data) ? apiResponse.data : (Array.isArray(apiResponse) ? apiResponse : []);
 
     // Filter members
-    const filteredMembers = membersMockData.filter(member => {
+    const filteredMembers = members.filter(member => {
+        // Guard against undefined values
+        if (!member) return false;
+
+        const name = member.name || '';
+        const phone = member.phone || '';
+        const id = member.id || 0;
+
         const matchSearch =
-            member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            member.phone.includes(searchTerm) ||
-            member.id.toString().includes(searchTerm);
+            name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            phone.toString().includes(searchTerm) ||
+            id.toString().includes(searchTerm);
 
         const matchStatus = statusFilter === 'all' || member.status === statusFilter;
 
         return matchSearch && matchStatus;
     });
 
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Quản Lý Hội Viên</h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Danh sách tất cả hội viên tại phòng gym</p>
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-white p-12 text-center shadow-sm dark:border-gray-800 dark:bg-gray-950">
+                    <p className="text-gray-500 dark:text-gray-400">Đang tải dữ liệu...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show error state
+    if (isError) {
+        return (
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Quản Lý Hội Viên</h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Danh sách tất cả hội viên tại phòng gym</p>
+                </div>
+                <div className="rounded-xl border border-red-100 bg-red-50 p-6 dark:border-red-900 dark:bg-red-900/20">
+                    <p className="text-red-600 dark:text-red-400">Lỗi khi tải dữ liệu. Vui lòng thử lại sau.</p>
+                </div>
+            </div>
+        );
+    }
+
     const getStatusBadge = (status) => {
-        const config = statusConfig[status];
+        const config = statusConfig[status] || statusConfig.inactive;
         return (
             <Badge className={config.color}>
                 {config.label}
             </Badge>
         );
     };
+
+    // Safe value getters with defaults
+    const getMemberName = (member) => member?.name || 'N/A';
+    const getMemberPhone = (member) => member?.phone || 'N/A';
+    const getMemberPackage = (member) => member?.package || 'Chưa đăng ký';
+    const getMemberSessions = (member) => member?.sessionsRemaining ?? 0;
+    const getMemberExpiry = (member) => member?.expiryDate || 'N/A';
+    const getMemberStatus = (member) => member?.status || 'inactive';
 
     return (
         <div className="space-y-6">
@@ -161,13 +131,14 @@ const MemberListView = () => {
                             <option value="active">Đang hoạt động</option>
                             <option value="paused">Tạm dừng</option>
                             <option value="expired">Hết hạn</option>
+                            <option value="inactive">Không hoạt động</option>
                         </select>
                     </div>
                 </div>
 
                 {/* Result count */}
                 <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                    Hiển thị <span className="font-medium">{filteredMembers.length}</span> trong <span className="font-medium">{membersMockData.length}</span> hội viên
+                    Hiển thị <span className="font-medium">{filteredMembers.length}</span> trong <span className="font-medium">{members.length}</span> hội viên
                 </div>
             </div>
 
@@ -186,25 +157,25 @@ const MemberListView = () => {
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-400 to-blue-500"></div>
                                             <div className="min-w-0 flex-1">
-                                                <h3 className="font-medium text-gray-900 dark:text-white">{member.name}</h3>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">{member.phone}</p>
+                                                <h3 className="font-medium text-gray-900 dark:text-white">{getMemberName(member)}</h3>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">{getMemberPhone(member)}</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="hidden sm:flex sm:items-center sm:gap-4">
                                         <div className="text-right">
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{member.package}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{member.sessionsRemaining} buổi còn lại</p>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{getMemberPackage(member)}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{getMemberSessions(member)} buổi còn lại</p>
                                         </div>
 
                                         <div className="text-right">
-                                            {getStatusBadge(member.status)}
+                                            {getStatusBadge(getMemberStatus(member))}
                                         </div>
 
                                         <div className="text-right">
                                             <p className="text-sm text-gray-600 dark:text-gray-400">Hết hạn</p>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{member.expiryDate}</p>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{getMemberExpiry(member)}</p>
                                         </div>
                                     </div>
 
@@ -215,14 +186,14 @@ const MemberListView = () => {
                                 <div className="mt-3 flex flex-wrap gap-3 sm:hidden">
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Gói</p>
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{member.package}</p>
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{getMemberPackage(member)}</p>
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Hết hạn</p>
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{member.expiryDate}</p>
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{getMemberExpiry(member)}</p>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        {getStatusBadge(member.status)}
+                                        {getStatusBadge(getMemberStatus(member))}
                                     </div>
                                 </div>
                             </div>

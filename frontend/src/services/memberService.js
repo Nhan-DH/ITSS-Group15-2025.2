@@ -19,6 +19,15 @@ export const memberService = {
     return response;
   },
 
+  getMemberDetail: async (id) => {
+    if (IS_MOCK) {
+      await delay(600);
+      return { id: 1, name: 'Mock Member', phone: '0901234567' };
+    }
+    const response = await axios.get(`/members/${id}`);
+    return response;
+  },
+
   createMember: async (data) => {
     if (IS_MOCK) {
       await delay(800);
