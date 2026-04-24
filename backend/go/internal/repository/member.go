@@ -15,19 +15,19 @@ func NewMemberRepository(db *sql.DB) adapter.MemberRepository {
 }
 
 func (r *memberRepository) Create(member *entity.Member) error {
-	query := `INSERT INTO "Member" (full_name, phone, email, gender, dob, address, account_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
-	return r.db.QueryRow(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, member.AccountID).Scan(&member.ID)
+	query := `INSERT INTO "Member" (full_name, phone, email, gender, dob, address, account_id, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
+	return r.db.QueryRow(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, member.AccountID, member.IsActive).Scan(&member.ID)
 }
 
 func (r *memberRepository) GetByID(id int) (*entity.Member, error) {
 	member := &entity.Member{}
-	query := `SELECT id, full_name, phone, email, gender, dob, address, account_id FROM "Member" WHERE id = $1`
-	err := r.db.QueryRow(query, id).Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID)
+	query := `SELECT id, full_name, phone, email, gender, dob, address, account_id, is_active FROM "Member" WHERE id = $1`
+	err := r.db.QueryRow(query, id).Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive)
 	return member, err
 }
 
 func (r *memberRepository) GetAll() ([]*entity.Member, error) {
-	rows, err := r.db.Query(`SELECT id, full_name, phone, email, gender, dob, address, account_id FROM "Member"`)
+	rows, err := r.db.Query(`SELECT id, full_name, phone, email, gender, dob, address, account_id, is_active FROM "Member"`)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (r *memberRepository) GetAll() ([]*entity.Member, error) {
 	var members []*entity.Member
 	for rows.Next() {
 		member := &entity.Member{}
-		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID)
+		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive)
 		if err != nil {
 			return nil, err
 		}
@@ -56,8 +56,8 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 	// Calculate offset
 	offset := (page - 1) * limit
 
-	// Get paginated data - simple query first to debug
-	query := `SELECT id, full_name, phone, email, gender, dob, address, account_id FROM "Member" ORDER BY id DESC LIMIT $1 OFFSET $2`
+	// Get paginated data
+	query := `SELECT id, full_name, phone, email, gender, dob, address, account_id, is_active FROM "Member" ORDER BY id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -67,21 +67,22 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 	var members []*entity.Member
 	for rows.Next() {
 		member := &entity.Member{}
-		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID)
+		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive)
 		if err != nil {
 			return nil, 0, err
 		}
-		// Set default values
-		member.PackageName = "Chưa đăng ký"
-		member.Status = "inactive"
+		// Set default package name if not set
+		if member.PackageName == "" {
+			member.PackageName = "Chưa đăng ký"
+		}
 		members = append(members, member)
 	}
 	return members, total, nil
 }
 
 func (r *memberRepository) Update(member *entity.Member) error {
-	query := `UPDATE "Member" SET full_name = $1, phone = $2, email = $3, gender = $4, dob = $5, address = $6, account_id = $7 WHERE id = $8`
-	_, err := r.db.Exec(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, member.AccountID, member.ID)
+	query := `UPDATE "Member" SET full_name = $1, phone = $2, email = $3, gender = $4, dob = $5, address = $6, account_id = $7, is_active = $8 WHERE id = $9`
+	_, err := r.db.Exec(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, member.AccountID, member.IsActive, member.ID)
 	return err
 }
 

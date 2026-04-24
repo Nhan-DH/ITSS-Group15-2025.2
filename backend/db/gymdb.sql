@@ -52,7 +52,8 @@ CREATE TABLE "Member" (
   "gender" varchar,
   "dob" date,
   "address" text,
-  "account_id" int
+  "account_id" int,
+  "is_active" boolean DEFAULT true
 );
 
 CREATE TABLE "ServiceCategory" (
