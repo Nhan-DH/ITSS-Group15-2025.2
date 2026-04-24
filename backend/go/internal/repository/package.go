@@ -21,8 +21,8 @@ func (r *packageRepository) Create(pkg *entity.MembershipPackage) error {
 
 func (r *packageRepository) GetByID(id int) (*entity.MembershipPackage, error) {
 	pkg := &entity.MembershipPackage{}
-	query := `SELECT id, category_id, package_name, duration_days, price FROM "MembershipPackage" WHERE id = $1`
-	err := r.db.QueryRow(query, id).Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price)
+	query := `SELECT id, category_id, package_name, duration_days, price, COALESCE(is_active, true) FROM "MembershipPackage" WHERE id = $1`
+	err := r.db.QueryRow(query, id).Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive)
 	return pkg, err
 }
 

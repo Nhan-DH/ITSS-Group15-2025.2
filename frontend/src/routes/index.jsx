@@ -41,6 +41,7 @@ import ManagerMemberFormPage from '@/pages/Manager/MemberManagement/MemberForm';
 import ManagerRenewPackage from '@/pages/Manager/MemberManagement/RenewPackage';
 import ManagerFeedbackList from '@/pages/Manager/FeedbackManagement/FeedbackList';
 import ManagerPackageList from '@/pages/Manager/PackageManagement/PackageListView';
+import ManagerPackageDetail from '@/pages/Manager/PackageManagement/PackageDetail';
 
 import TrainerDashboard from '@/pages/Trainer/TrainerDashboard';
 import TrainerProfile from '@/pages/Trainer/TrainerProfile';
@@ -167,6 +168,7 @@ export const router = createBrowserRouter([
               { path: 'report', element: <ReportsView /> },
               // Packages (View Only)
               { path: 'packages', element: <ManagerPackageList /> },
+              { path: 'packages/:id', element: <ManagerPackageDetail /> },
               // Legacy endpoints (kept for backward compatibility)
               { path: 'members-old', element: <ManagerMemberList /> },
               { path: 'members-old/:id', element: <ManagerMemberDetail /> },

@@ -23,14 +23,6 @@ const dashboardStats = [
     trendLabel: 'so với tuần trước'
   },
   {
-    title: 'Hội viên bảo lưu',
-    value: '18',
-    icon: UserX,
-    trend: 'down',
-    trendValue: '-2',
-    trendLabel: 'so với tuần trước'
-  },
-  {
     title: 'Lịch PT hôm nay',
     value: '24',
     icon: Calendar,
@@ -151,8 +143,8 @@ const ManagerDashboard = () => {
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{schedule.pt} • {schedule.member}</p>
                   <span className={`text-xs font-medium ${schedule.status === 'Done' ? 'text-green-600 dark:text-green-400' :
-                      schedule.status === 'InProgress' ? 'text-blue-600 dark:text-blue-400' :
-                        'text-gray-600 dark:text-gray-400'
+                    schedule.status === 'InProgress' ? 'text-blue-600 dark:text-blue-400' :
+                      'text-gray-600 dark:text-gray-400'
                     }`}>
                     {schedule.status === 'Done' ? '✓ Hoàn thành' :
                       schedule.status === 'InProgress' ? '⏱ Đang diễn ra' :

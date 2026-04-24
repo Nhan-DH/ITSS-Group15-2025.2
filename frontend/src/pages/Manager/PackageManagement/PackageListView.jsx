@@ -1,18 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Eye } from 'lucide-react';
 import { usePackages } from '@/hooks/queries/usePackages';
+import { useServiceCategories } from '@/hooks/queries/useServiceCategories';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import { formatPriceVND } from '@/utils/formatters';
 
 const PackageList = () => {
+  const navigate = useNavigate();
   const { data: packages, isLoading, isError } = usePackages();
+  const { data: serviceCategories } = useServiceCategories();
 
-  // Tạo mock data fallback cho tình huống usePackages hook chưa có data thật
-  const mockPackages = packages || [
-    { id: 1, name: "Gói Cơ Bản", duration: 1, durationUnit: "Tháng", price: 300000, status: "active", features: ["Phòng gym cơ bản", "Yoga"] },
-    { id: 2, name: "Gói Nâng Cao", duration: 3, durationUnit: "Tháng", price: 800000, status: "active", features: ["Tất cả khu vực", "Tủ đồ cá nhân"] },
-    { id: 3, name: "Gói VIP (1 Năm)", duration: 12, durationUnit: "Tháng", price: 3000000, status: "active", features: ["HLV cá nhân 2 buổi", "Massge", "Sauna"] },
-    { id: 4, name: "Gói Trải Nghiệm", duration: 7, durationUnit: "Ngày", price: 100000, status: "inactive", features: ["Dùng thử giới hạn"] },
-  ];
+  // Hàm helper để chuyển đổi ngày thành "X tháng" hoặc "X ngày"
+  const getDurationDisplay = (days) => {
+    if (days >= 30) {
+      const months = Math.round(days / 30);
+      return `${months} tháng`;
+    }
+    return `${days} ngày`;
+  };
+
+  // Transform backend data để phù hợp với table
+  const displayPackages = packages ? packages.map((pkg) => {
+    // Tìm category tương ứng từ serviceCategories
+    const category = serviceCategories?.find(cat => cat.id === pkg.category_id);
+
+    return {
+      id: pkg.id,
+      name: pkg.package_name,
+      duration: getDurationDisplay(pkg.duration_days),
+      price: pkg.price,
+      status: pkg.is_active ? 'active' : 'inactive',
+      categoryId: pkg.category_id,
+      categoryName: category?.category_name || 'N/A',
+      description: category?.benefits_description || 'Không có mô tả',
+    };
+  }) : [];
+
+  // Handler xem chi tiết gói tập
+  const handleViewDetails = (packageId) => {
+    navigate(`/manager/packages/${packageId}`);
+  };
 
   return (
     <div className="space-y-6 relative">
@@ -39,35 +67,45 @@ const PackageList = () => {
                 <TableHead>Giá (VND)</TableHead>
                 <TableHead>Mô tả ngắn</TableHead>
                 <TableHead>Trạng Thái</TableHead>
+                <TableHead className="text-center">Chi tiết gói</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockPackages.length === 0 ? (
+              {displayPackages.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-500 h-24">
+                  <TableCell colSpan={6} className="text-center text-gray-500 h-24">
                     Chưa có cấu hình gói tập nào.
                   </TableCell>
                 </TableRow>
               ) : (
-                mockPackages.map((pkg) => (
+                displayPackages.map((pkg) => (
                   <TableRow key={pkg.id}>
                     <TableCell className="font-semibold text-gray-900 dark:text-gray-100">{pkg.name}</TableCell>
                     <TableCell className="text-gray-600 dark:text-gray-300">
-                      {pkg.duration} {pkg.durationUnit}
+                      {pkg.duration}
                     </TableCell>
                     <TableCell className="font-medium text-emerald-600 dark:text-emerald-400">
                       {formatPriceVND ? formatPriceVND(pkg.price) : `${pkg.price.toLocaleString('vi-VN')} đ`}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-500 max-w-[200px] truncate">
-                      {pkg.features?.join(", ")}
+                    <TableCell className="text-sm text-gray-500 max-w-[250px] truncate" title={pkg.description}>
+                      {pkg.description}
                     </TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${pkg.status === 'active'
                         ? 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
                         : 'bg-gray-50 text-gray-600 ring-gray-600/20 dark:bg-gray-800/50 dark:text-gray-400'
                         }`}>
-                        {pkg.status === 'active' ? 'Đang bán' : 'Bị ẩn'}
+                        {pkg.status === 'active' ? 'Đang bán' : 'Tạm dừng bán'}
                       </span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <button
+                        onClick={() => handleViewDetails(pkg.id)}
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 transition-colors"
+                        title="Xem chi tiết"
+                      >
+                        <Eye size={18} />
+                      </button>
                     </TableCell>
                   </TableRow>
                 ))
