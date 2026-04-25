@@ -147,13 +147,57 @@ func (h *MemberHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MemberHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil || id <= 0 {
+		http.Error(w, "invalid member id", http.StatusBadRequest)
+		return
+	}
+
 	var member entity.Member
-	json.NewDecoder(r.Body).Decode(&member)
-	err := h.usecase.UpdateMember(&member)
+	if err := json.NewDecoder(r.Body).Decode(&member); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	member.ID = id
+
+	if member.AccountID == 0 {
+		existing, getErr := h.usecase.GetMemberByID(id)
+		if getErr != nil {
+			http.Error(w, getErr.Error(), http.StatusNotFound)
+			return
+		}
+		member.AccountID = existing.AccountID
+	}
+
+	err = h.usecase.UpdateMember(&member)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *MemberHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil || id <= 0 {
+		http.Error(w, "invalid member id", http.StatusBadRequest)
+		return
+	}
+
+	var payload struct {
+		IsActive bool `json:"is_active"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.usecase.UpdateMemberStatus(id, payload.IsActive); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 

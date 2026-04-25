@@ -15,6 +15,7 @@ type MemberUsecase interface {
 	GetAllMembersWithDetails() ([]*dto.MemberListItemDTO, error)
 	GetMemberByIDWithDetails(id int) (*dto.MemberDetailDTO, error)
 	UpdateMember(member *entity.Member) error
+	UpdateMemberStatus(id int, isActive bool) error
 	DeleteMember(id int) error
 }
 
@@ -76,6 +77,10 @@ func (u *memberUsecase) UpdateMember(member *entity.Member) error {
 	}
 	*member = *updated
 	return nil
+}
+
+func (u *memberUsecase) UpdateMemberStatus(id int, isActive bool) error {
+	return u.repo.UpdateStatus(id, isActive)
 }
 
 func (u *memberUsecase) DeleteMember(id int) error {

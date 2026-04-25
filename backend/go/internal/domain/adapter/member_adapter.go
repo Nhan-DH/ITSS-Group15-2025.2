@@ -13,5 +13,6 @@ type MemberRepository interface {
 	GetAllMembersWithDetails() ([]*dto.MemberListItemDTO, error)
 	GetMemberByIDWithDetails(id int) (*dto.MemberDetailDTO, error)
 	Update(member *entity.Member) error
+	UpdateStatus(id int, isActive bool) error
 	Delete(id int) error
 }

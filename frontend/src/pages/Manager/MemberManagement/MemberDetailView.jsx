@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Phone, Mail, Calendar, Pause, Edit2, AlertCircle } from 'lucide-react';
 import { useMemberDetails } from '@/hooks/queries/useMembers';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/Common/Button';
 import Badge from '@/components/Common/Badge';
+import { memberService } from '@/services/memberService';
+import { toast } from '@/utils/toast';
 
 const Tabs = {
     INFO: 'info',
@@ -25,10 +28,27 @@ const getMemberJoinDate = (member) => member?.joinDate || 'N/A';
 const MemberDetailView = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState(Tabs.INFO);
 
     // Fetch member details from API
     const { data: member, isLoading, isError, error } = useMemberDetails(parseInt(id));
+
+    const toggleStatusMutation = useMutation({
+        mutationFn: (isActive) => memberService.updateMemberStatus(parseInt(id), isActive),
+        onSuccess: () => {
+            toast.success(member?.is_active ? 'Đã tạm dừng hội viên' : 'Đã kích hoạt lại hội viên');
+            queryClient.invalidateQueries({ queryKey: ['member', parseInt(id)] });
+            queryClient.invalidateQueries({ queryKey: ['members'] });
+        },
+        onError: (err) => {
+            toast.error(err?.response?.data || err?.message || 'Cập nhật trạng thái thất bại');
+        },
+    });
+
+    const handleToggleStatus = () => {
+        toggleStatusMutation.mutate(!member?.is_active);
+    };
 
     // Loading state
     if (isLoading) {
@@ -75,13 +95,13 @@ const MemberDetailView = () => {
                     <span>Quay lại</span>
                 </button>
                 <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={handleToggleStatus} isLoading={toggleStatusMutation.isPending}>
+                        <Pause size={16} />
+                        {member?.is_active ? 'Tạm dừng' : 'Kích hoạt lại'}
+                    </Button>
                     <Button variant="outline" size="sm">
                         <Edit2 size={16} />
                         Chỉnh sửa
-                    </Button>
-                    <Button variant="outline" size="sm">
-                        <Pause size={16} />
-                        Tạm dừng
                     </Button>
                 </div>
             </div>

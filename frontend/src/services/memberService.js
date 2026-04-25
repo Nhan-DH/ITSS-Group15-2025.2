@@ -44,15 +44,19 @@ export const memberService = {
     return axios.put(`/members/${id}`, data);
   },
 
+  updateMemberStatus: async (id, isActive) => {
+    if (IS_MOCK) {
+      await delay(500);
+      return { id, is_active: isActive };
+    }
+    return axios.put(`/members/${id}/status`, { is_active: isActive });
+  },
+
   deleteMember: async (id) => {
     if (IS_MOCK) {
       await delay(500);
       return { success: true };
     }
     return axios.delete(`/members/${id}`);
-  },
-
-  updateMemberStatus: async (id, status) => {
-    return axios.put(`/members/${id}`, { status });
   },
 };

@@ -87,6 +87,12 @@ func (r *memberRepository) Update(member *entity.Member) error {
 	return err
 }
 
+func (r *memberRepository) UpdateStatus(id int, isActive bool) error {
+	query := `UPDATE "Member" SET is_active = $1 WHERE id = $2`
+	_, err := r.db.Exec(query, isActive, id)
+	return err
+}
+
 func (r *memberRepository) Delete(id int) error {
 	_, err := r.db.Exec(`DELETE FROM "Member" WHERE id = $1`, id)
 	return err

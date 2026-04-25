@@ -84,6 +84,7 @@ func NewRouter(
 	ownerManager.HandleFunc("/members", memberHandler.Create).Methods("POST")
 	ownerManager.HandleFunc("/members", memberHandler.GetAll).Methods("GET")
 	ownerManager.HandleFunc("/members/{id}", memberHandler.Update).Methods("PUT")
+	ownerManager.HandleFunc("/members/{id}/status", memberHandler.UpdateStatus).Methods("PUT")
 	ownerManager.HandleFunc("/members/{id}", memberHandler.Delete).Methods("DELETE")
 
 	ownerManager.HandleFunc("/feedbacks", feedbackHandler.GetAll).Methods("GET")
