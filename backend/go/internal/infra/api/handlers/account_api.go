@@ -58,6 +58,45 @@ func (h *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AccountHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	// Check for pagination parameters
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	if pageStr != "" && limitStr != "" {
+		page, err := strconv.Atoi(pageStr)
+		if err != nil || page < 1 {
+			page = 1
+		}
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil || limit < 1 {
+			limit = 6
+		}
+
+		accounts, total, err := h.usecase.GetAllAccountsPaginated(page, limit)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Map to DTO
+		responses := make([]*dto.AccountResponse, 0, len(accounts))
+		for _, account := range accounts {
+			responses = append(responses, mappers.AccountEntityToResponse(account))
+		}
+
+		totalPages := (total + limit - 1) / limit
+		response := dto.PaginationResponse{
+			Data:       responses,
+			Page:       page,
+			Limit:      limit,
+			TotalItems: total,
+			TotalPages: totalPages,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
 	accounts, err := h.usecase.GetAllAccounts()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

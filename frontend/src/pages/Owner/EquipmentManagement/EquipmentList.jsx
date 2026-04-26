@@ -1,31 +1,74 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Edit, Trash2, PenTool } from 'lucide-react';
+import { Plus, Edit, Trash2, PenTool, ChevronLeft, ChevronRight, Power, PowerOff } from 'lucide-react';
 import { useEquipment } from '@/hooks/queries/useEquipment';
+import { useDeleteEquipment, useUpdateEquipmentStatus } from '@/hooks/mutations/useEquipmentMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
+import Modal from '@/components/Common/Modal';
 
 const EquipmentList = () => {
-  const { data: equipment, isLoading, isError } = useEquipment();
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, equipment: null });
+  const limit = 10;
 
-  const mockEquipment = equipment || [
-    { id: 1, name: 'Máy chạy bộ Proform', category: 'Cardio', status: 'active', condition: 'Tốt', nextMaintenance: '15/05/2026' },
-    { id: 2, name: 'Ghế đẩy ngực Incline', category: 'Free Weights', status: 'active', condition: 'Tốt', nextMaintenance: '20/06/2026' },
-    { id: 3, name: 'Máy kéo xô lưng đùi', category: 'Machines', status: 'maintenance', condition: 'Đang sửa', nextMaintenance: 'Đang tiến hành' },
-    { id: 4, name: 'Tạ đòn Olympic 20kg', category: 'Free Weights', status: 'active', condition: 'Cũ', nextMaintenance: '30/12/2026' },
+  const { data: response, isLoading, isError, error } = useEquipment(page, limit);
+  const deleteMutation = useDeleteEquipment();
+  const statusMutation = useUpdateEquipmentStatus();
+
+  const handleDelete = () => {
+    if (deleteModal.equipment) {
+      deleteMutation.mutate(deleteModal.equipment.id);
+      setDeleteModal({ isOpen: false, equipment: null });
+    }
+  };
+
+  const handleToggleStatus = (equipment) => {
+    const newStatus = equipment.status === 'active' ? 'maintenance' : 'active';
+    statusMutation.mutate({ id: equipment.id, status: newStatus });
+  };
+  
+  // Handle API response - extract data from pagination response
+  // Fallback to mock data if API fails
+  const mockEquipment = [
+    { id: 1, equipment_name: 'Máy chạy bộ Proform', facility_id: 1, status: 'active', origin: 'Mỹ', maintenance_deadline: '2026-06-15' },
+    { id: 2, equipment_name: 'Ghế đẩy ngực', facility_id: 2, status: 'active', origin: 'Đức', maintenance_deadline: '2026-07-20' },
+    { id: 3, equipment_name: 'Máy kéo xô lưng đùi', facility_id: 2, status: 'maintenance', origin: 'Trung Quốc', maintenance_deadline: '2026-05-01' },
+    { id: 4, equipment_name: 'Tạ đòn Olympic 20kg', facility_id: 2, status: 'active', origin: 'Việt Nam', maintenance_deadline: '2026-12-30' },
+    { id: 5, equipment_name: 'Xe đạp tập Elip', facility_id: 1, status: 'active', origin: 'Mỹ', maintenance_deadline: '2026-08-15' },
   ];
+
+  const equipment = useMemo(() => {
+    if (!response) return mockEquipment;
+    if (Array.isArray(response)) return response; // Mock data format
+    if (response.data && response.data.length > 0) return response.data; // Pagination response with data
+    if (isError) return mockEquipment; // Fallback on error
+    return mockEquipment;
+  }, [response, isError]);
+
+  const totalItems = useMemo(() => {
+    if (!response) return 0;
+    if (Array.isArray(response)) return response.length;
+    return response.total_items || 0;
+  }, [response]);
+
+  const totalPages = useMemo(() => {
+    if (!response) return 1;
+    if (Array.isArray(response)) return 1;
+    return response.total_pages || Math.ceil(totalItems / limit) || 1;
+  }, [response, totalItems]);
 
   const filteredEquipment = useMemo(() => {
     const query = searchTerm.toLowerCase();
-    return mockEquipment.filter((item) =>
-      item.name?.toLowerCase().includes(query) ||
-      item.category?.toLowerCase().includes(query) ||
-      item.condition?.toLowerCase().includes(query) ||
+    return equipment.filter((item) =>
+      item.equipment_name?.toLowerCase().includes(query) ||
+      item.equipmentName?.toLowerCase().includes(query) ||
+      item.origin?.toLowerCase().includes(query) ||
       item.status?.toLowerCase().includes(query)
     );
-  }, [mockEquipment, searchTerm]);
+  }, [equipment, searchTerm]);
 
   return (
     <div className="space-y-6 relative">
@@ -61,8 +104,10 @@ const EquipmentList = () => {
         <div className="mt-6 overflow-x-auto">
           {isLoading ? (
             <div className="p-8 text-center text-gray-500">Đang tải danh sách thiết bị...</div>
-          ) : isError && !equipment ? (
-            <div className="p-8 text-center text-red-500">Lỗi không thể lấy dữ liệu thiết bị.</div>
+          ) : isError ? (
+            <div className="p-8 text-center text-red-500">
+              Lỗi khi tải dữ liệu: {error?.message || 'Vui lòng đăng nhập lại'}
+            </div>
           ) : (
             <Table>
               <TableHeader>
@@ -87,29 +132,44 @@ const EquipmentList = () => {
                       <TableCell>
                         <div className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                           <PenTool className="h-4 w-4 text-gray-400" />
-                          {item.name}
+                          {item.equipment_name || item.equipmentName || item.EquipmentName || 'N/A'}
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">Tình trạng: {item.condition}</div>
+                        <div className="text-xs text-gray-500 mt-1">Xuất xứ: {item.origin || 'N/A'}</div>
                       </TableCell>
-                      <TableCell className="text-gray-600 dark:text-gray-300">{item.category}</TableCell>
+                      <TableCell className="text-gray-600 dark:text-gray-300">
+                        {item.facility_id || 'N/A'}
+                      </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${
                           item.status === 'active'
                             ? 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
-                            : 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400'
+                            : item.status === 'maintenance'
+                            ? 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400'
+                            : 'bg-gray-50 text-gray-700 ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
                         }`}>
-                          {item.status === 'active' ? 'Hoạt động tốt' : 'Đang bảo trì'}
+                          {item.status === 'active' ? 'Hoạt động tốt' : item.status === 'maintenance' ? 'Đang bảo trì' : item.status || 'N/A'}
                         </span>
                       </TableCell>
-                      <TableCell className="text-sm font-medium text-gray-600 dark:text-gray-300">{item.nextMaintenance}</TableCell>
+                      <TableCell className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                        {item.maintenance_deadline || item.MaintenanceDeadline 
+                          ? new Date(item.maintenance_deadline || item.MaintenanceDeadline).toLocaleDateString('vi-VN')
+                          : 'N/A'}
+                      </TableCell>
                       <TableCell className="text-right pr-4">
                         <div className="flex items-center justify-end gap-1">
+                          {/* Kích hoạt button removed as requested */}
                           <Link to={`/owner/equipment/${item.id}/edit`}>
                             <Button variant="ghost" size="icon" title="Chỉnh sửa" className="h-8 w-8 text-blue-500 hidden sm:inline-flex">
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Button variant="ghost" size="icon" title="Xóa" className="h-8 w-8 text-red-500 hidden sm:inline-flex">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Xóa" 
+                            className="h-8 w-8 text-red-500 hidden sm:inline-flex"
+                            onClick={() => setDeleteModal({ isOpen: true, equipment: item })}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                           <div className="sm:hidden text-blue-500 font-medium text-sm underline px-2 py-1">Sửa</div>
@@ -122,7 +182,56 @@ const EquipmentList = () => {
             </Table>
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Trang {page} / {totalPages} (Tổng: {totalItems} thiết bị)
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, equipment: null })}
+        title="Xác nhận xóa thiết bị"
+      >
+        <div className="p-4">
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            Bạn có chắc chắn muốn xóa thiết bị <strong>{deleteModal.equipment?.equipment_name}</strong> không?
+          </p>
+          <p className="text-sm text-red-500 mb-4">Hành động này không thể hoàn tác.</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteModal({ isOpen: false, equipment: null })}>
+              Hủy
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

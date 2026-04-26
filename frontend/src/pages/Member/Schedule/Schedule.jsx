@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Schedule = () => {
   const navigate = useNavigate();
   const DAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-  
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 10)); // April 10, 2026
-  const [selectedDate, setSelectedDate] = useState('2026-04-14');
 
-  // Mock data using date key format (YYYY-MM-DD)
-  const [workouts, setWorkouts] = useState({
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 10));
+  const [selectedDate, setSelectedDate] = useState('2026-04-14');
+  const [activeTab, setActiveTab] = useState('scheduled');
+  const [selectedTrainer, setSelectedTrainer] = useState(null);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const [selectedDeniedRequest, setSelectedDeniedRequest] = useState(null);
+  const [bookingForm, setBookingForm] = useState(null);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phoneNumber: '',
+    email: '',
+    address: '',
+    notes: ''
+  });
+
+  const [workouts] = useState({
     '2026-04-07': [
       { time: '08:00', startTime: '08:00', endTime: '09:30', name: 'Buổi tập Yoga', type: 'Yoga', location: 'Phòng A2', trainer: 'Nguyễn Minh', status: 'Đã xong' }
     ],
@@ -39,6 +50,248 @@ const Schedule = () => {
       { time: '16:00', startTime: '16:00', endTime: '17:30', name: 'Buổi tập Pilates', type: 'Pilates', location: 'Phòng A3', trainer: 'Phạm Thị D', status: 'Chờ xác nhận' }
     ]
   });
+
+  const [availableBookings] = useState({
+    '2026-04-07': [
+      { time: '07:00', startTime: '07:00', endTime: '08:30', name: 'Lớp Aerobic', type: 'Aerobic', location: 'Studio B', trainer: 'Lê Thị B', isBookable: true },
+      { time: '10:00', startTime: '10:00', endTime: '11:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A1', trainer: 'Nguyễn Minh', isBookable: false },
+      { time: '15:00', startTime: '15:00', endTime: '16:30', name: 'Lớp Zumba', type: 'Zumba', location: 'Studio A', trainer: 'Hoàng Văn E', isBookable: true }
+    ],
+    '2026-04-09': [
+      { time: '06:30', startTime: '06:30', endTime: '07:30', name: 'Lớp Yoga sáng', type: 'Yoga', location: 'Phòng A2', trainer: 'Trần Văn C', isBookable: true },
+      { time: '09:00', startTime: '09:00', endTime: '10:30', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng B2', trainer: 'Phạm Thị D', isBookable: false },
+      { time: '18:00', startTime: '18:00', endTime: '19:30', name: 'Lớp CrossFit', type: 'CrossFit', location: 'Studio CrossFit', trainer: 'Lê Thị B', isBookable: true }
+    ],
+    '2026-04-11': [
+      { time: '07:00', startTime: '07:00', endTime: '08:30', name: 'Lớp HIIT sáng', type: 'HIIT', location: 'Studio A', trainer: 'Hoàng Văn E', isBookable: true },
+      { time: '14:00', startTime: '14:00', endTime: '15:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C1', trainer: 'Nguyễn Minh', isBookable: false }
+    ],
+    '2026-04-14': [
+      { time: '08:00', startTime: '08:00', endTime: '09:30', name: 'Lớp Strength', type: 'Strength Training', location: 'Phòng B1', trainer: 'Trần Văn C', isBookable: true },
+      { time: '11:00', startTime: '11:00', endTime: '12:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A1', trainer: 'Phạm Thị D', isBookable: false }
+    ],
+    '2026-04-17': [
+      { time: '07:30', startTime: '07:30', endTime: '08:30', name: 'Lớp Pilates', type: 'Pilates', location: 'Phòng A3', trainer: 'Lê Thị B', isBookable: true },
+      { time: '13:00', startTime: '13:00', endTime: '14:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng B1', trainer: 'Hoàng Văn E', isBookable: false },
+      { time: '16:00', startTime: '16:00', endTime: '17:30', name: 'Lớp Boxing', type: 'Boxing', location: 'Studio B', trainer: 'Nguyễn Minh', isBookable: true }
+    ],
+    '2026-04-21': [
+      { time: '06:00', startTime: '06:00', endTime: '07:30', name: 'Lớp Cardio', type: 'Cardio', location: 'Studio A', trainer: 'Phạm Thị D', isBookable: true },
+      { time: '10:00', startTime: '10:00', endTime: '11:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C2', trainer: 'Trần Văn C', isBookable: false }
+    ],
+    '2026-04-23': [
+      { time: '18:00', startTime: '18:00', endTime: '19:30', name: 'Lớp Zumba tối', type: 'Zumba', location: 'Studio B', trainer: 'Lê Thị B', isBookable: true },
+      { time: '19:30', startTime: '19:30', endTime: '20:30', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A2', trainer: 'Hoàng Văn E', isBookable: false }
+    ],
+    '2026-04-25': [
+      { time: '07:00', startTime: '07:00', endTime: '08:30', name: 'Lớp Yoga', type: 'Yoga', location: 'Phòng B2', trainer: 'Nguyễn Minh', isBookable: true }
+    ],
+    '2026-04-29': [
+      { time: '09:00', startTime: '09:00', endTime: '10:30', name: 'Lớp Strength nâng cao', type: 'Strength Training', location: 'Phòng B1', trainer: 'Phạm Thị D', isBookable: true },
+      { time: '15:00', startTime: '15:00', endTime: '16:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C1', trainer: 'Lê Thị B', isBookable: false }
+    ]
+  });
+
+  const [memberRequests, setMemberRequests] = useState({
+    '2026-04-12': [
+      {
+        time: '18:00',
+        startTime: '18:00',
+        endTime: '19:30',
+        name: 'Lớp Zumba tối',
+        type: 'Zumba',
+        location: 'Studio B',
+        trainer: 'Lê Thị B',
+        status: 'Chờ xác nhận',
+        submittedAt: '2026-04-09',
+        requestDetails: {
+          fullName: 'Nguyễn Tuấn A',
+          phoneNumber: '090 123 4567',
+          email: 'tuana@gym.com',
+          address: 'Số 123 Đường B, Phường C, Quận 1, TPHCM',
+          curriculum: 'Zumba',
+          notes: 'Muốn tham gia lớp buổi tối sau giờ làm.'
+        }
+      }
+    ],
+    '2026-04-18': [
+      {
+        time: '07:30',
+        startTime: '07:30',
+        endTime: '08:30',
+        name: 'Lớp Pilates',
+        type: 'Pilates',
+        location: 'Phòng A3',
+        trainer: 'Lê Thị B',
+        status: 'Completed',
+        submittedAt: '2026-04-15',
+        requestDetails: {
+          fullName: 'Nguyễn Tuấn A',
+          phoneNumber: '090 123 4567',
+          email: 'tuana@gym.com',
+          address: 'Số 123 Đường B, Phường C, Quận 1, TPHCM',
+          curriculum: 'Pilates',
+          notes: 'Cần buổi tập nhẹ để cải thiện độ linh hoạt.'
+        }
+      }
+    ],
+    '2026-04-20': [
+      {
+        time: '16:00',
+        startTime: '16:00',
+        endTime: '17:00',
+        name: 'PT cá nhân',
+        type: 'Personal Training',
+        location: 'Phòng B1',
+        trainer: 'Phạm Thị D',
+        status: 'Từ chối',
+        submittedAt: '2026-04-17',
+        denyReason: 'Khung giờ này đã kín lịch cho huấn luyện viên. Vui lòng chọn buổi khác trong tuần.',
+        requestDetails: {
+          fullName: 'Nguyễn Tuấn A',
+          phoneNumber: '090 123 4567',
+          email: 'tuana@gym.com',
+          address: 'Số 123 Đường B, Phường C, Quận 1, TPHCM',
+          curriculum: 'Personal Training',
+          notes: 'Ưu tiên buổi chiều để tiện theo lịch làm việc.'
+        }
+      }
+    ]
+  });
+
+  const trainerInfo = {
+    'Nguyễn Minh': {
+      name: 'Nguyễn Minh',
+      birthYear: 1992,
+      specialization: 'Strength Training, Powerlifting',
+      phone: '+84 912 345 678',
+      email: 'nguyen.minh@gym.com',
+      awards: [
+        { icon: '🥇', title: 'HCV Bodybuilding Championship', org: 'VNBF 2023' },
+        { icon: '🥈', title: "Á quân Men's Physique", org: 'WBPF 2022' },
+        { icon: '🏆', title: 'Top 3 PT of the Year', org: 'ActiveGym 2024' }
+      ],
+      experience: [
+        { position: 'Senior PT — ActiveGym Hà Nội', duration: '2021 – nay · 4 năm' },
+        { position: 'Personal Trainer — California Fitness', duration: '2018 – 2021 · 3 năm' },
+        { position: 'Chứng chỉ ACE-CPT, ISSN-SNS', duration: '2018' }
+      ],
+      measurements: {
+        height: { value: 180, unit: 'cm' },
+        weight: { value: 82, unit: 'kg' },
+        chest: { value: 105, unit: 'cm' },
+        arm: { value: 40, unit: 'cm' },
+        waist: { value: 78, unit: 'cm' },
+        forearm: { value: 32, unit: 'cm' },
+        thigh: { value: 60, unit: 'cm' },
+        calf: { value: 42, unit: 'cm' }
+      }
+    },
+    'Lê Thị B': {
+      name: 'Lê Thị B',
+      birthYear: 1995,
+      specialization: 'Cardio, HIIT, CrossFit',
+      phone: '+84 912 345 679',
+      email: 'le.thib@gym.com',
+      awards: [
+        { icon: '🥇', title: 'CrossFit Regional Champion', org: 'Asia 2023' },
+        { icon: '🏆', title: 'Best HIIT Instructor', org: 'ActiveGym 2024' }
+      ],
+      experience: [
+        { position: 'Head Instructor — ActiveGym Hà Nội', duration: '2020 – nay · 5 năm' },
+        { position: 'Fitness Coach — Pure Gym', duration: '2017 – 2020 · 3 năm' },
+        { position: 'Chứng chỉ CrossFit Level 2, ISSN-SNS', duration: '2017' }
+      ],
+      measurements: {
+        height: { value: 165, unit: 'cm' },
+        weight: { value: 58, unit: 'kg' },
+        chest: { value: 88, unit: 'cm' },
+        arm: { value: 28, unit: 'cm' },
+        waist: { value: 68, unit: 'cm' },
+        forearm: { value: 24, unit: 'cm' },
+        thigh: { value: 52, unit: 'cm' },
+        calf: { value: 36, unit: 'cm' }
+      }
+    },
+    'Phạm Thị D': {
+      name: 'Phạm Thị D',
+      birthYear: 1993,
+      specialization: 'Personal Training, Core Training',
+      phone: '+84 912 345 680',
+      email: 'pham.thid@gym.com',
+      awards: [
+        { icon: '🥇', title: 'Personal Trainer of the Year', org: 'Vietnam Fitness 2023' },
+        { icon: '🏆', title: 'Client Transformation Champion', org: 'ActiveGym 2024' }
+      ],
+      experience: [
+        { position: 'Senior PT Manager — ActiveGym Hà Nội', duration: '2019 – nay · 6 năm' },
+        { position: 'Personal Trainer — Diamond Fitness', duration: '2016 – 2019 · 3 năm' },
+        { position: 'Chứng chỉ ACE-CPT, CES, FMS Level 2', duration: '2016' }
+      ],
+      measurements: {
+        height: { value: 168, unit: 'cm' },
+        weight: { value: 62, unit: 'kg' },
+        chest: { value: 92, unit: 'cm' },
+        arm: { value: 30, unit: 'cm' },
+        waist: { value: 70, unit: 'cm' },
+        forearm: { value: 26, unit: 'cm' },
+        thigh: { value: 55, unit: 'cm' },
+        calf: { value: 38, unit: 'cm' }
+      }
+    },
+    'Hoàng Văn E': {
+      name: 'Hoàng Văn E',
+      birthYear: 1998,
+      specialization: 'Zumba, Yoga, Flexibility',
+      phone: '+84 912 345 681',
+      email: 'hoang.vane@gym.com',
+      awards: [
+        { icon: '🏆', title: 'Best Group Class Instructor', org: 'ActiveGym 2024' },
+        { icon: '⭐', title: 'Highest Client Satisfaction', org: 'Vietnam Fitness 2023' }
+      ],
+      experience: [
+        { position: 'Group Fitness Instructor — ActiveGym Hà Nội', duration: '2021 – nay · 4 năm' },
+        { position: 'Yoga Instructor — Zen Fitness', duration: '2019 – 2021 · 2 năm' },
+        { position: 'Chứng chỉ Yoga Alliance, Zumba License', duration: '2019' }
+      ],
+      measurements: {
+        height: { value: 172, unit: 'cm' },
+        weight: { value: 70, unit: 'kg' },
+        chest: { value: 96, unit: 'cm' },
+        arm: { value: 32, unit: 'cm' },
+        waist: { value: 75, unit: 'cm' },
+        forearm: { value: 28, unit: 'cm' },
+        thigh: { value: 56, unit: 'cm' },
+        calf: { value: 40, unit: 'cm' }
+      }
+    },
+    'Trần Văn C': {
+      name: 'Trần Văn C',
+      birthYear: 1990,
+      specialization: 'Pilates, Flexibility, Rehabilitation',
+      phone: '+84 912 345 682',
+      email: 'tran.vanc@gym.com',
+      awards: [
+        { icon: '🥇', title: 'Master Instructor Award', org: 'Pilates Association 2023' },
+        { icon: '🏆', title: 'Client Recovery Excellence', org: 'ActiveGym 2024' }
+      ],
+      experience: [
+        { position: 'Pilates Master Instructor — ActiveGym Hà Nội', duration: '2018 – nay · 7 năm' },
+        { position: 'Rehabilitation Specialist — Health Clinic', duration: '2015 – 2018 · 3 năm' },
+        { position: 'Chứng chỉ Pilates Reformer, FMS Level 3, PTA', duration: '2015' }
+      ],
+      measurements: {
+        height: { value: 175, unit: 'cm' },
+        weight: { value: 75, unit: 'kg' },
+        chest: { value: 100, unit: 'cm' },
+        arm: { value: 36, unit: 'cm' },
+        waist: { value: 77, unit: 'cm' },
+        forearm: { value: 30, unit: 'cm' },
+        thigh: { value: 58, unit: 'cm' },
+        calf: { value: 41, unit: 'cm' }
+      }
+    }
+  };
 
   const dateKey = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
@@ -76,6 +329,23 @@ const Schedule = () => {
     setSelectedDate(key);
   };
 
+  const resetFormData = () => {
+    setFormData({
+      fullName: '',
+      phoneNumber: '',
+      email: '',
+      address: '',
+      notes: ''
+    });
+  };
+
+  const currentData =
+    activeTab === 'scheduled'
+      ? workouts
+      : activeTab === 'booking'
+      ? availableBookings
+      : memberRequests;
+
   const previousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
   };
@@ -86,7 +356,86 @@ const Schedule = () => {
 
   const dayNames = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
   const monthName = currentDate.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' });
-  const selectedWorkouts = selectedDate ? (workouts[selectedDate] || []) : [];
+  const selectedWorkouts = selectedDate ? currentData[selectedDate] || [] : [];
+  const requestDates = Object.keys(memberRequests).sort();
+  const defaultRequestDate = requestDates[0] || selectedDate;
+  const selectedDateObject = selectedDate ? new Date(`${selectedDate}T00:00:00`) : null;
+
+  const getCalendarDotClass = (item) => {
+    if (activeTab === 'scheduled') {
+      return item.status === 'Đã xong' ? 'bg-green-500' : 'bg-blue-400';
+    }
+    if (activeTab === 'requests') {
+      if (item.status === 'Đã xác nhận' || item.status === 'Completed') return 'bg-green-500';
+      if (item.status === 'Chờ xác nhận') return 'bg-yellow-400';
+      return 'bg-red-400';
+    }
+    return item.isBookable ? 'bg-blue-400' : 'bg-gray-400';
+  };
+
+  const getAccentColor = (item) => {
+    if (activeTab === 'scheduled') {
+      if (item.status === 'Đã xong') return '#16A34A';
+      if (item.status === 'Chờ xác nhận') return '#EAB308';
+      return '#9CA3AF';
+    }
+    if (activeTab === 'requests') {
+      if (item.status === 'Đã xác nhận' || item.status === 'Completed') return '#16A34A';
+      if (item.status === 'Chờ xác nhận') return '#EAB308';
+      return '#EF4444';
+    }
+    return item.isBookable ? '#3B82F6' : '#9CA3AF';
+  };
+
+  const getStatusBadgeClass = (status) => {
+    if (status === 'Đã xong' || status === 'Đã xác nhận' || status === 'Completed') {
+      return 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300';
+    }
+    if (status === 'Chờ xác nhận') {
+      return 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300';
+    }
+    if (status === 'Từ chối') {
+      return 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300';
+    }
+    return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
+  };
+
+  const closeBookingForm = () => {
+    setBookingForm(null);
+    resetFormData();
+  };
+
+  const handleBookingSubmit = (e) => {
+    e.preventDefault();
+
+    const requestDate = bookingForm.requestDate || selectedDate;
+    const nextRequest = {
+      time: bookingForm.time,
+      startTime: bookingForm.startTime,
+      endTime: bookingForm.endTime,
+      name: bookingForm.name,
+      type: bookingForm.type,
+      location: bookingForm.location,
+      trainer: bookingForm.trainer,
+      status: 'Chờ xác nhận',
+      submittedAt: new Date().toISOString().slice(0, 10),
+      requestDetails: {
+        ...formData,
+        curriculum: bookingForm.type
+      }
+    };
+
+    setMemberRequests((prev) => ({
+      ...prev,
+      [requestDate]: [...(prev[requestDate] || []), nextRequest]
+    }));
+
+    alert('Yêu cầu đặt lịch của bạn đã được gửi thành công!');
+    setActiveTab('requests');
+    setSelectedDate(requestDate);
+    setBookingForm(null);
+    resetFormData();
+  };
 
   return (
     <div className="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto w-full pb-20">
@@ -94,11 +443,10 @@ const Schedule = () => {
         onClick={() => navigate('/member')}
         className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 mb-6"
       >
-        <ArrowLeft className="h-4 w-4" /> Quay lại tổng quan
+        
       </button>
 
       <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl">
-        {/* Calendar Header and Navigation */}
         <div className="p-5 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center justify-between mb-4">
             <button
@@ -116,7 +464,6 @@ const Schedule = () => {
             </button>
           </div>
 
-          {/* Day Headers */}
           <div className="grid grid-cols-7 gap-0 mb-2">
             {DAYS.map((day) => (
               <div
@@ -128,11 +475,10 @@ const Schedule = () => {
             ))}
           </div>
 
-          {/* Calendar Days Grid */}
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((dayObj, idx) => {
               const key = dayObj.isCurrentMonth ? dateKey(year, month, dayObj.day) : null;
-              const evs = key ? workouts[key] || [] : [];
+              const evs = key ? currentData[key] || [] : [];
               const isSelected = selectedDate === key;
 
               return (
@@ -150,13 +496,8 @@ const Schedule = () => {
                   <span className="text-sm font-semibold">{dayObj.day}</span>
                   {evs.length > 0 && (
                     <div className="flex gap-0.5 mt-1">
-                      {evs.map((e, i) => (
-                        <div
-                          key={i}
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            e.status === 'Đã xong' ? 'bg-green-500' : 'bg-blue-400'
-                          }`}
-                        />
+                      {evs.map((item, i) => (
+                        <div key={i} className={`w-1.5 h-1.5 rounded-full ${getCalendarDotClass(item)}`} />
                       ))}
                     </div>
                   )}
@@ -166,103 +507,257 @@ const Schedule = () => {
           </div>
         </div>
 
-        {/* Statistics */}
+        <div className="border-t border-gray-100 dark:border-gray-800 p-4 flex gap-2">
+          <button
+            onClick={() => {
+              setActiveTab('scheduled');
+              setSelectedDate('2026-04-14');
+            }}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
+              activeTab === 'scheduled'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+          >
+            Lịch tập của tôi
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('booking');
+              setSelectedDate('2026-04-07');
+            }}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
+              activeTab === 'booking'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+          >
+            Đặt buổi tập
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('requests');
+              setSelectedDate(defaultRequestDate);
+            }}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
+              activeTab === 'requests'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+          >
+            Yêu cầu của tôi
+          </button>
+        </div>
+
         <div className="border-t border-gray-100 dark:border-gray-800 p-4 grid grid-cols-2 gap-3">
-          <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
-            <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Tháng này</div>
-            <div className="text-xl font-black text-gray-800 dark:text-white">
-              8 <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
-            </div>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
-            <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Đã hoàn thành</div>
-            <div className="text-xl font-black text-gray-800 dark:text-white">
-              4 <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
-            </div>
-          </div>
+          {activeTab === 'scheduled' ? (
+            <>
+              <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Tháng này</div>
+                <div className="text-xl font-black text-gray-800 dark:text-white">
+                  8 <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
+                </div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Đã hoàn thành</div>
+                <div className="text-xl font-black text-gray-800 dark:text-white">
+                  4 <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
+                </div>
+              </div>
+            </>
+          ) : activeTab === 'booking' ? (
+            <>
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                <div className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mb-1">Có thể đặt</div>
+                <div className="text-xl font-black text-blue-700 dark:text-blue-300">
+                  {Object.values(availableBookings).reduce((sum, day) => sum + day.filter((item) => item.isBookable).length, 0)}{' '}
+                  <span className="text-xs text-blue-600 dark:text-blue-400">buổi</span>
+                </div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Không thể đặt</div>
+                <div className="text-xl font-black text-gray-800 dark:text-white">
+                  {Object.values(availableBookings).reduce((sum, day) => sum + day.filter((item) => !item.isBookable).length, 0)}{' '}
+                  <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                <div className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mb-1">Tổng yêu cầu</div>
+                <div className="text-xl font-black text-blue-700 dark:text-blue-300">
+                  {Object.values(memberRequests).reduce((sum, day) => sum + day.length, 0)}{' '}
+                  <span className="text-xs text-blue-600 dark:text-blue-400">yêu cầu</span>
+                </div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Chờ xác nhận</div>
+                <div className="text-xl font-black text-gray-800 dark:text-white">
+                  {Object.values(memberRequests).reduce(
+                    (sum, day) => sum + day.filter((request) => request.status === 'Chờ xác nhận').length,
+                    0
+                  )}{' '}
+                  <span className="text-xs text-gray-400 dark:text-gray-500">yêu cầu</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Workouts Detail Panel */}
       <div className="mt-6 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
         {!selectedDate ? (
           <div className="flex flex-col items-center justify-center h-40 gap-3">
             <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center text-3xl">
               📅
             </div>
-            <div className="text-sm text-gray-400 dark:text-gray-500">Chọn một ngày để xem lịch tập</div>
+            <div className="text-sm text-gray-400 dark:text-gray-500">
+              {activeTab === 'requests' ? 'Chọn một ngày để xem yêu cầu của bạn' : 'Chọn một ngày để xem lịch tập'}
+            </div>
           </div>
         ) : (
           <div>
             <div className="flex items-center justify-between mb-5">
               <div className="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                {dayNames[new Date(year, month, parseInt(selectedDate.split('-')[2])).getDay()]}, {selectedDate.split('-')[2]}/{String(month + 1).padStart(2, '0')}/{year}
+                {selectedDateObject ? dayNames[selectedDateObject.getDay()] : ''}, {selectedDateObject ? selectedDateObject.getDate() : ''}/
+                {selectedDateObject ? String(selectedDateObject.getMonth() + 1).padStart(2, '0') : ''}/
+                {selectedDateObject ? selectedDateObject.getFullYear() : ''}
               </div>
-              {selectedWorkouts && selectedWorkouts.length > 0 && (
+              {selectedWorkouts.length > 0 && (
                 <div className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                  {selectedWorkouts.length} buổi
+                  {selectedWorkouts.length} {activeTab === 'requests' ? 'yêu cầu' : 'buổi'}
                 </div>
               )}
             </div>
 
-            {!selectedWorkouts || selectedWorkouts.length === 0 ? (
-              <div className="text-sm text-gray-400 dark:text-gray-500">Không có buổi tập nào</div>
+            {selectedWorkouts.length === 0 ? (
+              <div className="text-sm text-gray-400 dark:text-gray-500">
+                {activeTab === 'requests' ? 'Chưa có yêu cầu nào' : 'Không có buổi tập nào'}
+              </div>
             ) : (
               <div>
                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
-                  Lịch hôm nay
+                  {activeTab === 'scheduled'
+                    ? 'Lịch tập hôm nay'
+                    : activeTab === 'booking'
+                    ? 'Các buổi có sẵn'
+                    : 'Yêu cầu của tôi'}
                 </div>
                 {selectedWorkouts.map((workout, idx) => (
                   <div
                     key={idx}
-                    className="bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-2.5 flex gap-3.5 relative overflow-hidden"
+                    className={`${
+                      activeTab === 'booking' && !workout.isBookable
+                        ? 'bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700'
+                        : 'bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800'
+                    } rounded-xl p-4 mb-2.5 flex gap-3.5 relative overflow-hidden transition-all`}
                   >
                     <div
                       className="absolute left-0 top-0 bottom-0 w-1"
-                      style={{
-                        backgroundColor:
-                          workout.status === 'Đã xong'
-                            ? '#16A34A'
-                            : workout.status === 'Chờ xác nhận'
-                            ? '#EAB308'
-                            : '#9CA3AF'
-                      }}
+                      style={{ backgroundColor: getAccentColor(workout) }}
                     />
 
                     <div className="flex flex-col items-center min-w-12">
-                      <div className="text-xs font-bold text-gray-700 dark:text-gray-300 font-semibold">
+                      <div
+                        className={`text-xs font-bold font-semibold ${
+                          activeTab === 'booking' && !workout.isBookable
+                            ? 'text-gray-500 dark:text-gray-400'
+                            : 'text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
                         {workout.startTime}
                       </div>
-                      <div className="w-px h-2 bg-gray-300 dark:bg-gray-600 my-1" />
+                      <div className="w-px h-2 my-1 bg-gray-300 dark:bg-gray-600" />
                       <div className="text-xs text-gray-400 dark:text-gray-500">{workout.endTime}</div>
                     </div>
 
                     <div className="flex-1 ml-2">
-                      <div className="text-sm font-bold text-gray-800 dark:text-white mb-2">{workout.name}</div>
+                      <div
+                        className={`text-sm font-bold mb-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
+                          activeTab === 'booking' && !workout.isBookable
+                            ? 'text-gray-600 dark:text-gray-400'
+                            : 'text-gray-800 dark:text-white'
+                        }`}
+                        onClick={() => setSelectedWorkout(workout)}
+                      >
+                        {workout.name}
+                      </div>
                       <div className="flex flex-wrap gap-1.5 mb-2">
-                        <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded">
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            activeTab === 'booking' && !workout.isBookable
+                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
+                          }`}
+                        >
                           {workout.location}
                         </span>
-                        <span className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            activeTab === 'booking' && !workout.isBookable
+                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                              : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                          }`}
+                        >
                           {workout.type}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        PT {workout.trainer}
+                      <div
+                        className={`text-xs ${
+                          activeTab === 'booking' && !workout.isBookable
+                            ? 'text-gray-500 dark:text-gray-500'
+                            : 'text-gray-500 dark:text-gray-400'
+                        }`}
+                      >
+                        <button
+                          onClick={() => setSelectedTrainer(workout.trainer)}
+                          className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer transition-colors"
+                        >
+                          PT {workout.trainer}
+                        </button>
                       </div>
                     </div>
 
-                    <div
-                      className={`text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap self-start ${
-                        workout.status === 'Đã xong'
-                          ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                          : workout.status === 'Chờ xác nhận'
-                          ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      {workout.status}
-                    </div>
+                    {activeTab === 'booking' ? (
+                      <div className="flex flex-col items-end gap-2">
+                        <div
+                          className={`text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap ${
+                            workout.isBookable
+                              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                              : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                          }`}
+                        >
+                          {workout.isBookable ? 'Có thể đặt' : 'Không thể đặt'}
+                        </div>
+                        {workout.isBookable && (
+                          <button
+                            onClick={() => setBookingForm({ ...workout, requestDate: selectedDate })}
+                            className="text-xs font-semibold px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                          >
+                            Đặt lịch ngay
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-end gap-2">
+                        <div
+                          className={`text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap ${getStatusBadgeClass(
+                            workout.status
+                          )}`}
+                        >
+                          {workout.status}
+                        </div>
+                        {activeTab === 'requests' && workout.status === 'Từ chối' && (
+                          <button
+                            onClick={() => setSelectedDeniedRequest(workout)}
+                            className="text-xs font-semibold px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
+                          >
+                            Chi tiết
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -270,6 +765,454 @@ const Schedule = () => {
           </div>
         )}
       </div>
+
+      {selectedWorkout && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40 p-4">
+          <div
+            className={`bg-white dark:bg-gray-950 rounded-xl w-full border border-gray-200 dark:border-gray-800 flex flex-col ${
+              activeTab === 'requests' ? 'max-w-xs max-h-[78vh]' : 'max-w-md'
+            }`}
+          >
+            <div
+              className={`flex items-center justify-between border-b border-gray-200 dark:border-gray-800 ${
+                activeTab === 'requests' ? 'p-4' : 'p-6'
+              }`}
+            >
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                {activeTab === 'requests' ? 'Chi tiết yêu cầu' : 'Chi tiết buổi tập'}
+              </h2>
+              <button
+                onClick={() => setSelectedWorkout(null)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+
+            <div
+              className={`overflow-y-auto ${
+                activeTab === 'requests' ? 'p-4 space-y-3 text-sm' : 'p-6 space-y-4'
+              }`}
+            >
+              <div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Tên buổi tập</div>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{selectedWorkout.name}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Thời gian bắt đầu</div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedWorkout.startTime}</p>
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Thời gian kết thúc</div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedWorkout.endTime}</p>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Giáo trình</div>
+                <p className="text-sm text-gray-900 dark:text-white bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-2 rounded-lg inline-block">
+                  {selectedWorkout.type}
+                </p>
+              </div>
+
+              <div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Địa điểm</div>
+                <p className="text-sm text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
+                  {selectedWorkout.location}
+                </p>
+              </div>
+
+              <div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Huấn luyện viên</div>
+                <button
+                  onClick={() => {
+                    setSelectedWorkout(null);
+                    setSelectedTrainer(selectedWorkout.trainer);
+                  }}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  {selectedWorkout.trainer}
+                </button>
+              </div>
+
+              {activeTab === 'requests' && selectedWorkout.status && (
+                <div>
+                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Trạng thái yêu cầu</div>
+                  <span
+                    className={`text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap inline-block ${getStatusBadgeClass(
+                      selectedWorkout.status
+                    )}`}
+                  >
+                    {selectedWorkout.status}
+                  </span>
+                </div>
+              )}
+
+              {activeTab === 'requests' && selectedWorkout.submittedAt && (
+                <div>
+                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Ngày gửi yêu cầu</div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedWorkout.submittedAt}</p>
+                </div>
+              )}
+
+              {activeTab === 'requests' && selectedWorkout.requestDetails?.curriculum && (
+                <div>
+                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Giáo trình mong muốn</div>
+                  <p className="text-sm text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
+                    {selectedWorkout.requestDetails.curriculum}
+                  </p>
+                </div>
+              )}
+
+              {activeTab === 'requests' && selectedWorkout.requestDetails?.notes && (
+                <div>
+                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Ghi chú thêm</div>
+                  <p className="text-sm text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
+                    {selectedWorkout.requestDetails.notes}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div
+              className={`flex gap-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 ${
+                activeTab === 'requests' ? 'p-4' : 'pt-4 p-6'
+              }`}
+            >
+                <button
+                  onClick={() => setSelectedWorkout(null)}
+                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Thoát
+                </button>
+                {activeTab === 'requests' && selectedWorkout.status === 'Từ chối' && (
+                  <button
+                    onClick={() => {
+                      setSelectedDeniedRequest(selectedWorkout);
+                      setSelectedWorkout(null);
+                    }}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Chi tiết
+                  </button>
+                )}
+                {activeTab === 'booking' && selectedWorkout.isBookable && (
+                  <button
+                    onClick={() => {
+                      setSelectedWorkout(null);
+                      setBookingForm({ ...selectedWorkout, requestDate: selectedDate });
+                    }}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Đặt lịch
+                  </button>
+                )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedDeniedRequest && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-950 rounded-xl max-w-sm w-full border border-gray-200 dark:border-gray-800">
+            <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-800">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Chi tiết từ chối</h2>
+              <button
+                onClick={() => setSelectedDeniedRequest(null)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Yêu cầu</div>
+                <p className="text-base font-bold text-gray-900 dark:text-white">{selectedDeniedRequest.name}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Thời gian</div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {selectedDeniedRequest.startTime} - {selectedDeniedRequest.endTime}
+                  </p>
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Trạng thái</div>
+                  <span
+                    className={`text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap inline-block ${getStatusBadgeClass(
+                      selectedDeniedRequest.status
+                    )}`}
+                  >
+                    {selectedDeniedRequest.status}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Lý do từ chối</div>
+                <p className="text-sm text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
+                  {selectedDeniedRequest.denyReason}
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+                <button
+                  onClick={() => setSelectedDeniedRequest(null)}
+                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Thoát
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {bookingForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40 p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-gray-950 rounded-xl max-w-md w-full my-auto border border-gray-200 dark:border-gray-800">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Yêu cầu đặt lịch</h2>
+              <button
+                onClick={closeBookingForm}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleBookingSubmit} className="p-6 space-y-4">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                <div className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-2">{bookingForm.name}</div>
+                <div className="text-xs text-blue-800 dark:text-blue-400">
+                  <div>
+                    {bookingForm.startTime} - {bookingForm.endTime} • {bookingForm.location}
+                  </div>
+                  <div>PT: {bookingForm.trainer}</div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Họ và tên *</label>
+                <input
+                  type="text"
+                  placeholder="Nhập họ và tên..."
+                  value={formData.fullName}
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  required
+                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Số điện thoại *</label>
+                <input
+                  type="tel"
+                  placeholder="Nhập số điện thoại..."
+                  value={formData.phoneNumber}
+                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                  required
+                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
+                <input
+                  type="email"
+                  placeholder="Nhập email..."
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Địa chỉ</label>
+                <input
+                  type="text"
+                  placeholder="Nhập địa chỉ..."
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Giáo trình mong muốn</label>
+                <input
+                  type="text"
+                  value={bookingForm.type}
+                  readOnly
+                  className="h-10 rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-200"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Ghi chú thêm</label>
+                <textarea
+                  placeholder="Nhập thông tin hoặc nhu cầu thêm..."
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  rows={3}
+                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+                <button
+                  type="button"
+                  onClick={closeBookingForm}
+                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Gửi yêu cầu
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {selectedTrainer && trainerInfo[selectedTrainer] && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-gray-950 rounded-xl max-w-2xl w-full my-auto border border-gray-200 dark:border-gray-800">
+            <div className="sticky top-0 flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Thông tin huấn luyện viên</h2>
+              <button
+                onClick={() => setSelectedTrainer(null)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex flex-col items-center justify-center">
+                  <div className="w-20 h-20 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-3xl font-semibold text-blue-600 dark:text-blue-400 border-2 border-blue-200 dark:border-blue-700 mb-4">
+                    {trainerInfo[selectedTrainer].name.charAt(0)}
+                  </div>
+                  <div className="text-center">
+                    <div className="text-base font-semibold text-gray-900 dark:text-white">{trainerInfo[selectedTrainer].name}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Năm sinh: {trainerInfo[selectedTrainer].birthYear}</div>
+                    <span className="inline-block mt-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded-full">
+                      TRAINER
+                    </span>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Thông tin cơ bản</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-xs text-gray-600 dark:text-gray-400">Họ và tên</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{trainerInfo[selectedTrainer].name}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-xs text-gray-600 dark:text-gray-400">Năm sinh</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{trainerInfo[selectedTrainer].birthYear}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-xs text-gray-600 dark:text-gray-400">Số điện thoại</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{trainerInfo[selectedTrainer].phone}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-xs text-gray-600 dark:text-gray-400">Email</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{trainerInfo[selectedTrainer].email}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-600 dark:text-gray-400">Chuyên môn</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{trainerInfo[selectedTrainer].specialization}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Giải thưởng</h3>
+                  <div className="space-y-3">
+                    {trainerInfo[selectedTrainer].awards.map((award, idx) => (
+                      <div key={idx} className="flex gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-sm flex-shrink-0">
+                          {award.icon}
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-900 dark:text-white">{award.title}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{award.org}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Kinh nghiệm</h3>
+                  <div className="space-y-3">
+                    {trainerInfo[selectedTrainer].experience.map((exp, idx) => (
+                      <div key={idx} className="flex gap-2.5">
+                        <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${idx === 0 ? 'bg-blue-600' : 'bg-blue-300'}`} />
+                        <div>
+                          <div className="text-sm text-gray-900 dark:text-white">{exp.position}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{exp.duration}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Số đo thể hình</h3>
+                <div className="grid grid-cols-4 gap-3">
+                  {Object.entries(trainerInfo[selectedTrainer].measurements).map(([key, val]) => {
+                    const labels = {
+                      height: 'Chiều cao',
+                      weight: 'Cân nặng',
+                      chest: 'Ngực',
+                      arm: 'Bắp tay',
+                      waist: 'Bụng',
+                      forearm: 'Cẳng tay',
+                      thigh: 'Đùi',
+                      calf: 'Bắp chuối'
+                    };
+                    return (
+                      <div key={key} className="bg-white dark:bg-gray-800/50 rounded-lg p-3">
+                        <div className="text-xs text-gray-600 dark:text-gray-400">{labels[key]}</div>
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
+                          {val.value} <span className="text-xs text-gray-600 dark:text-gray-400">{val.unit}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+                <button
+                  onClick={() => setSelectedTrainer(null)}
+                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Đóng
+                </button>
+                <button className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                  Liên hệ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

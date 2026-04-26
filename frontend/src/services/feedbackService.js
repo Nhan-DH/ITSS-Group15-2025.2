@@ -1,6 +1,6 @@
 import axios from '@/lib/axios';
 
-const IS_MOCK = true;
+const IS_MOCK = false; // Set to false to use real API
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const MOCK_FEEDBACKS = [
@@ -10,12 +10,19 @@ const MOCK_FEEDBACKS = [
 ];
 
 export const feedbackService = {
-  getFeedbacks: async () => {
+  getFeedbacks: async (page = 1, limit = 6, status = '') => {
     if (IS_MOCK) {
       await delay(500);
-      return MOCK_FEEDBACKS;
+      return { data: MOCK_FEEDBACKS, total: MOCK_FEEDBACKS.length, page, limit };
     }
-    return axios.get('/feedbacks');
+    const params = new URLSearchParams();
+    params.append('page', page);
+    params.append('limit', limit);
+    if (status) {
+      params.append('status', status);
+    }
+    const response = await axios.get(`/feedbacks?${params.toString()}`);
+    return response;
   },
 
   createFeedback: async (data) => {
@@ -31,6 +38,6 @@ export const feedbackService = {
       await delay(600);
       return { id, status, responseText };
     }
-    return axios.patch(`/feedbacks/${id}/status`, { status, responseText });
+    return axios.put(`/feedbacks/${id}`, { status, response_text: responseText });
   }
 };

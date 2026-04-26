@@ -202,3 +202,23 @@ type TrainingSessionResponse struct {
 	AttendanceStatus string    `json:"attendance_status"`
 	PTFeedback       string    `json:"pt_feedback"`
 }
+
+// Pagination Request
+type PaginationRequest struct {
+	Page  int `json:"page"`
+	Limit int `json:"limit"`
+}
+
+// Pagination Response
+type PaginationResponse struct {
+	Data       interface{} `json:"data"`
+	Page       int         `json:"page"`
+	Limit      int         `json:"limit"`
+	TotalItems int         `json:"total_items"`
+	TotalPages int         `json:"total_pages"`
+}
+
+// Feedback Filter Request
+type FeedbackFilterRequest struct {
+	Status string `json:"status"`
+}

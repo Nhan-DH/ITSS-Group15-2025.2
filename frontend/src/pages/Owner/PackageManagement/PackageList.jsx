@@ -1,13 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { usePackages } from '@/hooks/queries/usePackages';
+import { useDeletePackage, useUpdatePackageStatus } from '@/hooks/mutations/usePackageMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
+import Modal from '@/components/Common/Modal';
 import { formatPriceVND } from '@/utils/formatters';
 
 const PackageList = () => {
   const { data: packages, isLoading, isError } = usePackages();
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, pkg: null });
+  const deleteMutation = useDeletePackage();
+  const statusMutation = useUpdatePackageStatus();
+
+  const handleDelete = () => {
+    if (deleteModal.pkg) {
+      deleteMutation.mutate(deleteModal.pkg.id);
+      setDeleteModal({ isOpen: false, pkg: null });
+    }
+  };
+
+  const handleToggleStatus = (pkg) => {
+    const newIsActive = !pkg.is_active;
+    statusMutation.mutate({ id: pkg.id, isActive: newIsActive });
+  };
 
   // Tạo mock data fallback cho tình huống usePackages hook chưa có data thật
   const mockPackages = packages || [
@@ -60,33 +77,48 @@ const PackageList = () => {
               ) : (
                 mockPackages.map((pkg) => (
                   <TableRow key={pkg.id}>
-                    <TableCell className="font-semibold text-gray-900 dark:text-gray-100">{pkg.name}</TableCell>
+                    <TableCell className="font-semibold text-gray-900 dark:text-gray-100">{pkg.package_name || pkg.name}</TableCell>
                     <TableCell className="text-gray-600 dark:text-gray-300">
-                      {pkg.duration} {pkg.durationUnit}
+                      {pkg.duration_days ? `${pkg.duration_days} Ngày` : `${pkg.duration} ${pkg.durationUnit}`}
                     </TableCell>
                     <TableCell className="font-medium text-emerald-600 dark:text-emerald-400">
                       {formatPriceVND ? formatPriceVND(pkg.price) : `${pkg.price.toLocaleString('vi-VN')} đ`}
                     </TableCell>
                     <TableCell className="text-sm text-gray-500 max-w-[200px] truncate">
-                      {pkg.features?.join(", ")}
+                      {pkg.description || pkg.features?.join(", ") || 'Chưa có mô tả'}
                     </TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${
-                        pkg.status === 'active' 
+                        (pkg.is_active === true || pkg.status === 'active')
                           ? 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400' 
                           : 'bg-gray-50 text-gray-600 ring-gray-600/20 dark:bg-gray-800/50 dark:text-gray-400'
                       }`}>
-                        {pkg.status === 'active' ? 'Đang bán' : 'Bị ẩn'}
+                        {(pkg.is_active === true || pkg.status === 'active') ? 'Đang bán' : 'Bị ẩn'}
                       </span>
                     </TableCell>
                     <TableCell className="text-right pr-4">
                       <div className="flex items-center justify-end gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          title={pkg.is_active ? 'Ẩn gói' : 'Hiển thị gói'}
+                          className={`h-8 w-8 ${pkg.is_active ? 'text-green-500' : 'text-amber-500'} hidden sm:inline-flex`}
+                          onClick={() => handleToggleStatus(pkg)}
+                        >
+                          {pkg.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </Button>
                         <Link to={`/owner/packages/${pkg.id}/edit`}>
                           <Button variant="ghost" size="icon" title="Chỉnh sửa" className="h-8 w-8 text-blue-500 hidden sm:inline-flex">
                             <Edit className="h-4 w-4" />
                           </Button>
                         </Link>
-                        <Button variant="ghost" size="icon" title="Xóa" className="h-8 w-8 text-red-500 hidden sm:inline-flex">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          title="Xóa" 
+                          className="h-8 w-8 text-red-500 hidden sm:inline-flex"
+                          onClick={() => setDeleteModal({ isOpen: true, pkg })}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                         {/* Mobile view Action Fallback */}
@@ -100,6 +132,28 @@ const PackageList = () => {
           </Table>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, pkg: null })}
+        title="Xác nhận xóa gói tập"
+      >
+        <div className="p-4">
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            Bạn có chắc chắn muốn xóa gói tập <strong>{deleteModal.pkg?.name}</strong> không?
+          </p>
+          <p className="text-sm text-red-500 mb-4">Hành động này không thể hoàn tác.</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteModal({ isOpen: false, pkg: null })}>
+              Hủy
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

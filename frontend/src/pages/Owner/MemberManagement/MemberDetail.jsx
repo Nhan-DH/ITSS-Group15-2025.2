@@ -12,6 +12,7 @@ const MemberDetail = () => {
     fullName: "Nguyễn Văn Hội Viên",
     phone: "0901234567",
     email: "hoivien@activegym.vn",
+    gender: "Nam",
     status: "active",
     joinDate: "01/10/2024",
     packageEnds: "01/10/2025"
@@ -42,9 +43,11 @@ const MemberDetail = () => {
         {/* Info Card */}
         <div className="col-span-1 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
           <div className="flex flex-col items-center border-b border-gray-100 pb-6 dark:border-gray-800">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-blue-100 text-3xl font-bold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
-              {mockMember.fullName.charAt(0)}
-            </div>
+            <img 
+              src={(mockMember.gender || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'} 
+              alt="avatar" 
+              className="h-24 w-24 rounded-full object-cover border-4 border-white shadow-sm dark:border-gray-900"
+            />
             <h2 className="mt-4 text-xl font-bold text-gray-900 dark:text-white">{mockMember.fullName}</h2>
             <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{mockMember.memberCode}</p>
             <span className="mt-3 inline-flex items-center rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400">

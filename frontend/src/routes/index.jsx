@@ -28,19 +28,15 @@ import StaffPerformanceReport from '@/pages/Owner/Reports/StaffPerformanceReport
 import ReportsOverview from '@/pages/Owner/Reports/ReportsOverview';
 
 import ManagerDashboard from '@/pages/Manager/ManagerDashboard';
-import ManagerMemberList from '@/pages/Manager/MemberManagement/MemberList';
-import MemberListView from '@/pages/Manager/Members/MemberListView';
-import MemberDetailView from '@/pages/Manager/Members/MemberDetailView';
+import MemberListView from '@/pages/Manager/MemberManagement/MemberListView';
+import MemberDetailView from '@/pages/Manager/MemberManagement/MemberDetailView';
 import TransactionsView from '@/pages/Manager/Transactions/TransactionsView';
 import ScheduleCalendarView from '@/pages/Manager/Schedule/ScheduleCalendarView';
 import ComplaintsView from '@/pages/Manager/Complaints/ComplaintsView';
 import ReportsView from '@/pages/Manager/Reports/ReportsView';
-import RegisterMember from '@/pages/Manager/MemberManagement/RegisterMember';
-import ManagerMemberDetail from '@/pages/Manager/MemberManagement/MemberDetail';
-import ManagerMemberFormPage from '@/pages/Manager/MemberManagement/MemberForm';
-import ManagerRenewPackage from '@/pages/Manager/MemberManagement/RenewPackage';
 import ManagerFeedbackList from '@/pages/Manager/FeedbackManagement/FeedbackList';
 import ManagerPackageList from '@/pages/Manager/PackageManagement/PackageListView';
+import ManagerPackageDetail from '@/pages/Manager/PackageManagement/PackageDetail';
 
 import TrainerDashboard from '@/pages/Trainer/TrainerDashboard';
 import TrainerProfile from '@/pages/Trainer/TrainerProfile';
@@ -169,12 +165,8 @@ export const router = createBrowserRouter([
               { path: 'report', element: <ReportsView /> },
               // Packages (View Only)
               { path: 'packages', element: <ManagerPackageList /> },
-              // Legacy endpoints (kept for backward compatibility)
-              { path: 'members-old', element: <ManagerMemberList /> },
-              { path: 'members-old/:id', element: <ManagerMemberDetail /> },
-              { path: 'members-old/:id/edit', element: <ManagerMemberFormPage /> },
-              { path: 'members-old/register', element: <RegisterMember /> },
-              { path: 'members-old/renew', element: <ManagerRenewPackage /> },
+              { path: 'packages/:id', element: <ManagerPackageDetail /> },
+
               { path: 'feedbacks', element: <ManagerFeedbackList /> }
             ]
           }

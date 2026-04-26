@@ -6,7 +6,10 @@ type Equipment struct {
 	ID                  int       `json:"id"`
 	FacilityID          int       `json:"facility_id"`
 	EquipmentName       string    `json:"equipment_name"`
+	SerialNumber        string    `json:"serial_number"`
+	Quantity            int       `json:"quantity"`
 	Origin              string    `json:"origin"`
+	PurchaseDate        time.Time `json:"purchase_date"`
 	MaintenanceDeadline time.Time `json:"maintenance_deadline"`
 	Status              string    `json:"status"`
 }

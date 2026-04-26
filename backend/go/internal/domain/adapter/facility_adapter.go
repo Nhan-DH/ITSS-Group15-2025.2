@@ -6,6 +6,7 @@ type FacilityRepository interface {
 	Create(facility *entity.Facility) error
 	GetByID(id int) (*entity.Facility, error)
 	GetAll() ([]*entity.Facility, error)
+	GetAllPaginated(page, limit int) ([]*entity.Facility, int, error)
 	Update(facility *entity.Facility) error
 	Delete(id int) error
 }
