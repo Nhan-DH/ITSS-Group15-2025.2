@@ -57,6 +57,7 @@ import SendFeedback from '@/pages/Member/Feedback/SendFeedback';
 import ProfileInfo from '@/pages/Member/Profile/ProfileInfo';
 import EditProfile from '@/pages/Member/Profile/EditProfile';
 import Schedule from '@/pages/Member/Schedule/Schedule';
+import BookTraining from '@/pages/Member/BookTraining/BookTraining';
 
 export const router = createBrowserRouter([
   // Public Route: Bất kỳ ai cũng vào được (Login, Register)
@@ -105,6 +106,7 @@ export const router = createBrowserRouter([
             children: [
               { path: 'dashboard', element: <MemberDashboard /> },
               { path: 'schedule', element: <Schedule /> },
+              { path: 'book-training', element: <BookTraining /> },
               { path: 'my-package', element: <PackageInfo /> },
               { path: 'history', element: <TrainingHistory /> },
               { path: 'register', element: <RegisterGymPackage /> },

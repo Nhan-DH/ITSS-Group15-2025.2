@@ -1,25 +1,13 @@
 import React, { useState } from 'react';
-import { ArrowLeft, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { X } from 'lucide-react';
 
 const Schedule = () => {
-  const navigate = useNavigate();
   const DAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
   const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 10));
   const [selectedDate, setSelectedDate] = useState('2026-04-14');
-  const [activeTab, setActiveTab] = useState('scheduled');
   const [selectedTrainer, setSelectedTrainer] = useState(null);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
-  const [selectedDeniedRequest, setSelectedDeniedRequest] = useState(null);
-  const [bookingForm, setBookingForm] = useState(null);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    phoneNumber: '',
-    email: '',
-    address: '',
-    notes: ''
-  });
 
   const [workouts] = useState({
     '2026-04-07': [
@@ -48,114 +36,6 @@ const Schedule = () => {
     ],
     '2026-04-28': [
       { time: '16:00', startTime: '16:00', endTime: '17:30', name: 'Buổi tập Pilates', type: 'Pilates', location: 'Phòng A3', trainer: 'Phạm Thị D', status: 'Chờ xác nhận' }
-    ]
-  });
-
-  const [availableBookings] = useState({
-    '2026-04-07': [
-      { time: '07:00', startTime: '07:00', endTime: '08:30', name: 'Lớp Aerobic', type: 'Aerobic', location: 'Studio B', trainer: 'Lê Thị B', isBookable: true },
-      { time: '10:00', startTime: '10:00', endTime: '11:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A1', trainer: 'Nguyễn Minh', isBookable: false },
-      { time: '15:00', startTime: '15:00', endTime: '16:30', name: 'Lớp Zumba', type: 'Zumba', location: 'Studio A', trainer: 'Hoàng Văn E', isBookable: true }
-    ],
-    '2026-04-09': [
-      { time: '06:30', startTime: '06:30', endTime: '07:30', name: 'Lớp Yoga sáng', type: 'Yoga', location: 'Phòng A2', trainer: 'Trần Văn C', isBookable: true },
-      { time: '09:00', startTime: '09:00', endTime: '10:30', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng B2', trainer: 'Phạm Thị D', isBookable: false },
-      { time: '18:00', startTime: '18:00', endTime: '19:30', name: 'Lớp CrossFit', type: 'CrossFit', location: 'Studio CrossFit', trainer: 'Lê Thị B', isBookable: true }
-    ],
-    '2026-04-11': [
-      { time: '07:00', startTime: '07:00', endTime: '08:30', name: 'Lớp HIIT sáng', type: 'HIIT', location: 'Studio A', trainer: 'Hoàng Văn E', isBookable: true },
-      { time: '14:00', startTime: '14:00', endTime: '15:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C1', trainer: 'Nguyễn Minh', isBookable: false }
-    ],
-    '2026-04-14': [
-      { time: '08:00', startTime: '08:00', endTime: '09:30', name: 'Lớp Strength', type: 'Strength Training', location: 'Phòng B1', trainer: 'Trần Văn C', isBookable: true },
-      { time: '11:00', startTime: '11:00', endTime: '12:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A1', trainer: 'Phạm Thị D', isBookable: false }
-    ],
-    '2026-04-17': [
-      { time: '07:30', startTime: '07:30', endTime: '08:30', name: 'Lớp Pilates', type: 'Pilates', location: 'Phòng A3', trainer: 'Lê Thị B', isBookable: true },
-      { time: '13:00', startTime: '13:00', endTime: '14:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng B1', trainer: 'Hoàng Văn E', isBookable: false },
-      { time: '16:00', startTime: '16:00', endTime: '17:30', name: 'Lớp Boxing', type: 'Boxing', location: 'Studio B', trainer: 'Nguyễn Minh', isBookable: true }
-    ],
-    '2026-04-21': [
-      { time: '06:00', startTime: '06:00', endTime: '07:30', name: 'Lớp Cardio', type: 'Cardio', location: 'Studio A', trainer: 'Phạm Thị D', isBookable: true },
-      { time: '10:00', startTime: '10:00', endTime: '11:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C2', trainer: 'Trần Văn C', isBookable: false }
-    ],
-    '2026-04-23': [
-      { time: '18:00', startTime: '18:00', endTime: '19:30', name: 'Lớp Zumba tối', type: 'Zumba', location: 'Studio B', trainer: 'Lê Thị B', isBookable: true },
-      { time: '19:30', startTime: '19:30', endTime: '20:30', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A2', trainer: 'Hoàng Văn E', isBookable: false }
-    ],
-    '2026-04-25': [
-      { time: '07:00', startTime: '07:00', endTime: '08:30', name: 'Lớp Yoga', type: 'Yoga', location: 'Phòng B2', trainer: 'Nguyễn Minh', isBookable: true }
-    ],
-    '2026-04-29': [
-      { time: '09:00', startTime: '09:00', endTime: '10:30', name: 'Lớp Strength nâng cao', type: 'Strength Training', location: 'Phòng B1', trainer: 'Phạm Thị D', isBookable: true },
-      { time: '15:00', startTime: '15:00', endTime: '16:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C1', trainer: 'Lê Thị B', isBookable: false }
-    ]
-  });
-
-  const [memberRequests, setMemberRequests] = useState({
-    '2026-04-12': [
-      {
-        time: '18:00',
-        startTime: '18:00',
-        endTime: '19:30',
-        name: 'Lớp Zumba tối',
-        type: 'Zumba',
-        location: 'Studio B',
-        trainer: 'Lê Thị B',
-        status: 'Chờ xác nhận',
-        submittedAt: '2026-04-09',
-        requestDetails: {
-          fullName: 'Nguyễn Tuấn A',
-          phoneNumber: '090 123 4567',
-          email: 'tuana@gym.com',
-          address: 'Số 123 Đường B, Phường C, Quận 1, TPHCM',
-          curriculum: 'Zumba',
-          notes: 'Muốn tham gia lớp buổi tối sau giờ làm.'
-        }
-      }
-    ],
-    '2026-04-18': [
-      {
-        time: '07:30',
-        startTime: '07:30',
-        endTime: '08:30',
-        name: 'Lớp Pilates',
-        type: 'Pilates',
-        location: 'Phòng A3',
-        trainer: 'Lê Thị B',
-        status: 'Completed',
-        submittedAt: '2026-04-15',
-        requestDetails: {
-          fullName: 'Nguyễn Tuấn A',
-          phoneNumber: '090 123 4567',
-          email: 'tuana@gym.com',
-          address: 'Số 123 Đường B, Phường C, Quận 1, TPHCM',
-          curriculum: 'Pilates',
-          notes: 'Cần buổi tập nhẹ để cải thiện độ linh hoạt.'
-        }
-      }
-    ],
-    '2026-04-20': [
-      {
-        time: '16:00',
-        startTime: '16:00',
-        endTime: '17:00',
-        name: 'PT cá nhân',
-        type: 'Personal Training',
-        location: 'Phòng B1',
-        trainer: 'Phạm Thị D',
-        status: 'Từ chối',
-        submittedAt: '2026-04-17',
-        denyReason: 'Khung giờ này đã kín lịch cho huấn luyện viên. Vui lòng chọn buổi khác trong tuần.',
-        requestDetails: {
-          fullName: 'Nguyễn Tuấn A',
-          phoneNumber: '090 123 4567',
-          email: 'tuana@gym.com',
-          address: 'Số 123 Đường B, Phường C, Quận 1, TPHCM',
-          curriculum: 'Personal Training',
-          notes: 'Ưu tiên buổi chiều để tiện theo lịch làm việc.'
-        }
-      }
     ]
   });
 
@@ -329,23 +209,6 @@ const Schedule = () => {
     setSelectedDate(key);
   };
 
-  const resetFormData = () => {
-    setFormData({
-      fullName: '',
-      phoneNumber: '',
-      email: '',
-      address: '',
-      notes: ''
-    });
-  };
-
-  const currentData =
-    activeTab === 'scheduled'
-      ? workouts
-      : activeTab === 'booking'
-      ? availableBookings
-      : memberRequests;
-
   const previousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
   };
@@ -356,96 +219,31 @@ const Schedule = () => {
 
   const dayNames = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
   const monthName = currentDate.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' });
-  const selectedWorkouts = selectedDate ? currentData[selectedDate] || [] : [];
-  const requestDates = Object.keys(memberRequests).sort();
-  const defaultRequestDate = requestDates[0] || selectedDate;
+  const selectedWorkouts = selectedDate ? workouts[selectedDate] || [] : [];
   const selectedDateObject = selectedDate ? new Date(`${selectedDate}T00:00:00`) : null;
 
   const getCalendarDotClass = (item) => {
-    if (activeTab === 'scheduled') {
-      return item.status === 'Đã xong' ? 'bg-green-500' : 'bg-blue-400';
-    }
-    if (activeTab === 'requests') {
-      if (item.status === 'Đã xác nhận' || item.status === 'Completed') return 'bg-green-500';
-      if (item.status === 'Chờ xác nhận') return 'bg-yellow-400';
-      return 'bg-red-400';
-    }
-    return item.isBookable ? 'bg-blue-400' : 'bg-gray-400';
+    return item.status === 'Đã xong' ? 'bg-green-500' : 'bg-blue-400';
   };
 
   const getAccentColor = (item) => {
-    if (activeTab === 'scheduled') {
-      if (item.status === 'Đã xong') return '#16A34A';
-      if (item.status === 'Chờ xác nhận') return '#EAB308';
-      return '#9CA3AF';
-    }
-    if (activeTab === 'requests') {
-      if (item.status === 'Đã xác nhận' || item.status === 'Completed') return '#16A34A';
-      if (item.status === 'Chờ xác nhận') return '#EAB308';
-      return '#EF4444';
-    }
-    return item.isBookable ? '#3B82F6' : '#9CA3AF';
+    if (item.status === 'Đã xong') return '#16A34A';
+    if (item.status === 'Chờ xác nhận') return '#EAB308';
+    return '#9CA3AF';
   };
 
   const getStatusBadgeClass = (status) => {
-    if (status === 'Đã xong' || status === 'Đã xác nhận' || status === 'Completed') {
+    if (status === 'Đã xong') {
       return 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300';
     }
     if (status === 'Chờ xác nhận') {
       return 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300';
     }
-    if (status === 'Từ chối') {
-      return 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300';
-    }
     return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
-  };
-
-  const closeBookingForm = () => {
-    setBookingForm(null);
-    resetFormData();
-  };
-
-  const handleBookingSubmit = (e) => {
-    e.preventDefault();
-
-    const requestDate = bookingForm.requestDate || selectedDate;
-    const nextRequest = {
-      time: bookingForm.time,
-      startTime: bookingForm.startTime,
-      endTime: bookingForm.endTime,
-      name: bookingForm.name,
-      type: bookingForm.type,
-      location: bookingForm.location,
-      trainer: bookingForm.trainer,
-      status: 'Chờ xác nhận',
-      submittedAt: new Date().toISOString().slice(0, 10),
-      requestDetails: {
-        ...formData,
-        curriculum: bookingForm.type
-      }
-    };
-
-    setMemberRequests((prev) => ({
-      ...prev,
-      [requestDate]: [...(prev[requestDate] || []), nextRequest]
-    }));
-
-    alert('Yêu cầu đặt lịch của bạn đã được gửi thành công!');
-    setActiveTab('requests');
-    setSelectedDate(requestDate);
-    setBookingForm(null);
-    resetFormData();
   };
 
   return (
     <div className="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto w-full pb-20">
-      <button
-        onClick={() => navigate('/member')}
-        className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 mb-6"
-      >
-        
-      </button>
-
       <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl">
         <div className="p-5 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center justify-between mb-4">
@@ -478,7 +276,7 @@ const Schedule = () => {
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((dayObj, idx) => {
               const key = dayObj.isCurrentMonth ? dateKey(year, month, dayObj.day) : null;
-              const evs = key ? currentData[key] || [] : [];
+              const evs = key ? workouts[key] || [] : [];
               const isSelected = selectedDate === key;
 
               return (
@@ -507,102 +305,19 @@ const Schedule = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-100 dark:border-gray-800 p-4 flex gap-2">
-          <button
-            onClick={() => {
-              setActiveTab('scheduled');
-              setSelectedDate('2026-04-14');
-            }}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
-              activeTab === 'scheduled'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
-          >
-            Lịch tập của tôi
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('booking');
-              setSelectedDate('2026-04-07');
-            }}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
-              activeTab === 'booking'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
-          >
-            Đặt buổi tập
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('requests');
-              setSelectedDate(defaultRequestDate);
-            }}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
-              activeTab === 'requests'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
-          >
-            Yêu cầu của tôi
-          </button>
-        </div>
-
         <div className="border-t border-gray-100 dark:border-gray-800 p-4 grid grid-cols-2 gap-3">
-          {activeTab === 'scheduled' ? (
-            <>
-              <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Tháng này</div>
-                <div className="text-xl font-black text-gray-800 dark:text-white">
-                  8 <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Đã hoàn thành</div>
-                <div className="text-xl font-black text-gray-800 dark:text-white">
-                  4 <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
-                </div>
-              </div>
-            </>
-          ) : activeTab === 'booking' ? (
-            <>
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                <div className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mb-1">Có thể đặt</div>
-                <div className="text-xl font-black text-blue-700 dark:text-blue-300">
-                  {Object.values(availableBookings).reduce((sum, day) => sum + day.filter((item) => item.isBookable).length, 0)}{' '}
-                  <span className="text-xs text-blue-600 dark:text-blue-400">buổi</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Không thể đặt</div>
-                <div className="text-xl font-black text-gray-800 dark:text-white">
-                  {Object.values(availableBookings).reduce((sum, day) => sum + day.filter((item) => !item.isBookable).length, 0)}{' '}
-                  <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                <div className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mb-1">Tổng yêu cầu</div>
-                <div className="text-xl font-black text-blue-700 dark:text-blue-300">
-                  {Object.values(memberRequests).reduce((sum, day) => sum + day.length, 0)}{' '}
-                  <span className="text-xs text-blue-600 dark:text-blue-400">yêu cầu</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Chờ xác nhận</div>
-                <div className="text-xl font-black text-gray-800 dark:text-white">
-                  {Object.values(memberRequests).reduce(
-                    (sum, day) => sum + day.filter((request) => request.status === 'Chờ xác nhận').length,
-                    0
-                  )}{' '}
-                  <span className="text-xs text-gray-400 dark:text-gray-500">yêu cầu</span>
-                </div>
-              </div>
-            </>
-          )}
+          <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
+            <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Tháng này</div>
+            <div className="text-xl font-black text-gray-800 dark:text-white">
+              8 <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
+            </div>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
+            <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Đã hoàn thành</div>
+            <div className="text-xl font-black text-gray-800 dark:text-white">
+              4 <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -613,7 +328,7 @@ const Schedule = () => {
               📅
             </div>
             <div className="text-sm text-gray-400 dark:text-gray-500">
-              {activeTab === 'requests' ? 'Chọn một ngày để xem yêu cầu của bạn' : 'Chọn một ngày để xem lịch tập'}
+              Chọn một ngày để xem lịch tập của bạn
             </div>
           </div>
         ) : (
@@ -626,32 +341,24 @@ const Schedule = () => {
               </div>
               {selectedWorkouts.length > 0 && (
                 <div className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                  {selectedWorkouts.length} {activeTab === 'requests' ? 'yêu cầu' : 'buổi'}
+                  {selectedWorkouts.length} buổi
                 </div>
               )}
             </div>
 
             {selectedWorkouts.length === 0 ? (
               <div className="text-sm text-gray-400 dark:text-gray-500">
-                {activeTab === 'requests' ? 'Chưa có yêu cầu nào' : 'Không có buổi tập nào'}
+                Không có buổi tập nào
               </div>
             ) : (
               <div>
                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
-                  {activeTab === 'scheduled'
-                    ? 'Lịch tập hôm nay'
-                    : activeTab === 'booking'
-                    ? 'Các buổi có sẵn'
-                    : 'Yêu cầu của tôi'}
+                  Lịch tập hôm nay
                 </div>
                 {selectedWorkouts.map((workout, idx) => (
                   <div
                     key={idx}
-                    className={`${
-                      activeTab === 'booking' && !workout.isBookable
-                        ? 'bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700'
-                        : 'bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800'
-                    } rounded-xl p-4 mb-2.5 flex gap-3.5 relative overflow-hidden transition-all`}
+                    className="bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-2.5 flex gap-3.5 relative overflow-hidden transition-all"
                   >
                     <div
                       className="absolute left-0 top-0 bottom-0 w-1"
@@ -659,13 +366,7 @@ const Schedule = () => {
                     />
 
                     <div className="flex flex-col items-center min-w-12">
-                      <div
-                        className={`text-xs font-bold font-semibold ${
-                          activeTab === 'booking' && !workout.isBookable
-                            ? 'text-gray-500 dark:text-gray-400'
-                            : 'text-gray-700 dark:text-gray-300'
-                        }`}
-                      >
+                      <div className="text-xs font-bold font-semibold text-gray-700 dark:text-gray-300">
                         {workout.startTime}
                       </div>
                       <div className="w-px h-2 my-1 bg-gray-300 dark:bg-gray-600" />
@@ -674,42 +375,20 @@ const Schedule = () => {
 
                     <div className="flex-1 ml-2">
                       <div
-                        className={`text-sm font-bold mb-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
-                          activeTab === 'booking' && !workout.isBookable
-                            ? 'text-gray-600 dark:text-gray-400'
-                            : 'text-gray-800 dark:text-white'
-                        }`}
+                        className="text-sm font-bold mb-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-gray-800 dark:text-white"
                         onClick={() => setSelectedWorkout(workout)}
                       >
                         {workout.name}
                       </div>
                       <div className="flex flex-wrap gap-1.5 mb-2">
-                        <span
-                          className={`text-xs px-2 py-1 rounded ${
-                            activeTab === 'booking' && !workout.isBookable
-                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
-                          }`}
-                        >
+                        <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
                           {workout.location}
                         </span>
-                        <span
-                          className={`text-xs px-2 py-1 rounded ${
-                            activeTab === 'booking' && !workout.isBookable
-                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                              : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                          }`}
-                        >
+                        <span className="text-xs px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
                           {workout.type}
                         </span>
                       </div>
-                      <div
-                        className={`text-xs ${
-                          activeTab === 'booking' && !workout.isBookable
-                            ? 'text-gray-500 dark:text-gray-500'
-                            : 'text-gray-500 dark:text-gray-400'
-                        }`}
-                      >
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         <button
                           onClick={() => setSelectedTrainer(workout.trainer)}
                           className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer transition-colors"
@@ -719,45 +398,15 @@ const Schedule = () => {
                       </div>
                     </div>
 
-                    {activeTab === 'booking' ? (
-                      <div className="flex flex-col items-end gap-2">
-                        <div
-                          className={`text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap ${
-                            workout.isBookable
-                              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                              : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                          }`}
-                        >
-                          {workout.isBookable ? 'Có thể đặt' : 'Không thể đặt'}
-                        </div>
-                        {workout.isBookable && (
-                          <button
-                            onClick={() => setBookingForm({ ...workout, requestDate: selectedDate })}
-                            className="text-xs font-semibold px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
-                          >
-                            Đặt lịch ngay
-                          </button>
-                        )}
+                    <div className="flex flex-col items-end gap-2">
+                      <div
+                        className={`text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap ${getStatusBadgeClass(
+                          workout.status
+                        )}`}
+                      >
+                        {workout.status}
                       </div>
-                    ) : (
-                      <div className="flex flex-col items-end gap-2">
-                        <div
-                          className={`text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap ${getStatusBadgeClass(
-                            workout.status
-                          )}`}
-                        >
-                          {workout.status}
-                        </div>
-                        {activeTab === 'requests' && workout.status === 'Từ chối' && (
-                          <button
-                            onClick={() => setSelectedDeniedRequest(workout)}
-                            className="text-xs font-semibold px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
-                          >
-                            Chi tiết
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -768,19 +417,9 @@ const Schedule = () => {
 
       {selectedWorkout && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40 p-4">
-          <div
-            className={`bg-white dark:bg-gray-950 rounded-xl w-full border border-gray-200 dark:border-gray-800 flex flex-col ${
-              activeTab === 'requests' ? 'max-w-xs max-h-[78vh]' : 'max-w-md'
-            }`}
-          >
-            <div
-              className={`flex items-center justify-between border-b border-gray-200 dark:border-gray-800 ${
-                activeTab === 'requests' ? 'p-4' : 'p-6'
-              }`}
-            >
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {activeTab === 'requests' ? 'Chi tiết yêu cầu' : 'Chi tiết buổi tập'}
-              </h2>
+          <div className="bg-white dark:bg-gray-950 rounded-xl w-full max-w-md border border-gray-200 dark:border-gray-800 flex flex-col">
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Chi tiết buổi tập</h2>
               <button
                 onClick={() => setSelectedWorkout(null)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
@@ -789,11 +428,7 @@ const Schedule = () => {
               </button>
             </div>
 
-            <div
-              className={`overflow-y-auto ${
-                activeTab === 'requests' ? 'p-4 space-y-3 text-sm' : 'p-6 space-y-4'
-              }`}
-            >
+            <div className="overflow-y-auto p-6 space-y-4">
               <div>
                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Tên buổi tập</div>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">{selectedWorkout.name}</p>
@@ -837,248 +472,26 @@ const Schedule = () => {
                 </button>
               </div>
 
-              {activeTab === 'requests' && selectedWorkout.status && (
-                <div>
-                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Trạng thái yêu cầu</div>
-                  <span
-                    className={`text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap inline-block ${getStatusBadgeClass(
-                      selectedWorkout.status
-                    )}`}
-                  >
-                    {selectedWorkout.status}
-                  </span>
-                </div>
-              )}
-
-              {activeTab === 'requests' && selectedWorkout.submittedAt && (
-                <div>
-                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Ngày gửi yêu cầu</div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedWorkout.submittedAt}</p>
-                </div>
-              )}
-
-              {activeTab === 'requests' && selectedWorkout.requestDetails?.curriculum && (
-                <div>
-                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Giáo trình mong muốn</div>
-                  <p className="text-sm text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
-                    {selectedWorkout.requestDetails.curriculum}
-                  </p>
-                </div>
-              )}
-
-              {activeTab === 'requests' && selectedWorkout.requestDetails?.notes && (
-                <div>
-                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Ghi chú thêm</div>
-                  <p className="text-sm text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
-                    {selectedWorkout.requestDetails.notes}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div
-              className={`flex gap-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 ${
-                activeTab === 'requests' ? 'p-4' : 'pt-4 p-6'
-              }`}
-            >
-                <button
-                  onClick={() => setSelectedWorkout(null)}
-                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              <div>
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Trạng thái</div>
+                <span
+                  className={`text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap inline-block ${getStatusBadgeClass(
+                    selectedWorkout.status
+                  )}`}
                 >
-                  Thoát
-                </button>
-                {activeTab === 'requests' && selectedWorkout.status === 'Từ chối' && (
-                  <button
-                    onClick={() => {
-                      setSelectedDeniedRequest(selectedWorkout);
-                      setSelectedWorkout(null);
-                    }}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Chi tiết
-                  </button>
-                )}
-                {activeTab === 'booking' && selectedWorkout.isBookable && (
-                  <button
-                    onClick={() => {
-                      setSelectedWorkout(null);
-                      setBookingForm({ ...selectedWorkout, requestDate: selectedDate });
-                    }}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Đặt lịch
-                  </button>
-                )}
+                  {selectedWorkout.status}
+                </span>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {selectedDeniedRequest && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-950 rounded-xl max-w-sm w-full border border-gray-200 dark:border-gray-800">
-            <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-800">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Chi tiết từ chối</h2>
+            <div className="flex gap-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-6">
               <button
-                onClick={() => setSelectedDeniedRequest(null)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                onClick={() => setSelectedWorkout(null)}
+                className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
-                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                Thoát
               </button>
             </div>
-
-            <div className="p-5 space-y-4">
-              <div>
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Yêu cầu</div>
-                <p className="text-base font-bold text-gray-900 dark:text-white">{selectedDeniedRequest.name}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Thời gian</div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {selectedDeniedRequest.startTime} - {selectedDeniedRequest.endTime}
-                  </p>
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Trạng thái</div>
-                  <span
-                    className={`text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap inline-block ${getStatusBadgeClass(
-                      selectedDeniedRequest.status
-                    )}`}
-                  >
-                    {selectedDeniedRequest.status}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Lý do từ chối</div>
-                <p className="text-sm text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
-                  {selectedDeniedRequest.denyReason}
-                </p>
-              </div>
-
-              <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
-                <button
-                  onClick={() => setSelectedDeniedRequest(null)}
-                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                >
-                  Thoát
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {bookingForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40 p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-gray-950 rounded-xl max-w-md w-full my-auto border border-gray-200 dark:border-gray-800">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Yêu cầu đặt lịch</h2>
-              <button
-                onClick={closeBookingForm}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-              >
-                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-              </button>
-            </div>
-
-            <form onSubmit={handleBookingSubmit} className="p-6 space-y-4">
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <div className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-2">{bookingForm.name}</div>
-                <div className="text-xs text-blue-800 dark:text-blue-400">
-                  <div>
-                    {bookingForm.startTime} - {bookingForm.endTime} • {bookingForm.location}
-                  </div>
-                  <div>PT: {bookingForm.trainer}</div>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Họ và tên *</label>
-                <input
-                  type="text"
-                  placeholder="Nhập họ và tên..."
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  required
-                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Số điện thoại *</label>
-                <input
-                  type="tel"
-                  placeholder="Nhập số điện thoại..."
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                  required
-                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
-                <input
-                  type="email"
-                  placeholder="Nhập email..."
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Địa chỉ</label>
-                <input
-                  type="text"
-                  placeholder="Nhập địa chỉ..."
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Giáo trình mong muốn</label>
-                <input
-                  type="text"
-                  value={bookingForm.type}
-                  readOnly
-                  className="h-10 rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-200"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Ghi chú thêm</label>
-                <textarea
-                  placeholder="Nhập thông tin hoặc nhu cầu thêm..."
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows={3}
-                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white resize-none"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
-                <button
-                  type="button"
-                  onClick={closeBookingForm}
-                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Gửi yêu cầu
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

@@ -31,6 +31,7 @@ export const menus = {
     { title: "Đăng ký gói tập mới", path: "/member/register", icon: "ShoppingCart" },
     { title: "Gói tập của tôi", path: "/member/my-package", icon: "Package" },
     { title: "Lịch tập", path: "/member/schedule", icon: "Calendar" },
+    { title: "Đặt buổi tập", path: "/member/book-training", icon: "CalendarPlus" },
     { title: "Gia hạn", path: "/member/renew", icon: "CreditCard" },
     { title: "Gửi phản hồi", path: "/member/feedback", icon: "MessageCircle" },
     { title: "Hồ sơ cá nhân", path: "/member/profile", icon: "User" },
