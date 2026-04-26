@@ -157,15 +157,7 @@ const EquipmentList = () => {
                       </TableCell>
                       <TableCell className="text-right pr-4">
                         <div className="flex items-center justify-end gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            title={item.status === 'active' ? 'Bảo trì' : 'Kích hoạt'}
-                            className={`h-8 w-8 ${item.status === 'active' ? 'text-amber-500' : 'text-green-500'} hidden sm:inline-flex`}
-                            onClick={() => handleToggleStatus(item)}
-                          >
-                            {item.status === 'active' ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
-                          </Button>
+                          {/* Kích hoạt button removed as requested */}
                           <Link to={`/owner/equipment/${item.id}/edit`}>
                             <Button variant="ghost" size="icon" title="Chỉnh sửa" className="h-8 w-8 text-blue-500 hidden sm:inline-flex">
                               <Edit className="h-4 w-4" />

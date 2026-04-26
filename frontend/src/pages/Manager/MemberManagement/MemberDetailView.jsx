@@ -95,10 +95,7 @@ const MemberDetailView = () => {
                     <span>Quay lại</span>
                 </button>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={handleToggleStatus} isLoading={toggleStatusMutation.isPending}>
-                        <Pause size={16} />
-                        {member?.is_active ? 'Tạm dừng' : 'Kích hoạt lại'}
-                    </Button>
+                    {/* Kích hoạt button removed as requested */}
                     <Button variant="outline" size="sm">
                         <Edit2 size={16} />
                         Chỉnh sửa

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Edit, Trash2, Shield, UserCog, Eye, EyeOff, Lock, Key, ChevronLeft, ChevronRight, Power, PowerOff } from 'lucide-react';
 import { useEmployees } from '@/hooks/queries/useEmployees';
-import { useDeleteEmployee, useUpdateEmployeeStatus } from '@/hooks/mutations/useEmployeeMutation';
+import { useDeleteEmployee, useUpdateEmployeeStatus, useUpdateEmployee } from '@/hooks/mutations/useEmployeeMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
@@ -23,6 +23,7 @@ const StaffList = () => {
   const { data: employeeResponse, isLoading, isError } = useEmployees(page, limit);
   const deleteMutation = useDeleteEmployee();
   const statusMutation = useUpdateEmployeeStatus();
+  const updateMutation = useUpdateEmployee();
 
   const handleDelete = () => {
     if (deleteModal.staff) {
@@ -110,7 +111,7 @@ const StaffList = () => {
   };
 
   const handleSaveStaff = () => {
-    setStaffs((prev) => prev.map((item) => (item.id === staffForm.id ? staffForm : item)));
+    updateMutation.mutate({ id: staffForm.id, data: staffForm });
     setSelectedStaff(staffForm);
     setIsEditing(false);
   };
@@ -212,16 +213,7 @@ const StaffList = () => {
                     </TableCell>
                     <TableCell className="text-right pr-4">
                       <div className="flex items-center justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          title={staff.status === 'active' ? 'Ngừng hoạt động' : 'Kích hoạt'}
-                          className={`h-8 w-8 ${staff.status === 'active' ? 'text-amber-500' : 'text-green-500'}`}
-                          onClick={(e) => { e.stopPropagation(); handleToggleStatus(staff); }}
-                        >
-                          {staff.status === 'active' ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
-                        </Button>
+                        {/* Kích hoạt button removed as requested */}
                         <Button
                           type="button"
                           variant="ghost"
@@ -371,7 +363,9 @@ const StaffList = () => {
                 <Button variant="outline" onClick={() => { setIsEditing(false); setStaffForm(selectedStaff); }}>
                   Hủy
                 </Button>
-                <Button onClick={handleSaveStaff}>Lưu thay đổi</Button>
+                <Button onClick={handleSaveStaff} disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+                </Button>
               </>
             ) : (
               <>
@@ -385,64 +379,65 @@ const StaffList = () => {
         {staffForm && (
           <div className="space-y-5">
             <div className="flex items-center gap-4">
-              <img src={staffForm.photo} alt={staffForm.fullName} className="h-20 w-20 rounded-2xl object-cover" />
+              <img src={staffForm.photo || staffForm.Photo || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80'} alt={staffForm.full_name || staffForm.fullName || 'Avatar'} className="h-20 w-20 rounded-2xl object-cover" />
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Vai trò</p>
-                <p className="text-base font-semibold text-gray-900 dark:text-white">{staffForm.position}</p>
+                <p className="text-base font-semibold text-gray-900 dark:text-white">{staffForm.position || staffForm.Position}</p>
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Họ tên</label>
                 <input
-                  value={staffForm.fullName}
+                  value={staffForm.full_name || staffForm.fullName || staffForm.FullName || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, fullName: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, full_name: e.target.value, fullName: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Giới tính</label>
                 <input
-                  value={staffForm.gender}
+                  value={staffForm.gender || staffForm.Gender || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, gender: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, gender: e.target.value, Gender: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Ngày sinh</label>
                 <input
-                  value={staffForm.dob}
+                  type="date"
+                  value={staffForm.dob ? (staffForm.dob.split('T')[0] || staffForm.dob) : ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, dob: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, dob: e.target.value, DOB: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Chức vụ</label>
                 <input
-                  value={staffForm.position}
+                  value={staffForm.position || staffForm.Position || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, position: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, position: e.target.value, Position: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">SĐT</label>
                 <input
-                  value={staffForm.phone}
+                  value={staffForm.phone || staffForm.Phone || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value, Phone: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
                 <input
-                  value={staffForm.email}
+                  value={staffForm.email || staffForm.Email || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value, Email: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
@@ -450,9 +445,9 @@ const StaffList = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Địa chỉ</label>
               <textarea
-                value={staffForm.address}
+                value={staffForm.address || staffForm.Address || ''}
                 disabled={!isEditing}
-                onChange={(e) => setStaffForm({ ...staffForm, address: e.target.value })}
+                onChange={(e) => setStaffForm({ ...staffForm, address: e.target.value, Address: e.target.value })}
                 className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 rows={3}
               />

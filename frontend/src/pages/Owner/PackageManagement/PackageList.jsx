@@ -77,23 +77,23 @@ const PackageList = () => {
               ) : (
                 mockPackages.map((pkg) => (
                   <TableRow key={pkg.id}>
-                    <TableCell className="font-semibold text-gray-900 dark:text-gray-100">{pkg.name}</TableCell>
+                    <TableCell className="font-semibold text-gray-900 dark:text-gray-100">{pkg.package_name || pkg.name}</TableCell>
                     <TableCell className="text-gray-600 dark:text-gray-300">
-                      {pkg.duration} {pkg.durationUnit}
+                      {pkg.duration_days ? `${pkg.duration_days} Ngày` : `${pkg.duration} ${pkg.durationUnit}`}
                     </TableCell>
                     <TableCell className="font-medium text-emerald-600 dark:text-emerald-400">
                       {formatPriceVND ? formatPriceVND(pkg.price) : `${pkg.price.toLocaleString('vi-VN')} đ`}
                     </TableCell>
                     <TableCell className="text-sm text-gray-500 max-w-[200px] truncate">
-                      {pkg.features?.join(", ")}
+                      {pkg.description || pkg.features?.join(", ") || 'Chưa có mô tả'}
                     </TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${
-                        pkg.status === 'active' 
+                        (pkg.is_active === true || pkg.status === 'active')
                           ? 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400' 
                           : 'bg-gray-50 text-gray-600 ring-gray-600/20 dark:bg-gray-800/50 dark:text-gray-400'
                       }`}>
-                        {pkg.status === 'active' ? 'Đang bán' : 'Bị ẩn'}
+                        {(pkg.is_active === true || pkg.status === 'active') ? 'Đang bán' : 'Bị ẩn'}
                       </span>
                     </TableCell>
                     <TableCell className="text-right pr-4">

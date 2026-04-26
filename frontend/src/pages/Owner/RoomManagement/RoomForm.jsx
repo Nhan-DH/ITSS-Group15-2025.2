@@ -4,6 +4,8 @@ import RoomFormComponent from "@/components/Forms/RoomForm";
 import { ArrowLeft } from "lucide-react";
 import Button from "@/components/Common/Button";
 import { toast } from "@/utils/toast";
+import { facilityService } from "@/services/facilityService";
+import { useCreateFacility, useUpdateFacility } from "@/hooks/mutations/useFacilityMutation";
 
 const RoomFormPage = () => {
   const { id } = useParams();
@@ -13,35 +15,64 @@ const RoomFormPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [initialData, setInitialData] = useState(null);
 
+  const createMutation = useCreateFacility();
+  const updateMutation = useUpdateFacility();
+
   useEffect(() => {
     if (isEditing) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoading(true);
-      // Giả lập tải dữ liệu từ API
-      setTimeout(() => {
-        setInitialData({
-          name: "Phòng Yoga",
-          capacity: 20,
-          status: "active",
-          icon: "yoga",
+      facilityService.getFacilityById(id)
+        .then(response => {
+          const data = response.data || response;
+          setInitialData({
+            name: data.facility_name || data.name,
+            capacity: data.max_capacity || data.capacity,
+            status: data.status || "active",
+            icon: data.facility_type || "cardio",
+          });
+        })
+        .catch(err => {
+          toast.error("Lỗi khi tải thông tin phòng tập");
+          console.error(err);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
-        setIsLoading(false);
-      }, 500);
     }
   }, [id, isEditing]);
 
   const handleSubmit = (data) => {
-    console.log("Form data:", data);
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success(
-        isEditing
-          ? "Cập nhật thay đổi thành công!"
-          : "Đã tạo phòng tập mới thành công!",
+    const payload = {
+      facility_name: data.name,
+      max_capacity: parseInt(data.capacity, 10),
+      status: data.status,
+      facility_type: data.icon,
+    };
+
+    if (isEditing) {
+      updateMutation.mutate(
+        { id, data: payload },
+        {
+          onSuccess: () => {
+            setIsLoading(false);
+            navigate("/owner/rooms");
+          },
+          onError: () => setIsLoading(false)
+        }
       );
-      navigate("/owner/rooms");
-    }, 500);
+    } else {
+      createMutation.mutate(
+        payload,
+        {
+          onSuccess: () => {
+            setIsLoading(false);
+            navigate("/owner/rooms");
+          },
+          onError: () => setIsLoading(false)
+        }
+      );
+    }
   };
 
   if (isEditing && !initialData)

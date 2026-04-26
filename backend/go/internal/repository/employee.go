@@ -21,13 +21,13 @@ func (r *employeeRepository) Create(employee *entity.Employee) error {
 
 func (r *employeeRepository) GetByID(id int) (*entity.Employee, error) {
 	employee := &entity.Employee{}
-	query := `SELECT id, full_name, phone, position, salary, account_id, COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(email, ''), COALESCE(address, '') FROM "Employee" WHERE id = $1`
+	query := `SELECT id, full_name, COALESCE(phone, ''), position, salary, COALESCE(account_id, 0), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(email, ''), COALESCE(address, '') FROM "Employee" WHERE id = $1`
 	err := r.db.QueryRow(query, id).Scan(&employee.ID, &employee.FullName, &employee.Phone, &employee.Position, &employee.Salary, &employee.AccountID, &employee.Gender, &employee.DOB, &employee.Email, &employee.Address)
 	return employee, err
 }
 
 func (r *employeeRepository) GetAll() ([]*entity.Employee, error) {
-	rows, err := r.db.Query(`SELECT id, full_name, phone, position, salary, account_id, COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(email, ''), COALESCE(address, '') FROM "Employee"`)
+	rows, err := r.db.Query(`SELECT id, full_name, COALESCE(phone, ''), position, salary, COALESCE(account_id, 0), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(email, ''), COALESCE(address, '') FROM "Employee"`)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (r *employeeRepository) GetAllPaginated(page, limit int) ([]*entity.Employe
 	offset := (page - 1) * limit
 
 	// Get paginated data - simple query
-	query := `SELECT id, full_name, phone, position, salary, account_id, COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(email, ''), COALESCE(address, '') FROM "Employee" ORDER BY id DESC LIMIT $1 OFFSET $2`
+	query := `SELECT id, full_name, COALESCE(phone, ''), position, salary, COALESCE(account_id, 0), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(email, ''), COALESCE(address, '') FROM "Employee" ORDER BY id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
