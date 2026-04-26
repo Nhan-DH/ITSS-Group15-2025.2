@@ -106,7 +106,11 @@ const MemberDetailView = () => {
             {/* Member Card */}
             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
-                    <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-purple-400 to-blue-500 flex-shrink-0"></div>
+                    <img 
+                      src={(getMemberGender(member) || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'} 
+                      alt="avatar" 
+                      className="h-32 w-32 rounded-lg object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
+                    />
 
                     <div className="flex-1">
                         <div className="flex items-start justify-between gap-4">

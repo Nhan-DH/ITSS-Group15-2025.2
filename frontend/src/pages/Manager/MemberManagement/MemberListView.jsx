@@ -155,7 +155,11 @@ const MemberListView = () => {
                                 <div className="flex items-center justify-between">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-400 to-blue-500"></div>
+                                            <img 
+                                              src={(member.gender || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'} 
+                                              alt="avatar" 
+                                              className="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                                            />
                                             <div className="min-w-0 flex-1">
                                                 <h3 className="font-medium text-gray-900 dark:text-white">{getMemberName(member)}</h3>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">{getMemberPhone(member)}</p>
