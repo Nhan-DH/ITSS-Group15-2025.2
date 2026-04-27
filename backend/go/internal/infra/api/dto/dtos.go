@@ -112,6 +112,7 @@ type PackageResponse struct {
 	PackageName  string  `json:"package_name"`
 	DurationDays int     `json:"duration_days"`
 	Price        float64 `json:"price"`
+	Description  string  `json:"description"`
 }
 
 type PTDetailRequest struct {

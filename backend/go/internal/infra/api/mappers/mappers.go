@@ -58,7 +58,7 @@ func PackageRequestToEntity(req *dto.PackageRequest) *entity.MembershipPackage {
 }
 
 func PackageEntityToResponse(ent *entity.MembershipPackage) *dto.PackageResponse {
-	return &dto.PackageResponse{ID: ent.ID, CategoryID: ent.CategoryID, PackageName: ent.PackageName, DurationDays: ent.DurationDays, Price: ent.Price}
+	return &dto.PackageResponse{ID: ent.ID, CategoryID: ent.CategoryID, PackageName: ent.PackageName, DurationDays: ent.DurationDays, Price: ent.Price, Description: ent.Description}
 }
 
 func PTDetailRequestToEntity(req *dto.PTDetailRequest) *entity.PTDetail {

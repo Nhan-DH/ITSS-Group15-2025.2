@@ -45,7 +45,7 @@ func (r *packageRepository) GetAll() ([]*entity.MembershipPackage, error) {
 	var packages []*entity.MembershipPackage
 	for rows.Next() {
 		pkg := &entity.MembershipPackage{}
-		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive)
+		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description)
 		if err != nil {
 			return nil, err
 		}
