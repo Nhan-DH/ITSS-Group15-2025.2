@@ -34,8 +34,8 @@ axiosInstance.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    // Nếu token hết hạn (401), ép đăng xuất và chuyển về trang Login
-    if (error.response?.status === 401) {
+    // Nếu token hết hạn (401), ép đăng xuất và chuyển về trang Login (trừ request đăng nhập)
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
       useAuthStore.getState().logout();
       window.location.href = '/login';
     }

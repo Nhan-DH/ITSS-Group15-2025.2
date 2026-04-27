@@ -2,22 +2,15 @@ package repository
 
 import (
 	"database/sql"
+	"gym-management/internal/domain/adapter"
 	"gym-management/internal/domain/entity"
 )
-
-type TrainingBookingRepository interface {
-	Create(trainingBooking *entity.TrainingBooking) error
-	GetByID(id int) (*entity.TrainingBooking, error)
-	GetAll() ([]*entity.TrainingBooking, error)
-	Update(trainingBooking *entity.TrainingBooking) error
-	Delete(id int) error
-}
 
 type trainingBookingRepository struct {
 	db *sql.DB
 }
 
-func NewTrainingBookingRepository(db *sql.DB) TrainingBookingRepository {
+func NewTrainingBookingRepository(db *sql.DB) adapter.TrainingBookingRepository {
 	return &trainingBookingRepository{db: db}
 }
 
@@ -70,4 +63,22 @@ func (r *trainingBookingRepository) Delete(id int) error {
 	query := `DELETE FROM "TrainingBooking" WHERE id = $1`
 	_, err := r.db.Exec(query, id)
 	return err
+}
+
+func (r *trainingBookingRepository) GetByMemberID(memberID int) ([]*entity.TrainingBooking, error) {
+	query := `SELECT id, member_id, pt_id, requested_schedule, training_plan_note, status FROM "TrainingBooking" WHERE member_id = $1 ORDER BY id DESC`
+	rows, err := r.db.Query(query, memberID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var bookings []*entity.TrainingBooking
+	for rows.Next() {
+		var b entity.TrainingBooking
+		if err := rows.Scan(&b.ID, &b.MemberID, &b.PTID, &b.RequestedSchedule, &b.TrainingPlanNote, &b.Status); err != nil {
+			return nil, err
+		}
+		bookings = append(bookings, &b)
+	}
+	return bookings, nil
 }

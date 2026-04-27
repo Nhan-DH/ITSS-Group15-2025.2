@@ -9,4 +9,6 @@ type FeedbackRepository interface {
 	GetAllPaginated(page, limit int, status string) ([]*entity.Feedback, int, error)
 	Update(feedback *entity.Feedback) error
 	Delete(id int) error
+	GetByMemberID(memberID int) ([]*entity.Feedback, error)
+	UpdateStatus(id int, status, resolutionNote string) error
 }

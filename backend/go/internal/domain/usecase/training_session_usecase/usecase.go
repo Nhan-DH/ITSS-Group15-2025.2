@@ -12,23 +12,29 @@ type TrainingSessionUsecase interface {
 	GetAllTrainingSessions() ([]*entity.TrainingSession, error)
 	UpdateTrainingSession(trainingSession *entity.TrainingSession) error
 	DeleteTrainingSession(id int) error
+	GetTrainingHistoryByMemberID(memberID int) ([]*entity.TrainingSession, error)
+	GetUpcomingTrainingSessionsByMemberID(memberID int) ([]*entity.TrainingSession, error)
 }
 
 type trainingSessionUsecase struct {
-	create ICreateTrainingSessionUseCase
-	get    IGetTrainingSessionUseCase
-	list   IListTrainingSessionsUseCase
-	update IUpdateTrainingSessionUseCase
-	delete IDeleteTrainingSessionUseCase
+	create          ICreateTrainingSessionUseCase
+	get             IGetTrainingSessionUseCase
+	list            IListTrainingSessionsUseCase
+	update          IUpdateTrainingSessionUseCase
+	delete          IDeleteTrainingSessionUseCase
+	getPastByMember     IGetPastTrainingSessionsByMemberUseCase
+	getUpcomingByMember IGetUpcomingTrainingSessionsByMemberUseCase
 }
 
 func NewTrainingSessionUsecase(repo adapter.TrainingSessionRepository) TrainingSessionUsecase {
 	return &trainingSessionUsecase{
-		create: NewCreateTrainingSessionUseCase(repo),
-		get:    NewGetTrainingSessionUseCase(repo),
-		list:   NewListTrainingSessionsUseCase(repo),
-		update: NewUpdateTrainingSessionUseCase(repo),
-		delete: NewDeleteTrainingSessionUseCase(repo),
+		create:              NewCreateTrainingSessionUseCase(repo),
+		get:                 NewGetTrainingSessionUseCase(repo),
+		list:                NewListTrainingSessionsUseCase(repo),
+		update:              NewUpdateTrainingSessionUseCase(repo),
+		delete:              NewDeleteTrainingSessionUseCase(repo),
+		getPastByMember:     NewGetPastTrainingSessionsByMemberUseCase(repo),
+		getUpcomingByMember: NewGetUpcomingTrainingSessionsByMemberUseCase(repo),
 	}
 }
 
@@ -60,4 +66,12 @@ func (u *trainingSessionUsecase) UpdateTrainingSession(trainingSession *entity.T
 
 func (u *trainingSessionUsecase) DeleteTrainingSession(id int) error {
 	return u.delete.Execute(context.Background(), id)
+}
+
+func (u *trainingSessionUsecase) GetTrainingHistoryByMemberID(memberID int) ([]*entity.TrainingSession, error) {
+	return u.getPastByMember.Execute(context.Background(), memberID)
+}
+
+func (u *trainingSessionUsecase) GetUpcomingTrainingSessionsByMemberID(memberID int) ([]*entity.TrainingSession, error) {
+	return u.getUpcomingByMember.Execute(context.Background(), memberID)
 }

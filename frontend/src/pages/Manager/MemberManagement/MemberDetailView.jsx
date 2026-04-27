@@ -17,7 +17,12 @@ const Tabs = {
 const getMemberName = (member) => member?.full_name || 'N/A';
 const getMemberPhone = (member) => member?.phone || 'N/A';
 const getMemberEmail = (member) => member?.email || 'N/A';
-const getMemberGender = (member) => member?.gender || 'N/A';
+const GENDER_MAP = { male: 'Nam', female: 'Nữ', other: 'Khác', nam: 'Nam', nữ: 'Nữ', khác: 'Khác' };
+const getMemberGender = (member) => {
+    const raw = member?.gender;
+    if (!raw) return 'N/A';
+    return GENDER_MAP[raw.toLowerCase().trim()] ?? raw;
+};
 const getMemberDOB = (member) => member?.dob || 'N/A';
 const getMemberAddress = (member) => member?.address || 'N/A';
 const getMemberStatus = (member) => member?.is_active ? 'Đang hoạt động' : 'Tạm dừng';

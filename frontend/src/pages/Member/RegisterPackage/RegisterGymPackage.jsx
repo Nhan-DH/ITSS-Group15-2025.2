@@ -1,7 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, ArrowRight, CheckCircle2, Video, Image as ImageIcon, CreditCard, ShieldCheck, HelpCircle } from 'lucide-react';
+import { ShoppingCart, ArrowRight, CheckCircle2, Video, Image as ImageIcon, CreditCard, ShieldCheck, HelpCircle, Loader2 } from 'lucide-react';
 import Button from '@/components/Common/Button';
+import { packageService } from '@/services/packageService';
+
+// UI metadata bổ sung (description, image, video) — field này BE không có.
+// Dùng package_name từ BE để map vào.
+const LOCAL_METADATA = {
+  "Gói 1 Tháng Cơ Bản Nam": {
+    gender: "male", type: "normal", best: false,
+    description: "Trải nghiệm đầy đủ trang thiết bị tiêu chuẩn tại phòng tập. Phù hợp cho người mới bắt đầu.",
+    facilities: ["Sử dụng toàn bộ máy tập cardio và tạ", "Tủ để đồ cá nhân", "Truy cập lớp tập nhóm cơ bản"],
+    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+  },
+  "Gói 1 Tháng Cơ Bản Nữ": {
+    gender: "female", type: "normal", best: false,
+    description: "Không gian riêng biệt dành cho nữ. Phù hợp cho người mới bắt đầu.",
+    facilities: ["Sử dụng máy tập (khu vực nữ)", "Tủ để đồ cá nhân", "Truy cập lớp nhóm cơ bản", "Khu tập riêng biệt"],
+    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+  },
+  "Gói 6 Tháng VIP Nam Tặng 1": {
+    gender: "male", type: "vip", best: true,
+    description: "Gói tiết kiệm tặng thêm 1 tháng. Đầy đủ quyền lợi cao cấp.",
+    facilities: ["Phòng VIP thay đồ", "Xông hơi đá muối", "3 buổi PT miễn phí", "Yoga Master + Zumba"],
+    image: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&q=80&w=600",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+  },
+  "Gói 6 Tháng VIP Nữ Tặng 1": {
+    gender: "female", type: "vip", best: true,
+    description: "Khu vực VIP riêng cho nữ. Đầy đủ quyền lợi cao cấp.",
+    facilities: ["Phòng VIP nữ", "Xông hơi đá muối (nữ)", "3 buổi PT nữ", "Yoga Master + Zumba"],
+    image: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&q=80&w=600",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+  },
+  "Gói 12 Tháng VIP Nam": {
+    gender: "male", type: "vip", best: false,
+    description: "Trải nghiệm đẳng cấp cao nhất, cam kết dài hạn.",
+    facilities: ["Phòng VIP thay đồ", "Xông hơi không giới hạn", "3 buổi PT", "Yoga + Zumba", "InBody hàng tháng"],
+    image: "https://images.unsplash.com/photo-1571019614242-c5c5adee9f50?auto=format&fit=crop&q=80&w=600",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+  },
+  "Gói 12 Tháng VIP Nữ": {
+    gender: "female", type: "vip", best: false,
+    description: "Trải nghiệm đẳng cấp VIP riêng biệt dành cho nữ.",
+    facilities: ["Phòng VIP nữ", "Xông hơi (nữ)", "3 buổi PT nữ", "Yoga + Zumba", "InBody hàng tháng", "Khu VIP nữ"],
+    image: "https://images.unsplash.com/photo-1571019614242-c5c5adee9f50?auto=format&fit=crop&q=80&w=600",
+    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+  },
+};
+
+const formatPrice = (price) => {
+  if (typeof price === 'number') return price.toLocaleString('vi-VN') + ' đ';
+  return String(price);
+};
 
 const gymPackagesData = [
   { 
@@ -115,23 +168,64 @@ const gymPackagesData = [
 ];
 
 const RegisterGymPackage = () => {
-  // Separate packages by gender
-  const malePackages = gymPackagesData.filter(pkg => pkg.gender === 'male');
-  const femalePackages = gymPackagesData.filter(pkg => pkg.gender === 'female');
-  
-  const [selectedPkg, setSelectedPkg] = useState(malePackages[0]);
+  const [allPackages, setAllPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const handleSelectPackage = (pkg) => {
-    setSelectedPkg(pkg);
-  };
+  useEffect(() => {
+    packageService.getPackages()
+      .then((res) => {
+        const raw = res?.data ?? res;
+        const list = Array.isArray(raw) ? raw : [];
+        // Merge với local metadata để bổ sung UI fields
+        const merged = list.map((pkg) => {
+          const meta = LOCAL_METADATA[pkg.package_name] || {};
+          return {
+            id: pkg.id,
+            name: pkg.package_name || pkg.name || 'Gói tập',
+            price: formatPrice(pkg.price),
+            rawPrice: pkg.price,
+            gender: meta.gender || 'male',
+            type: meta.type || 'normal',
+            best: meta.best || false,
+            description: meta.description || pkg.description || 'Gói tập chất lượng cao.',
+            facilities: meta.facilities || [],
+            image: meta.image || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600',
+            videoUrl: meta.videoUrl || 'https://www.w3schools.com/html/mov_bbb.mp4',
+          };
+        });
+        setAllPackages(merged.length > 0 ? merged : gymPackagesData);
+      })
+      .catch(() => {
+        // Fallback sang local data nếu API lỗi
+        setAllPackages(gymPackagesData);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const malePackages = allPackages.filter(pkg => pkg.gender === 'male');
+  const femalePackages = allPackages.filter(pkg => pkg.gender === 'female');
+  const [selectedPkg, setSelectedPkg] = useState(null);
+
+  const currentSelected = selectedPkg || (malePackages[0] ?? allPackages[0] ?? null);
+
+  const handleSelectPackage = (pkg) => setSelectedPkg(pkg);
 
   const handleCheckout = () => {
-    navigate('/member/register/checkout', { state: { package: selectedPkg } });
+    navigate('/member/register/checkout', { state: { package: currentSelected } });
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto pb-20">
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Đăng Ký Gói Tập</h1>
         <p className="text-gray-500 text-sm mt-2">Chọn gói tập phù hợp với giới tính của bạn và hoàn tất thanh toán qua thẻ / Momo / VNPay.</p>
@@ -151,14 +245,14 @@ const RegisterGymPackage = () => {
                 <label 
                   key={pkg.id} 
                   onClick={() => handleSelectPackage(pkg)}
-                  className={`rounded-xl border-2 p-5 cursor-pointer transition-all flex items-center justify-between relative ${selectedPkg.id === pkg.id ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20 shadow-md' : 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 hover:border-blue-300'}`}
+                  className={`rounded-xl border-2 p-5 cursor-pointer transition-all flex items-center justify-between relative ${currentSelected?.id === pkg.id ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20 shadow-md' : 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 hover:border-blue-300'}`}
                 >
                   {pkg.best && <div className="absolute -top-3 right-4 bg-red-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-sm tracking-widest">Tiết kiệm nhất</div>}
                   <div className="flex items-center gap-4">
                     <input 
                       type="radio" 
                       name="package" 
-                      checked={selectedPkg.id === pkg.id} 
+                      checked={currentSelected?.id === pkg.id} 
                       onChange={() => handleSelectPackage(pkg)} 
                       className="h-5 w-5 text-blue-600 focus:ring-blue-500 cursor-pointer" 
                     />
@@ -186,14 +280,14 @@ const RegisterGymPackage = () => {
                 <label 
                   key={pkg.id} 
                   onClick={() => handleSelectPackage(pkg)}
-                  className={`rounded-xl border-2 p-5 cursor-pointer transition-all flex items-center justify-between relative ${selectedPkg.id === pkg.id ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20 shadow-md' : 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 hover:border-blue-300'}`}
+                  className={`rounded-xl border-2 p-5 cursor-pointer transition-all flex items-center justify-between relative ${currentSelected?.id === pkg.id ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20 shadow-md' : 'border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 hover:border-blue-300'}`}
                 >
                   {pkg.best && <div className="absolute -top-3 right-4 bg-red-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-sm tracking-widest">Tiết kiệm nhất</div>}
                   <div className="flex items-center gap-4">
                     <input 
                       type="radio" 
                       name="package" 
-                      checked={selectedPkg.id === pkg.id} 
+                      checked={currentSelected?.id === pkg.id} 
                       onChange={() => handleSelectPackage(pkg)} 
                       className="h-5 w-5 text-blue-600 focus:ring-blue-500 cursor-pointer" 
                     />
@@ -258,16 +352,16 @@ const RegisterGymPackage = () => {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Chi tiết gói</h2>
             
             <div className="mb-4 inline-block px-3 py-1 rounded-full text-xs font-semibold" style={{
-              backgroundColor: selectedPkg.gender === 'male' ? '#dbeafe' : '#fce7f3',
-              color: selectedPkg.gender === 'male' ? '#1e40af' : '#be185d'
+              backgroundColor: currentSelected?.gender === 'male' ? '#dbeafe' : '#fce7f3',
+              color: currentSelected?.gender === 'male' ? '#1e40af' : '#be185d'
             }}>
-              {selectedPkg.gender === 'male' ? 'Dành cho Nam' : 'Dành cho Nữ'}
+              {currentSelected?.gender === 'male' ? 'Dành cho Nam' : 'Dành cho Nữ'}
             </div>
 
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{selectedPkg.name}</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{currentSelected?.name}</h3>
             
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6 text-sm">
-              {selectedPkg.description}
+              {currentSelected?.description}
             </p>
 
             <div className="space-y-4 mb-8">
@@ -276,7 +370,7 @@ const RegisterGymPackage = () => {
                 Quyền lợi bao gồm
               </h4>
               <ul className="space-y-3">
-                {selectedPkg.facilities.map((fac, idx) => (
+                {(currentSelected?.facilities ?? []).map((fac, idx) => (
                   <li key={idx} className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400">
                     <div className="h-2 w-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
                     {fac}
@@ -291,7 +385,7 @@ const RegisterGymPackage = () => {
                   <ImageIcon className="h-4 w-4 text-blue-600" /> Không gian
                 </div>
                 <div className="rounded-lg overflow-hidden aspect-video border border-gray-200 dark:border-gray-800 group relative">
-                  <img src={selectedPkg.image} alt={selectedPkg.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  <img src={currentSelected?.image} alt={currentSelected?.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                 </div>
               </div>
               <div className="space-y-2">
@@ -302,9 +396,9 @@ const RegisterGymPackage = () => {
                   <video 
                     className="w-full h-full outline-none object-cover" 
                     controls 
-                    poster={selectedPkg.image}
+                    poster={currentSelected?.image}
                   >
-                    <source src={selectedPkg.videoUrl} type="video/mp4" />
+                    <source src={currentSelected?.videoUrl} type="video/mp4" />
                   </video>
                 </div>
               </div>

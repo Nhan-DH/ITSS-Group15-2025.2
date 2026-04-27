@@ -5,6 +5,8 @@ import "gym-management/internal/domain/entity"
 type SubscriptionRepository interface {
 	Create(sub *entity.Subscription) error
 	GetByID(id int) (*entity.Subscription, error)
+	GetLatestByMemberID(memberID int) (*entity.Subscription, error)
+	GetByMemberID(memberID int) ([]*entity.Subscription, error)
 	GetAll() ([]*entity.Subscription, error)
 	Update(sub *entity.Subscription) error
 	Delete(id int) error

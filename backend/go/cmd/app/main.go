@@ -45,7 +45,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 		if allowed[origin] {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 		}
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
@@ -101,11 +101,11 @@ func main() {
 	ptDetailUsecase := pt_detail_usecase.NewPTDetailUsecase(ptDetailRepo)
 
 	// Initialize handlers
-	memberHandler := handlers.NewMemberHandler(memberUsecase)
+	memberHandler := handlers.NewMemberHandler(memberUsecase, packageUsecase, subscriptionUsecase, feedbackUsecase, trainingBookingUsecase, trainingSessionUsecase)
 	employeeHandler := handlers.NewEmployeeHandler(employeeUsecase)
 	packageHandler := handlers.NewPackageHandler(packageUsecase)
 	equipmentHandler := handlers.NewEquipmentHandler(equipmentUsecase)
-	feedbackHandler := handlers.NewFeedbackHandler(feedbackUsecase)
+	feedbackHandler := handlers.NewFeedbackHandler(feedbackUsecase, memberUsecase)
 	roleHandler := handlers.NewRoleHandler(roleUsecase)
 	facilityHandler := handlers.NewFacilityHandler(facilityUsecase)
 	accountHandler := handlers.NewAccountHandler(accountUsecase)

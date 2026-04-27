@@ -108,6 +108,33 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 	return members, total, nil
 }
 
+type memberScanner interface {
+	Scan(dest ...interface{}) error
+}
+
+func scanMember(scanner memberScanner, member *entity.Member) error {
+	var dob sql.NullTime
+	if err := scanner.Scan(
+		&member.ID,
+		&member.FullName,
+		&member.Phone,
+		&member.Email,
+		&member.Gender,
+		&dob,
+		&member.Address,
+		&member.AccountID,
+		&member.IsActive,
+	); err != nil {
+		return err
+	}
+
+	if dob.Valid {
+		member.DOB = dob.Time
+	}
+
+	return nil
+}
+
 func (r *memberRepository) Update(member *entity.Member) error {
 	var accountID interface{} = member.AccountID
 	if member.AccountID == 0 {

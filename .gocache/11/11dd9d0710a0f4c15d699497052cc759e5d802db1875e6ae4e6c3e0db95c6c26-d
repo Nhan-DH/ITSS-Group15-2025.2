@@ -1,0 +1,14 @@
+./account_adapter.go
+./auth_adapter.go
+./employee_adapter.go
+./equipment_adapter.go
+./facility_adapter.go
+./feedback_adapter.go
+./member_adapter.go
+./package_adapter.go
+./pt_detail_adapter.go
+./role_adapter.go
+./service_category_adapter.go
+./subscription_adapter.go
+./training_booking_adapter.go
+./training_session_adapter.go

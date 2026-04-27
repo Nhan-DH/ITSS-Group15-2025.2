@@ -99,7 +99,7 @@ export const router = createBrowserRouter([
           // Member Dashboard
           {
             path: 'member',
-            element: <RoleBasedRoute allowedRoles={['member', 'owner', 'manager']} />,
+            element: <RoleBasedRoute allowedRoles={['member']} />,
             children: [
               { path: 'dashboard', element: <MemberDashboard /> },
               { path: 'schedule', element: <Schedule /> },
