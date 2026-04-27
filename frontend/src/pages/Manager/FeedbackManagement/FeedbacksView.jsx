@@ -5,10 +5,10 @@ import Input from '@/components/Common/Input';
 import Badge from '@/components/Common/Badge';
 import Modal from '@/components/Common/Modal';
 import { useFeedbacks } from '@/hooks/queries/useFeedbacks';
+import { useUpdateFeedbackStatus } from '@/hooks/mutations/useFeedbackMutations';
 
 const statusConfig = {
     pending: { label: 'Chờ xử lý', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
-    processing: { label: 'Đang xử lý', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
     resolved: { label: 'Đã xử lý', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' }
 };
 
@@ -17,8 +17,12 @@ const FeedbacksView = () => {
     const [statusFilter, setStatusFilter] = useState('all');
     const [selectedFeedback, setSelectedFeedback] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [showProcessModal, setShowProcessModal] = useState(false);
+    const [processingNote, setProcessingNote] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
+    const { mutate: updateFeedback } = useUpdateFeedbackStatus();
     const { data: response, isLoading } = useFeedbacks(1, 10, statusFilter === 'all' ? '' : statusFilter);
-    
+
     const feedbacks = response?.data || [];
 
     // Filter feedbacks by search term
@@ -43,9 +47,8 @@ const FeedbacksView = () => {
     const getStatusStats = () => {
         return {
             total: feedbacks.length,
-            pending: feedbacks.filter(f => f.status === 'pending').length,
-            processing: feedbacks.filter(f => f.status === 'processing').length,
-            resolved: feedbacks.filter(f => f.status === 'resolved').length
+            pending: feedbacks.filter(f => f.status === 'Pending').length,
+            resolved: feedbacks.filter(f => f.status === 'Resolved').length
         };
     };
 
@@ -78,7 +81,7 @@ const FeedbacksView = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
                     <p className="text-sm text-gray-500 dark:text-gray-400">Tổng phản hồi</p>
                     <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
@@ -86,10 +89,6 @@ const FeedbacksView = () => {
                 <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
                     <p className="text-sm text-gray-500 dark:text-gray-400">Chưa xử lý</p>
                     <p className="mt-1 text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pending}</p>
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Đang xử lý</p>
-                    <p className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.processing}</p>
                 </div>
                 <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
                     <p className="text-sm text-gray-500 dark:text-gray-400">Đã xử lý</p>
@@ -122,7 +121,6 @@ const FeedbacksView = () => {
                     >
                         <option value="all">Tất cả trạng thái</option>
                         <option value="pending">Chưa xử lý</option>
-                        <option value="processing">Đang xử lý</option>
                         <option value="resolved">Đã xử lý</option>
                     </select>
                 </div>
@@ -154,8 +152,8 @@ const FeedbacksView = () => {
                                     <div className="mb-2 flex flex-wrap items-center gap-2">
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{feedback.member_name}</h3>
                                         <div>{renderStars(feedback.rating)}</div>
-                                        <Badge className={statusConfig[feedback.status]?.color || 'bg-gray-100'}>
-                                            {statusConfig[feedback.status]?.label || feedback.status}
+                                        <Badge className={statusConfig[feedback.status?.toLowerCase()]?.color || 'bg-gray-100'}>
+                                            {statusConfig[feedback.status?.toLowerCase()]?.label || feedback.status}
                                         </Badge>
                                     </div>
 
@@ -200,8 +198,8 @@ const FeedbacksView = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Trạng thái</p>
-                                <Badge className={statusConfig[selectedFeedback.status]?.color || 'bg-gray-100'}>
-                                    {statusConfig[selectedFeedback.status]?.label || selectedFeedback.status}
+                                <Badge className={statusConfig[selectedFeedback.status?.toLowerCase()]?.color || 'bg-gray-100'}>
+                                    {statusConfig[selectedFeedback.status?.toLowerCase()]?.label || selectedFeedback.status}
                                 </Badge>
                             </div>
                         </div>
@@ -214,11 +212,83 @@ const FeedbacksView = () => {
                         )}
 
                         <div className="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
-                            {selectedFeedback.status !== 'resolved' && (
-                                <Button>Đánh dấu đã xử lý</Button>
+                            {selectedFeedback.status === 'Pending' && (
+                                <Button onClick={() => setShowProcessModal(true)}>Xử lý</Button>
                             )}
                             <Button variant="outline" onClick={() => setShowDetailModal(false)}>
                                 Đóng
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* Process Modal */}
+            {showProcessModal && selectedFeedback && (
+                <Modal
+                    isOpen={showProcessModal}
+                    onClose={() => {
+                        setShowProcessModal(false);
+                        setProcessingNote('');
+                    }}
+                    title="Xử lý phản hồi"
+                >
+                    <div className="space-y-4">
+                        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{selectedFeedback.member_name}</h3>
+                            <p className="text-gray-600 dark:text-gray-400">{selectedFeedback.content}</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                Ghi chú xử lý
+                            </label>
+                            <textarea
+                                value={processingNote}
+                                onChange={(e) => setProcessingNote(e.target.value)}
+                                placeholder="Nhập ghi chú về cách xử lý phản hồi này..."
+                                rows="4"
+                                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 placeholder-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 focus:border-blue-500 focus:outline-none dark:focus:border-blue-500"
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setShowProcessModal(false);
+                                    setProcessingNote('');
+                                }}
+                                disabled={isProcessing}
+                            >
+                                Hủy
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    if (!processingNote.trim()) {
+                                        alert('Vui lòng nhập ghi chú xử lý');
+                                        return;
+                                    }
+                                    setIsProcessing(true);
+                                    updateFeedback(
+                                        { id: selectedFeedback.id, status: 'Resolved', responseText: processingNote },
+                                        {
+                                            onSuccess: () => {
+                                                setShowProcessModal(false);
+                                                setShowDetailModal(false);
+                                                setProcessingNote('');
+                                                setIsProcessing(false);
+                                                setSelectedFeedback(null);
+                                            },
+                                            onError: () => {
+                                                setIsProcessing(false);
+                                            }
+                                        }
+                                    );
+                                }}
+                                disabled={isProcessing}
+                            >
+                                {isProcessing ? 'Đang xử lý...' : 'Gửi'}
                             </Button>
                         </div>
                     </div>
