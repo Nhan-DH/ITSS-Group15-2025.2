@@ -21,13 +21,13 @@ func (r *feedbackRepository) Create(feedback *entity.Feedback) error {
 
 func (r *feedbackRepository) GetByID(id int) (*entity.Feedback, error) {
 	feedback := &entity.Feedback{}
-	query := `SELECT id, member_id, processor_id, equipment_id, content, sent_at, resolution_note, status FROM "Feedback" WHERE id = $1`
+	query := `SELECT id, COALESCE(member_id, 0), COALESCE(processor_id, 0), COALESCE(equipment_id, 0), COALESCE(content, ''), sent_at, COALESCE(resolution_note, ''), COALESCE(status, '') FROM "Feedback" WHERE id = $1`
 	err := r.db.QueryRow(query, id).Scan(&feedback.ID, &feedback.MemberID, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status)
 	return feedback, err
 }
 
 func (r *feedbackRepository) GetAll() ([]*entity.Feedback, error) {
-	rows, err := r.db.Query(`SELECT id, member_id, processor_id, equipment_id, content, sent_at, resolution_note, status FROM "Feedback"`)
+	rows, err := r.db.Query(`SELECT id, COALESCE(member_id, 0), COALESCE(processor_id, 0), COALESCE(equipment_id, 0), COALESCE(content, ''), sent_at, COALESCE(resolution_note, ''), COALESCE(status, '') FROM "Feedback"`)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 	var err error
 
 	if status != "" {
-		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0), 'service'
+		query = `SELECT f.id, COALESCE(f.member_id, 0), COALESCE(m.full_name, 'Unknown'), COALESCE(f.processor_id, 0), COALESCE(f.equipment_id, 0), COALESCE(f.content, ''), f.sent_at, COALESCE(f.resolution_note, ''), COALESCE(f.status, ''), COALESCE(f.rating, 0), 'service'
 			FROM "Feedback" f
 			LEFT JOIN "Member" m ON f.member_id = m.id
 			WHERE f.status = $1 
@@ -81,7 +81,7 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 			LIMIT $2 OFFSET $3`
 		rows, err = r.db.Query(query, status, limit, offset)
 	} else {
-		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0), 'service'
+		query = `SELECT f.id, COALESCE(f.member_id, 0), COALESCE(m.full_name, 'Unknown'), COALESCE(f.processor_id, 0), COALESCE(f.equipment_id, 0), COALESCE(f.content, ''), f.sent_at, COALESCE(f.resolution_note, ''), COALESCE(f.status, ''), COALESCE(f.rating, 0), 'service'
 			FROM "Feedback" f
 			LEFT JOIN "Member" m ON f.member_id = m.id
 			ORDER BY f.id DESC 
@@ -107,8 +107,21 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 }
 
 func (r *feedbackRepository) Update(feedback *entity.Feedback) error {
+	var equipmentID interface{} = feedback.EquipmentID
+	if feedback.EquipmentID == 0 {
+		equipmentID = nil
+	}
+	var processorID interface{} = feedback.ProcessorID
+	if feedback.ProcessorID == 0 {
+		processorID = nil
+	}
+	var memberID interface{} = feedback.MemberID
+	if feedback.MemberID == 0 {
+		memberID = nil
+	}
+
 	query := `UPDATE "Feedback" SET member_id = $1, processor_id = $2, equipment_id = $3, content = $4, sent_at = $5, resolution_note = $6, status = $7 WHERE id = $8`
-	_, err := r.db.Exec(query, feedback.MemberID, feedback.ProcessorID, feedback.EquipmentID, feedback.Content, feedback.SentAt, feedback.ResolutionNote, feedback.Status, feedback.ID)
+	_, err := r.db.Exec(query, memberID, processorID, equipmentID, feedback.Content, feedback.SentAt, feedback.ResolutionNote, feedback.Status, feedback.ID)
 	return err
 }
 

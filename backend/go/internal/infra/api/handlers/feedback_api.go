@@ -88,9 +88,26 @@ func (h *FeedbackHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FeedbackHandler) Update(w http.ResponseWriter, r *http.Request) {
-	var feedback entity.Feedback
-	json.NewDecoder(r.Body).Decode(&feedback)
-	err := h.usecase.UpdateFeedback(&feedback)
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
+	var req map[string]interface{}
+	json.NewDecoder(r.Body).Decode(&req)
+
+	existing, err := h.usecase.GetFeedbackByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if status, ok := req["status"].(string); ok {
+		existing.Status = status
+	}
+	if responseText, ok := req["response_text"].(string); ok {
+		existing.ResolutionNote = responseText
+	} else if resolutionNote, ok := req["resolution_note"].(string); ok {
+		existing.ResolutionNote = resolutionNote
+	}
+
+	err = h.usecase.UpdateFeedback(existing)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
