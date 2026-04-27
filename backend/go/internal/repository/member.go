@@ -16,19 +16,23 @@ func NewMemberRepository(db *sql.DB) adapter.MemberRepository {
 }
 
 func (r *memberRepository) Create(member *entity.Member) error {
+	var accountID interface{} = member.AccountID
+	if member.AccountID == 0 {
+		accountID = nil
+	}
 	query := `INSERT INTO "Member" (full_name, phone, email, gender, dob, address, account_id, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
-	return r.db.QueryRow(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, member.AccountID, member.IsActive).Scan(&member.ID)
+	return r.db.QueryRow(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, accountID, member.IsActive).Scan(&member.ID)
 }
 
 func (r *memberRepository) GetByID(id int) (*entity.Member, error) {
 	member := &entity.Member{}
-	query := `SELECT id, full_name, COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), COALESCE(is_active, true) FROM "Member" WHERE id = $1`
+	query := `SELECT id, COALESCE(full_name, ''), COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), COALESCE(is_active, true) FROM "Member" WHERE id = $1`
 	err := r.db.QueryRow(query, id).Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive)
 	return member, err
 }
 
 func (r *memberRepository) GetAll() ([]*entity.Member, error) {
-	rows, err := r.db.Query(`SELECT id, full_name, COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), COALESCE(is_active, true) FROM "Member"`)
+	rows, err := r.db.Query(`SELECT id, COALESCE(full_name, ''), COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), COALESCE(is_active, true) FROM "Member"`)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +62,7 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 	offset := (page - 1) * limit
 
 	// Get paginated data
-	query := `SELECT id, full_name, COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), COALESCE(is_active, true) FROM "Member" ORDER BY id DESC LIMIT $1 OFFSET $2`
+	query := `SELECT id, COALESCE(full_name, ''), COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), COALESCE(is_active, true) FROM "Member" ORDER BY id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -82,8 +86,12 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 }
 
 func (r *memberRepository) Update(member *entity.Member) error {
+	var accountID interface{} = member.AccountID
+	if member.AccountID == 0 {
+		accountID = nil
+	}
 	query := `UPDATE "Member" SET full_name = $1, phone = $2, email = $3, gender = $4, dob = $5, address = $6, account_id = $7, is_active = $8 WHERE id = $9`
-	_, err := r.db.Exec(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, member.AccountID, member.IsActive, member.ID)
+	_, err := r.db.Exec(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, accountID, member.IsActive, member.ID)
 	return err
 }
 

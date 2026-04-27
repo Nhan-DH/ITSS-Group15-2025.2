@@ -15,19 +15,23 @@ func NewPackageRepository(db *sql.DB) adapter.MembershipPackageRepository {
 }
 
 func (r *packageRepository) Create(pkg *entity.MembershipPackage) error {
+	var categoryID interface{} = pkg.CategoryID
+	if pkg.CategoryID == 0 {
+		categoryID = nil
+	}
 	query := `INSERT INTO "MembershipPackage" (category_id, package_name, duration_days, price) VALUES ($1, $2, $3, $4) RETURNING id`
-	return r.db.QueryRow(query, pkg.CategoryID, pkg.PackageName, pkg.DurationDays, pkg.Price).Scan(&pkg.ID)
+	return r.db.QueryRow(query, categoryID, pkg.PackageName, pkg.DurationDays, pkg.Price).Scan(&pkg.ID)
 }
 
 func (r *packageRepository) GetByID(id int) (*entity.MembershipPackage, error) {
 	pkg := &entity.MembershipPackage{}
-	query := `SELECT id, category_id, package_name, duration_days, price, COALESCE(is_active, true) FROM "MembershipPackage" WHERE id = $1`
+	query := `SELECT id, COALESCE(category_id, 0), COALESCE(package_name, ''), COALESCE(duration_days, 0), COALESCE(price, 0), COALESCE(is_active, true) FROM "MembershipPackage" WHERE id = $1`
 	err := r.db.QueryRow(query, id).Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive)
 	return pkg, err
 }
 
 func (r *packageRepository) GetAll() ([]*entity.MembershipPackage, error) {
-	rows, err := r.db.Query(`SELECT id, category_id, package_name, duration_days, price, COALESCE(is_active, true) FROM "MembershipPackage"`)
+	rows, err := r.db.Query(`SELECT id, COALESCE(category_id, 0), COALESCE(package_name, ''), COALESCE(duration_days, 0), COALESCE(price, 0), COALESCE(is_active, true) FROM "MembershipPackage"`)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +61,7 @@ func (r *packageRepository) GetAllPaginated(page, limit int) ([]*entity.Membersh
 	offset := (page - 1) * limit
 
 	// Get paginated data
-	query := `SELECT id, category_id, package_name, duration_days, price, COALESCE(is_active, true) FROM "MembershipPackage" ORDER BY id DESC LIMIT $1 OFFSET $2`
+	query := `SELECT id, COALESCE(category_id, 0), COALESCE(package_name, ''), COALESCE(duration_days, 0), COALESCE(price, 0), COALESCE(is_active, true) FROM "MembershipPackage" ORDER BY id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -77,8 +81,12 @@ func (r *packageRepository) GetAllPaginated(page, limit int) ([]*entity.Membersh
 }
 
 func (r *packageRepository) Update(pkg *entity.MembershipPackage) error {
+	var categoryID interface{} = pkg.CategoryID
+	if pkg.CategoryID == 0 {
+		categoryID = nil
+	}
 	query := `UPDATE "MembershipPackage" SET category_id = $1, package_name = $2, duration_days = $3, price = $4 WHERE id = $5`
-	_, err := r.db.Exec(query, pkg.CategoryID, pkg.PackageName, pkg.DurationDays, pkg.Price, pkg.ID)
+	_, err := r.db.Exec(query, categoryID, pkg.PackageName, pkg.DurationDays, pkg.Price, pkg.ID)
 	return err
 }
 

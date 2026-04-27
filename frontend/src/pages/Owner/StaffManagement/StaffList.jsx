@@ -192,8 +192,8 @@ const StaffList = () => {
                 filteredStaffs.map((staff) => (
                   <TableRow key={staff.id} className="hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer" onClick={() => handleOpenStaffDetail(staff)}>
                     <TableCell className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                      <div className="h-9 w-9 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-                        <img src={staff.photo || staff.Photo || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80'} alt={staff.full_name || staff.FullName || staff.fullName} className="h-full w-full object-cover" />
+                      <div className="h-9 w-9 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                        <img src={(staff.gender || '').toLowerCase() === 'female' || (staff.gender || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'} alt={staff.full_name || staff.FullName || staff.fullName} className="h-full w-full object-cover" />
                       </div>
                       {staff.full_name || staff.FullName || staff.fullName || 'N/A'}
                     </TableCell>
@@ -379,7 +379,7 @@ const StaffList = () => {
         {staffForm && (
           <div className="space-y-5">
             <div className="flex items-center gap-4">
-              <img src={staffForm.photo || staffForm.Photo || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80'} alt={staffForm.full_name || staffForm.fullName || 'Avatar'} className="h-20 w-20 rounded-2xl object-cover" />
+              <img src={(staffForm.gender || '').toLowerCase() === 'female' || (staffForm.gender || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'} alt={staffForm.full_name || staffForm.fullName || 'Avatar'} className="h-20 w-20 rounded-2xl object-cover flex-shrink-0 border border-gray-200 dark:border-gray-800" />
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Vai trò</p>
                 <p className="text-base font-semibold text-gray-900 dark:text-white">{staffForm.position || staffForm.Position}</p>
