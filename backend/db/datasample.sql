@@ -63,22 +63,42 @@ INSERT INTO "Equipment" ("facility_id", "equipment_name", "serial_number", "quan
 (10, 'Máy chèo thuyền (Rower)', 'CTH-001', 3, 'Broken', '2026-03-05', '2027-03-05', 'Mỹ');
 
 INSERT INTO "ServiceCategory" ("category_name", "benefits_description", "allowed_gender") VALUES
-('VIP', 'Truy cập mọi khu vực', 'All'),
-('Normal', 'Khu vực Gym cơ bản', 'All');
+('VIP', 'Truy cập mọi khu vực, sử dụng phòng xông hơi, yoga, gym, hồ bơi', 'All'),
+('Normal', 'Khu vực Gym cơ bản', 'All'),
+('Female-only', 'Khu vực riêng cho nữ, Yoga, Spa', 'Female');
 
 INSERT INTO "MembershipPackage" ("category_id", "package_name", "duration_days", "price", "is_active") VALUES
 (1, 'Gói VIP Tháng', 30, 1000000, true),
-(2, 'Gói Cơ Bản Tháng', 30, 500000, true);
+(2, 'Gói Cơ Bản Tháng', 30, 500000, true),
+(3, 'Gói Nữ Tháng', 30, 50000, true),
+(4, 'Gói VIP nửa năm', 180, 5000000, true),
+(5, 'Gói Nữ nửa năm', 180, 2500000, true),
+(6, 'Gói VIP 1 năm', 365, 10000000, true);
+
 
 INSERT INTO "Subscription" ("member_id", "package_id", "registration_date", "start_date", "end_date", "status") VALUES
-(1, 1, CURRENT_TIMESTAMP, '2026-04-19', '2026-05-19', 'Active'),
-(2, 2, CURRENT_TIMESTAMP, '2026-04-19', '2026-05-19', 'Active'),
-(3, 1, CURRENT_TIMESTAMP, '2026-04-19', '2026-05-19', 'Active');
+(1, 1, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
+(2, 2, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
+(3, 1, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
+(4, 3, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
+(5, 4, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
+(6, 2, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
+(7, 4, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
+(8, 3, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-19', 'Active'),
+(9, 6, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
+(10, 3, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active');
 
 INSERT INTO "Invoice" ("member_id", "subscription_id", "total_amount", "payment_status", "payment_method", "notes") VALUES
-(1, 1, 1000000, 'Paid', 'Cash', 'Thanh toán tháng 4'),
-(2, 2, 500000, 'Paid', 'Bank Transfer', 'Thanh toán tháng 4'),
-(3, 3, 1000000, 'Paid', 'Card', 'Thanh toán tháng 4');
+(1, 1, 1000000, 'Paid', 'Cash', 'Thanh toán gói VIP Tháng'),
+(2, 2, 500000, 'Paid', 'Bank Transfer', 'Thanh toán gói Cơ Bản Tháng'),
+(3, 3, 1000000, 'Paid', 'Card', 'Thanh toán gói VIP Tháng'),
+(4, 4, 50000, 'Paid', 'Cash', 'Thanh toán gói Nữ Tháng'),
+(5, 5, 5000000, 'Paid', 'Bank Transfer', 'Thanh toán gói VIP nửa năm'),
+(6, 6, 500000, 'Paid', 'Cash', 'Thanh toán gói Cơ Bản Tháng'),
+(7, 7, 5000000, 'Paid', 'Card', 'Thanh toán gói VIP nửa năm'),
+(8, 8, 50000, 'Paid', 'Cash', 'Thanh toán gói Nữ Tháng'),
+(9, 9, 10000000, 'Paid', 'Bank Transfer', 'Thanh toán gói VIP 1 năm'),
+(10, 10, 50000, 'Paid', 'Card', 'Thanh toán gói Nữ Tháng');
 
 -- Liên kết member với 3 PT đã tạo (ID 2, 5, 9)
 INSERT INTO "TrainingBooking" ("member_id", "pt_id", "requested_schedule", "training_plan_note", "status") VALUES

@@ -25,13 +25,19 @@ func (r *packageRepository) Create(pkg *entity.MembershipPackage) error {
 
 func (r *packageRepository) GetByID(id int) (*entity.MembershipPackage, error) {
 	pkg := &entity.MembershipPackage{}
-	query := `SELECT id, COALESCE(category_id, 0), COALESCE(package_name, ''), COALESCE(duration_days, 0), COALESCE(price, 0), COALESCE(is_active, true) FROM "MembershipPackage" WHERE id = $1`
-	err := r.db.QueryRow(query, id).Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive)
+	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, '')
+	FROM "MembershipPackage" p
+	LEFT JOIN "ServiceCategory" c ON p.category_id = c.id
+	WHERE p.id = $1`
+	err := r.db.QueryRow(query, id).Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description)
 	return pkg, err
 }
 
 func (r *packageRepository) GetAll() ([]*entity.MembershipPackage, error) {
-	rows, err := r.db.Query(`SELECT id, COALESCE(category_id, 0), COALESCE(package_name, ''), COALESCE(duration_days, 0), COALESCE(price, 0), COALESCE(is_active, true) FROM "MembershipPackage"`)
+	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, '')
+	FROM "MembershipPackage" p
+	LEFT JOIN "ServiceCategory" c ON p.category_id = c.id`
+	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +67,10 @@ func (r *packageRepository) GetAllPaginated(page, limit int) ([]*entity.Membersh
 	offset := (page - 1) * limit
 
 	// Get paginated data
-	query := `SELECT id, COALESCE(category_id, 0), COALESCE(package_name, ''), COALESCE(duration_days, 0), COALESCE(price, 0), COALESCE(is_active, true) FROM "MembershipPackage" ORDER BY id DESC LIMIT $1 OFFSET $2`
+	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, '')
+	FROM "MembershipPackage" p
+	LEFT JOIN "ServiceCategory" c ON p.category_id = c.id
+	ORDER BY p.id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -71,7 +80,7 @@ func (r *packageRepository) GetAllPaginated(page, limit int) ([]*entity.Membersh
 	var packages []*entity.MembershipPackage
 	for rows.Next() {
 		pkg := &entity.MembershipPackage{}
-		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive)
+		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description)
 		if err != nil {
 			return nil, 0, err
 		}

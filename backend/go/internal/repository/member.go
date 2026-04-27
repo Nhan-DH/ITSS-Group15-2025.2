@@ -26,13 +26,29 @@ func (r *memberRepository) Create(member *entity.Member) error {
 
 func (r *memberRepository) GetByID(id int) (*entity.Member, error) {
 	member := &entity.Member{}
-	query := `SELECT id, COALESCE(full_name, ''), COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), COALESCE(is_active, true) FROM "Member" WHERE id = $1`
-	err := r.db.QueryRow(query, id).Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive)
+	query := `SELECT m.id, COALESCE(m.full_name, ''), COALESCE(m.phone, ''), COALESCE(m.email, ''), COALESCE(m.gender, ''), COALESCE(m.dob, CURRENT_DATE), COALESCE(m.address, ''), COALESCE(m.account_id, 0), COALESCE(m.is_active, true), COALESCE(p.package_name, ''), COALESCE(s.registration_date, CURRENT_DATE) 
+	FROM "Member" m
+	LEFT JOIN (
+		SELECT DISTINCT ON (member_id) member_id, package_id, registration_date 
+		FROM "Subscription" 
+		ORDER BY member_id, id DESC
+	) s ON m.id = s.member_id
+	LEFT JOIN "MembershipPackage" p ON s.package_id = p.id
+	WHERE m.id = $1`
+	err := r.db.QueryRow(query, id).Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive, &member.PackageName, &member.RegisteredAt)
 	return member, err
 }
 
 func (r *memberRepository) GetAll() ([]*entity.Member, error) {
-	rows, err := r.db.Query(`SELECT id, COALESCE(full_name, ''), COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), COALESCE(is_active, true) FROM "Member"`)
+	query := `SELECT m.id, COALESCE(m.full_name, ''), COALESCE(m.phone, ''), COALESCE(m.email, ''), COALESCE(m.gender, ''), COALESCE(m.dob, CURRENT_DATE), COALESCE(m.address, ''), COALESCE(m.account_id, 0), COALESCE(m.is_active, true), COALESCE(p.package_name, ''), COALESCE(s.registration_date, CURRENT_DATE) 
+	FROM "Member" m
+	LEFT JOIN (
+		SELECT DISTINCT ON (member_id) member_id, package_id, registration_date 
+		FROM "Subscription" 
+		ORDER BY member_id, id DESC
+	) s ON m.id = s.member_id
+	LEFT JOIN "MembershipPackage" p ON s.package_id = p.id`
+	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +56,7 @@ func (r *memberRepository) GetAll() ([]*entity.Member, error) {
 	var members []*entity.Member
 	for rows.Next() {
 		member := &entity.Member{}
-		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive)
+		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive, &member.PackageName, &member.RegisteredAt)
 		if err != nil {
 			return nil, err
 		}
@@ -61,8 +77,15 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 	// Calculate offset
 	offset := (page - 1) * limit
 
-	// Get paginated data
-	query := `SELECT id, COALESCE(full_name, ''), COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), COALESCE(is_active, true) FROM "Member" ORDER BY id DESC LIMIT $1 OFFSET $2`
+	query := `SELECT m.id, COALESCE(m.full_name, ''), COALESCE(m.phone, ''), COALESCE(m.email, ''), COALESCE(m.gender, ''), COALESCE(m.dob, CURRENT_DATE), COALESCE(m.address, ''), COALESCE(m.account_id, 0), COALESCE(m.is_active, true), COALESCE(p.package_name, ''), COALESCE(s.registration_date, CURRENT_DATE) 
+	FROM "Member" m
+	LEFT JOIN (
+		SELECT DISTINCT ON (member_id) member_id, package_id, registration_date 
+		FROM "Subscription" 
+		ORDER BY member_id, id DESC
+	) s ON m.id = s.member_id
+	LEFT JOIN "MembershipPackage" p ON s.package_id = p.id
+	ORDER BY m.id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -72,7 +95,7 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 	var members []*entity.Member
 	for rows.Next() {
 		member := &entity.Member{}
-		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive)
+		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive, &member.PackageName, &member.RegisteredAt)
 		if err != nil {
 			return nil, 0, err
 		}
