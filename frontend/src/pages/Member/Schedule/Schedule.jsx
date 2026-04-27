@@ -2,12 +2,26 @@ import React, { useState } from 'react';
 import { ArrowLeft, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const FALLBACK_SELECTED_DATE = '2026-04-14';
+const FALLBACK_CURRENT_DATE = new Date(2026, 3, 10);
+const isPendingScheduledStatus = (status) => status === 'Chờ xác nhận' || status === 'Chưa xác nhận';
+const getWorkoutDateTime = (dateKey, time) => new Date(`${dateKey}T${time}:00`);
+const getNextUpcomingWorkout = (workoutMap) =>
+  Object.entries(workoutMap)
+    .flatMap(([dateKey, dayWorkouts]) =>
+      dayWorkouts.map((workout, index) => ({
+        dateKey,
+        index,
+        workout,
+        dateTime: getWorkoutDateTime(dateKey, workout.startTime)
+      }))
+    )
+    .filter(({ workout, dateTime }) => dateTime >= new Date() && isPendingScheduledStatus(workout.status))
+    .sort((a, b) => a.dateTime - b.dateTime)[0];
+
 const Schedule = () => {
   const navigate = useNavigate();
-  const DAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 10));
-  const [selectedDate, setSelectedDate] = useState('2026-04-14');
+  const DAYS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']; // Updated to align with Date.getDay() (0 for Sunday, 1 for Monday, etc.)
   const [activeTab, setActiveTab] = useState('scheduled');
   const [selectedTrainer, setSelectedTrainer] = useState(null);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
@@ -16,12 +30,14 @@ const Schedule = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     phoneNumber: '',
-    email: '',
-    address: '',
-    notes: ''
+    curriculum: '',
+    notes: '',
+    selectedDaysOfWeek: [], // New: Array of numbers (0-6) representing days of the week
+    recurrenceEndDate: '' // New: 'YYYY-MM-DD'
   });
+  const [selectedCurriculum, setSelectedCurriculum] = useState('');
 
-  const [workouts] = useState({
+  const [workouts, setWorkouts] = useState({
     '2026-04-07': [
       { time: '08:00', startTime: '08:00', endTime: '09:30', name: 'Buổi tập Yoga', type: 'Yoga', location: 'Phòng A2', trainer: 'Nguyễn Minh', status: 'Đã xong' }
     ],
@@ -29,12 +45,21 @@ const Schedule = () => {
       { time: '09:00', startTime: '09:00', endTime: '10:30', name: 'Buổi tập Core', type: 'Core Training', location: 'Phòng B1', trainer: 'Phạm Thị D', status: 'Đã xong' },
       { time: '14:00', startTime: '14:00', endTime: '15:30', name: 'Buổi tập Skinny fat', type: 'Skinny fat', location: 'Phòng C2', trainer: 'Hoàng Văn E', status: 'Đã xong' }
     ],
+    '2026-04-13': [
+      { time: '18:00', startTime: '18:00', endTime: '19:00', name: 'Buổi tập Cardio', type: 'Cardio', location: 'Studio A', trainer: 'Lê Thị B', status: 'Đã xong' }
+    ],
     '2026-04-14': [
       { time: '06:00', startTime: '06:00', endTime: '07:30', name: 'Buổi tập Cardio', type: 'Cardio', location: 'Phòng A1', trainer: 'Lê Thị B', status: 'Đã xong' },
       { time: '17:00', startTime: '17:00', endTime: '18:30', name: 'Buổi tập Strength', type: 'Strength Training', location: 'Phòng B2', trainer: 'Trần Văn C', status: 'Đã xong' }
     ],
+    '2026-04-15': [
+      { time: '09:00', startTime: '09:00', endTime: '10:00', name: 'Buổi tập Core', type: 'Core Training', location: 'Phòng B1', trainer: 'Phạm Thị D', status: 'Đã xong' }
+    ],
     '2026-04-17': [
-      { time: '10:00', startTime: '10:00', endTime: '11:30', name: 'Buổi tập Cơ lưng', type: 'Back Training', location: 'Phòng C1', trainer: 'Phạm Thị D', status: 'Chờ xác nhận' }
+      { time: '10:00', startTime: '10:00', endTime: '11:30', name: 'Buổi tập Cơ lưng', type: 'Back Training', location: 'Phòng C1', trainer: 'Phạm Thị D', status: 'Đã xác nhận' }
+    ],
+    '2026-04-20': [
+      { time: '07:00', startTime: '07:00', endTime: '08:00', name: 'Lớp HIIT', type: 'HIIT', location: 'Studio CrossFit', trainer: 'Hoàng Văn E', status: 'Đã xác nhận' }
     ],
     '2026-04-22': [
       { time: '07:00', startTime: '07:00', endTime: '08:30', name: 'Lớp HIIT', type: 'HIIT', location: 'Studio CrossFit', trainer: 'Hoàng Văn E', status: 'Chờ xác nhận' },
@@ -46,10 +71,23 @@ const Schedule = () => {
     '2026-04-25': [
       { time: '18:00', startTime: '18:00', endTime: '19:30', name: 'Buổi tập Flexibility', type: 'Flexibility', location: 'Phòng B3', trainer: 'Trần Văn C', status: 'Chưa xác nhận' }
     ],
+    '2026-04-27': [
+      { time: '16:00', startTime: '16:00', endTime: '17:30', name: 'Buổi tập Pilates', type: 'Pilates', location: 'Phòng A3', trainer: 'Phạm Thị D', status: 'Chờ xác nhận' }
+    ],
     '2026-04-28': [
       { time: '16:00', startTime: '16:00', endTime: '17:30', name: 'Buổi tập Pilates', type: 'Pilates', location: 'Phòng A3', trainer: 'Phạm Thị D', status: 'Chờ xác nhận' }
+    ],
+    '2026-04-29': [
+      { time: '10:00', startTime: '10:00', endTime: '11:30', name: 'Buổi tập Cơ lưng', type: 'Back Training', location: 'Phòng C1', trainer: 'Phạm Thị D', status: 'Chờ xác nhận' }
     ]
   });
+  const initialUpcomingWorkout = getNextUpcomingWorkout(workouts);
+  const [currentDate, setCurrentDate] = useState(() =>
+    initialUpcomingWorkout
+      ? new Date(initialUpcomingWorkout.dateTime.getFullYear(), initialUpcomingWorkout.dateTime.getMonth(), 1)
+      : new Date(FALLBACK_CURRENT_DATE)
+  );
+  const [selectedDate, setSelectedDate] = useState(() => initialUpcomingWorkout?.dateKey || FALLBACK_SELECTED_DATE);
 
   const [availableBookings] = useState({
     '2026-04-07': [
@@ -57,38 +95,92 @@ const Schedule = () => {
       { time: '10:00', startTime: '10:00', endTime: '11:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A1', trainer: 'Nguyễn Minh', isBookable: false },
       { time: '15:00', startTime: '15:00', endTime: '16:30', name: 'Lớp Zumba', type: 'Zumba', location: 'Studio A', trainer: 'Hoàng Văn E', isBookable: true }
     ],
+    '2026-04-08': [
+      { time: '08:00', startTime: '08:00', endTime: '09:00', name: 'Lớp Yoga', type: 'Yoga', location: 'Phòng A2', trainer: 'Hoàng Văn E', isBookable: true },
+      { time: '17:00', startTime: '17:00', endTime: '18:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng B2', trainer: 'Trần Văn C', isBookable: false },
+      { time: '18:30', startTime: '18:30', endTime: '19:30', name: 'Lớp BodyPump', type: 'Strength Training', location: 'Studio B', trainer: 'Nguyễn Minh', isBookable: true }
+    ],
     '2026-04-09': [
       { time: '06:30', startTime: '06:30', endTime: '07:30', name: 'Lớp Yoga sáng', type: 'Yoga', location: 'Phòng A2', trainer: 'Trần Văn C', isBookable: true },
       { time: '09:00', startTime: '09:00', endTime: '10:30', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng B2', trainer: 'Phạm Thị D', isBookable: false },
       { time: '18:00', startTime: '18:00', endTime: '19:30', name: 'Lớp CrossFit', type: 'CrossFit', location: 'Studio CrossFit', trainer: 'Lê Thị B', isBookable: true }
     ],
+    '2026-04-10': [
+      { time: '07:00', startTime: '07:00', endTime: '08:00', name: 'Lớp Cardio Kickboxing', type: 'Cardio', location: 'Studio A', trainer: 'Lê Thị B', isBookable: true },
+      { time: '11:00', startTime: '11:00', endTime: '12:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C1', trainer: 'Phạm Thị D', isBookable: false },
+      { time: '19:00', startTime: '19:00', endTime: '20:00', name: 'Lớp Zumba', type: 'Zumba', location: 'Studio B', trainer: 'Hoàng Văn E', isBookable: true }
+    ],
     '2026-04-11': [
       { time: '07:00', startTime: '07:00', endTime: '08:30', name: 'Lớp HIIT sáng', type: 'HIIT', location: 'Studio A', trainer: 'Hoàng Văn E', isBookable: true },
       { time: '14:00', startTime: '14:00', endTime: '15:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C1', trainer: 'Nguyễn Minh', isBookable: false }
     ],
+    '2026-04-13': [
+      { time: '06:00', startTime: '06:00', endTime: '07:00', name: 'Lớp Chạy bộ', type: 'Cardio', location: 'Ngoài trời', trainer: 'Lê Thị B', isBookable: true },
+      { time: '09:00', startTime: '09:00', endTime: '10:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A1', trainer: 'Nguyễn Minh', isBookable: false },
+      { time: '17:30', startTime: '17:30', endTime: '18:30', name: 'Lớp Pilates', type: 'Pilates', location: 'Phòng A3', trainer: 'Trần Văn C', isBookable: true }
+    ],
     '2026-04-14': [
       { time: '08:00', startTime: '08:00', endTime: '09:30', name: 'Lớp Strength', type: 'Strength Training', location: 'Phòng B1', trainer: 'Trần Văn C', isBookable: true },
-      { time: '11:00', startTime: '11:00', endTime: '12:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A1', trainer: 'Phạm Thị D', isBookable: false }
+      { time: '11:00', startTime: '11:00', endTime: '12:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A1', trainer: 'Phạm Thị D', isBookable: false },
+      { time: '16:00', startTime: '16:00', endTime: '17:00', name: 'Lớp Yoga', type: 'Yoga', location: 'Phòng A2', trainer: 'Hoàng Văn E', isBookable: true }
+    ],
+    '2026-04-15': [
+      { time: '07:30', startTime: '07:30', endTime: '08:30', name: 'Lớp CrossFit', type: 'CrossFit', location: 'Studio CrossFit', trainer: 'Lê Thị B', isBookable: true },
+      { time: '12:00', startTime: '12:00', endTime: '13:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng B2', trainer: 'Phạm Thị D', isBookable: false },
+      { time: '18:00', startTime: '18:00', endTime: '19:00', name: 'Lớp Core', type: 'Core Training', location: 'Phòng B1', trainer: 'Nguyễn Minh', isBookable: true }
+    ],
+    '2026-04-16': [
+      { time: '09:00', startTime: '09:00', endTime: '10:00', name: 'Lớp Zumba', type: 'Zumba', location: 'Studio A', trainer: 'Hoàng Văn E', isBookable: true },
+      { time: '14:00', startTime: '14:00', endTime: '15:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C1', trainer: 'Trần Văn C', isBookable: false }
     ],
     '2026-04-17': [
       { time: '07:30', startTime: '07:30', endTime: '08:30', name: 'Lớp Pilates', type: 'Pilates', location: 'Phòng A3', trainer: 'Lê Thị B', isBookable: true },
       { time: '13:00', startTime: '13:00', endTime: '14:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng B1', trainer: 'Hoàng Văn E', isBookable: false },
       { time: '16:00', startTime: '16:00', endTime: '17:30', name: 'Lớp Boxing', type: 'Boxing', location: 'Studio B', trainer: 'Nguyễn Minh', isBookable: true }
     ],
+    '2026-04-18': [
+      { time: '10:00', startTime: '10:00', endTime: '11:30', name: 'Lớp Strength cuối tuần', type: 'Strength Training', location: 'Phòng B1', trainer: 'Nguyễn Minh', isBookable: true },
+      { time: '15:00', startTime: '15:00', endTime: '16:00', name: 'Lớp Yoga giãn cơ', type: 'Yoga', location: 'Phòng A2', trainer: 'Trần Văn C', isBookable: true }
+    ],
+    '2026-04-20': [
+      { time: '18:00', startTime: '18:00', endTime: '19:00', name: 'Lớp HIIT', type: 'HIIT', location: 'Studio CrossFit', trainer: 'Hoàng Văn E', isBookable: true },
+      { time: '19:30', startTime: '19:30', endTime: '20:30', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A1', trainer: 'Lê Thị B', isBookable: false }
+    ],
     '2026-04-21': [
       { time: '06:00', startTime: '06:00', endTime: '07:30', name: 'Lớp Cardio', type: 'Cardio', location: 'Studio A', trainer: 'Phạm Thị D', isBookable: true },
       { time: '10:00', startTime: '10:00', endTime: '11:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C2', trainer: 'Trần Văn C', isBookable: false }
+    ],
+    '2026-04-22': [
+      { time: '08:00', startTime: '08:00', endTime: '09:00', name: 'Lớp Pilates', type: 'Pilates', location: 'Phòng A3', trainer: 'Trần Văn C', isBookable: true },
+      { time: '17:00', startTime: '17:00', endTime: '18:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng B1', trainer: 'Nguyễn Minh', isBookable: false }
     ],
     '2026-04-23': [
       { time: '18:00', startTime: '18:00', endTime: '19:30', name: 'Lớp Zumba tối', type: 'Zumba', location: 'Studio B', trainer: 'Lê Thị B', isBookable: true },
       { time: '19:30', startTime: '19:30', endTime: '20:30', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng A2', trainer: 'Hoàng Văn E', isBookable: false }
     ],
+    '2026-04-24': [
+      { time: '07:00', startTime: '07:00', endTime: '08:00', name: 'Lớp Yoga', type: 'Yoga', location: 'Phòng A2', trainer: 'Hoàng Văn E', isBookable: true },
+      { time: '16:00', startTime: '16:00', endTime: '17:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C2', trainer: 'Phạm Thị D', isBookable: false }
+    ],
     '2026-04-25': [
-      { time: '07:00', startTime: '07:00', endTime: '08:30', name: 'Lớp Yoga', type: 'Yoga', location: 'Phòng B2', trainer: 'Nguyễn Minh', isBookable: true }
+      { time: '07:00', startTime: '07:00', endTime: '08:30', name: 'Lớp Yoga', type: 'Yoga', location: 'Phòng B2', trainer: 'Nguyễn Minh', isBookable: true },
+      { time: '10:00', startTime: '10:00', endTime: '11:30', name: 'Lớp CrossFit cuối tuần', type: 'CrossFit', location: 'Studio CrossFit', trainer: 'Lê Thị B', isBookable: true }
+    ],
+    '2026-04-27': [
+      { time: '06:30', startTime: '06:30', endTime: '07:30', name: 'Lớp Cardio', type: 'Cardio', location: 'Studio A', trainer: 'Phạm Thị D', isBookable: true },
+      { time: '18:00', startTime: '18:00', endTime: '19:00', name: 'Lớp Strength', type: 'Strength Training', location: 'Phòng B1', trainer: 'Trần Văn C', isBookable: true }
+    ],
+    '2026-04-28': [
+      { time: '09:00', startTime: '09:00', endTime: '10:00', name: 'Lớp Pilates', type: 'Pilates', location: 'Phòng A3', trainer: 'Trần Văn C', isBookable: true },
+      { time: '15:00', startTime: '15:00', endTime: '16:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng B2', trainer: 'Nguyễn Minh', isBookable: false }
     ],
     '2026-04-29': [
       { time: '09:00', startTime: '09:00', endTime: '10:30', name: 'Lớp Strength nâng cao', type: 'Strength Training', location: 'Phòng B1', trainer: 'Phạm Thị D', isBookable: true },
       { time: '15:00', startTime: '15:00', endTime: '16:00', name: 'PT cá nhân', type: 'Personal Training', location: 'Phòng C1', trainer: 'Lê Thị B', isBookable: false }
+    ],
+    '2026-04-30': [
+      { time: '07:00', startTime: '07:00', endTime: '08:00', name: 'Lớp HIIT', type: 'HIIT', location: 'Studio CrossFit', trainer: 'Hoàng Văn E', isBookable: true },
+      { time: '19:00', startTime: '19:00', endTime: '20:00', name: 'Lớp Zumba', type: 'Zumba', location: 'Studio B', trainer: 'Lê Thị B', isBookable: true }
     ]
   });
 
@@ -154,6 +246,25 @@ const Schedule = () => {
           address: 'Số 123 Đường B, Phường C, Quận 1, TPHCM',
           curriculum: 'Personal Training',
           notes: 'Ưu tiên buổi chiều để tiện theo lịch làm việc.'
+        }
+      }
+    ],
+    '2026-04-26': [
+      {
+        time: '10:00',
+        startTime: '10:00',
+        endTime: '11:30',
+        name: 'Lớp CrossFit cuối tuần',
+        type: 'CrossFit',
+        location: 'Studio CrossFit',
+        trainer: 'Lê Thị B',
+        status: 'Chờ xác nhận',
+        submittedAt: '2026-04-24',
+        requestDetails: {
+          fullName: 'Nguyễn Tuấn A',
+          phoneNumber: '090 123 4567',
+          curriculum: 'CrossFit',
+          notes: 'Đăng ký cho buổi cuối tuần.'
         }
       }
     ]
@@ -293,6 +404,40 @@ const Schedule = () => {
     }
   };
 
+  const memberCurricula = [
+    { id: 1, name: 'Core Training', totalLessons: 12 },
+    { id: 2, name: 'Strength Training', totalLessons: 20 },
+    { id: 3, name: 'Yoga', totalLessons: 8 },
+    { id: 4, name: 'Cardio', totalLessons: 15 },
+    { id: 5, name: 'Pilates', totalLessons: 10 },
+    { id: 6, name: 'HIIT', totalLessons: 10 },
+    { id: 7, name: 'Boxing', totalLessons: 12 },
+    { id: 8, name: 'Flexibility', totalLessons: 6 },
+    { id: 9, name: 'Back Training', totalLessons: 8 },
+    { id: 10, name: 'Leg Training', totalLessons: 8 }
+  ];
+
+  const getCurriculumStats = (curriculumName) => {
+    if (!curriculumName) return { completed: 0, remaining: 0, total: 0, percentage: 0 };
+
+    const completed = Object.values(workouts).flat().filter(
+      (w) => w.type === curriculumName && w.status === 'Đã xong'
+    ).length;
+
+    const curriculum = memberCurricula.find((c) => c.name === curriculumName);
+    if (!curriculum) return { completed: 0, remaining: 0, total: 0, percentage: 0 };
+
+    const total = curriculum.totalLessons;
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    return {
+      completed,
+      remaining: Math.max(0, total - completed),
+      total,
+      percentage
+    };
+  };
+
   const dateKey = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
   const buildCalendar = () => {
@@ -333,9 +478,10 @@ const Schedule = () => {
     setFormData({
       fullName: '',
       phoneNumber: '',
-      email: '',
-      address: '',
-      notes: ''
+      curriculum: '',
+      notes: '',
+      selectedDaysOfWeek: [], // Reset new fields
+      recurrenceEndDate: '' // Reset new fields
     });
   };
 
@@ -345,6 +491,16 @@ const Schedule = () => {
       : activeTab === 'booking'
       ? availableBookings
       : memberRequests;
+
+  const displayData =
+    activeTab === 'scheduled' && selectedCurriculum
+      ? Object.fromEntries(
+          Object.entries(currentData).map(([date, dayWorkouts]) => [
+            date,
+            dayWorkouts.filter((w) => w.type === selectedCurriculum)
+          ])
+        )
+      : currentData;
 
   const previousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
@@ -356,10 +512,33 @@ const Schedule = () => {
 
   const dayNames = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
   const monthName = currentDate.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' });
-  const selectedWorkouts = selectedDate ? currentData[selectedDate] || [] : [];
+  const selectedWorkouts = selectedDate ? displayData[selectedDate] || [] : [];
   const requestDates = Object.keys(memberRequests).sort();
   const defaultRequestDate = requestDates[0] || selectedDate;
   const selectedDateObject = selectedDate ? new Date(`${selectedDate}T00:00:00`) : null;
+  const getWorkoutDisplayName = (workout) => (activeTab === 'booking' ? workout.trainer : workout.name);
+  const getTrainerRequestSlots = (trainer) =>
+    Object.entries(availableBookings)
+      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+      .flatMap(([date, daySlots]) =>
+        daySlots
+          .filter((slot) => slot.isBookable && slot.trainer === trainer)
+          .map((slot) => ({ date, slot }))
+      );
+  const nextUpcomingWorkout = getNextUpcomingWorkout(workouts);
+
+  const openScheduledTab = () => {
+    setActiveTab('scheduled');
+
+    if (!nextUpcomingWorkout) {
+      setSelectedDate(FALLBACK_SELECTED_DATE);
+      setCurrentDate(new Date(FALLBACK_CURRENT_DATE));
+      return;
+    }
+
+    setSelectedDate(nextUpcomingWorkout.dateKey);
+    setCurrentDate(new Date(nextUpcomingWorkout.dateTime.getFullYear(), nextUpcomingWorkout.dateTime.getMonth(), 1));
+  };
 
   const getCalendarDotClass = (item) => {
     if (activeTab === 'scheduled') {
@@ -375,8 +554,8 @@ const Schedule = () => {
 
   const getAccentColor = (item) => {
     if (activeTab === 'scheduled') {
-      if (item.status === 'Đã xong') return '#16A34A';
-      if (item.status === 'Chờ xác nhận') return '#EAB308';
+      if (item.status === 'Đã xong' || item.status === 'Đã xác nhận') return '#16A34A';
+      if (item.status === 'Chờ xác nhận' || item.status === 'Chưa xác nhận') return '#EAB308';
       return '#9CA3AF';
     }
     if (activeTab === 'requests') {
@@ -391,13 +570,31 @@ const Schedule = () => {
     if (status === 'Đã xong' || status === 'Đã xác nhận' || status === 'Completed') {
       return 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300';
     }
-    if (status === 'Chờ xác nhận') {
+    if (status === 'Chờ xác nhận' || status === 'Chưa xác nhận') {
       return 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300';
     }
     if (status === 'Từ chối') {
       return 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300';
     }
     return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300';
+  };
+
+  const handleConfirmAttendance = (dateKey, workoutIndex) => {
+    setWorkouts((prev) => {
+      const dayWorkouts = prev[dateKey] || [];
+      const targetWorkout = dayWorkouts[workoutIndex];
+
+      if (!targetWorkout || !isPendingScheduledStatus(targetWorkout.status)) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [dateKey]: dayWorkouts.map((workout, index) =>
+          index === workoutIndex ? { ...workout, status: 'Đã xác nhận' } : workout
+        )
+      };
+    });
   };
 
   const closeBookingForm = () => {
@@ -409,30 +606,39 @@ const Schedule = () => {
     e.preventDefault();
 
     const requestDate = bookingForm.requestDate || selectedDate;
-    const nextRequest = {
-      time: bookingForm.time,
-      startTime: bookingForm.startTime,
-      endTime: bookingForm.endTime,
-      name: bookingForm.name,
-      type: bookingForm.type,
-      location: bookingForm.location,
-      trainer: bookingForm.trainer,
-      status: 'Chờ xác nhận',
-      submittedAt: new Date().toISOString().slice(0, 10),
-      requestDetails: {
-        ...formData,
-        curriculum: bookingForm.type
-      }
-    };
+    const requestSlots = getTrainerRequestSlots(bookingForm.trainer);
+    const slotsToRequest =
+      requestSlots.length > 0 ? requestSlots : [{ date: requestDate, slot: bookingForm }];
+    const submittedAt = new Date().toISOString().slice(0, 10);
 
-    setMemberRequests((prev) => ({
-      ...prev,
-      [requestDate]: [...(prev[requestDate] || []), nextRequest]
-    }));
+    setMemberRequests((prev) => {
+      const nextRequests = { ...prev };
+
+      slotsToRequest.forEach(({ date, slot }) => {
+        const nextRequest = {
+          time: slot.time,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          name: slot.trainer,
+          type: formData.curriculum,
+          location: slot.location,
+          trainer: slot.trainer,
+          status: 'Chờ xác nhận',
+          submittedAt,
+          requestDetails: {
+            ...formData
+          }
+        };
+
+        nextRequests[date] = [...(nextRequests[date] || []), nextRequest];
+      });
+
+      return nextRequests;
+    });
 
     alert('Yêu cầu đặt lịch của bạn đã được gửi thành công!');
     setActiveTab('requests');
-    setSelectedDate(requestDate);
+    setSelectedDate(slotsToRequest[0]?.date || requestDate);
     setBookingForm(null);
     resetFormData();
   };
@@ -478,8 +684,9 @@ const Schedule = () => {
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((dayObj, idx) => {
               const key = dayObj.isCurrentMonth ? dateKey(year, month, dayObj.day) : null;
-              const evs = key ? currentData[key] || [] : [];
+              const evs = key ? displayData[key] || [] : [];
               const isSelected = selectedDate === key;
+              const showSingleLessonDot = evs.length > 0;
 
               return (
                 <div
@@ -496,9 +703,13 @@ const Schedule = () => {
                   <span className="text-sm font-semibold">{dayObj.day}</span>
                   {evs.length > 0 && (
                     <div className="flex gap-0.5 mt-1">
-                      {evs.map((item, i) => (
-                        <div key={i} className={`w-1.5 h-1.5 rounded-full ${getCalendarDotClass(item)}`} />
-                      ))}
+                      {showSingleLessonDot ? (
+                        <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-blue-200' : 'bg-blue-500'}`} />
+                      ) : (
+                        evs.map((item, i) => (
+                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${getCalendarDotClass(item)}`} />
+                        ))
+                      )}
                     </div>
                   )}
                 </div>
@@ -509,10 +720,7 @@ const Schedule = () => {
 
         <div className="border-t border-gray-100 dark:border-gray-800 p-4 flex gap-2">
           <button
-            onClick={() => {
-              setActiveTab('scheduled');
-              setSelectedDate('2026-04-14');
-            }}
+            onClick={openScheduledTab}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
               activeTab === 'scheduled'
                 ? 'bg-blue-600 text-white'
@@ -552,16 +760,67 @@ const Schedule = () => {
         <div className="border-t border-gray-100 dark:border-gray-800 p-4 grid grid-cols-2 gap-3">
           {activeTab === 'scheduled' ? (
             <>
-              <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Tháng này</div>
-                <div className="text-xl font-black text-gray-800 dark:text-white">
-                  8 <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
+              <div className="col-span-2 space-y-3">
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+                  <div className="flex-1 w-full">
+                    <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5">
+                      Chọn giáo trình
+                    </label>
+                    <select
+                      value={selectedCurriculum}
+                      onChange={(e) => {
+                        setSelectedCurriculum(e.target.value);
+                        setSelectedDate('');
+                      }}
+                      className="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
+                    >
+                      <option value="">Tất cả giáo trình</option>
+                      {memberCurricula.map((curriculum) => (
+                        <option key={curriculum.id} value={curriculum.name}>
+                          {curriculum.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {selectedCurriculum && (() => {
+                    const stats = getCurriculumStats(selectedCurriculum);
+                    return (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 min-w-[180px] w-full sm:w-auto">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase">Buổi còn lại</span>
+                          <span className="text-xs font-bold text-blue-700 dark:text-blue-300">{stats.remaining}/{stats.total}</span>
+                        </div>
+                        <div className="text-2xl font-black text-blue-700 dark:text-blue-300 mb-1">
+                          {stats.remaining}
+                        </div>
+                        <div className="w-full bg-blue-200 rounded-full h-1.5 dark:bg-blue-900/40">
+                          <div
+                            className="bg-blue-600 h-1.5 rounded-full transition-all"
+                            style={{ width: `${stats.percentage}%` }}
+                          />
+                        </div>
+                        <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          Đã hoàn thành {stats.completed} buổi ({stats.percentage}%)
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
-                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Đã hoàn thành</div>
-                <div className="text-xl font-black text-gray-800 dark:text-white">
-                  4 <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
+                    <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Tháng này</div>
+                    <div className="text-xl font-black text-gray-800 dark:text-white">
+                      {Object.values(displayData).reduce((sum, day) => sum + day.length, 0)} <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3">
+                    <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Đã hoàn thành</div>
+                    <div className="text-xl font-black text-gray-800 dark:text-white">
+                      {Object.values(displayData).reduce((sum, day) => sum + day.filter((w) => w.status === 'Đã xong').length, 0)} <span className="text-xs text-gray-400 dark:text-gray-500">buổi</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </>
@@ -644,7 +903,15 @@ const Schedule = () => {
                     ? 'Các buổi có sẵn'
                     : 'Yêu cầu của tôi'}
                 </div>
-                {selectedWorkouts.map((workout, idx) => (
+                {selectedWorkouts.map((workout, idx) => {
+                  const isNextUpcomingScheduledWorkout =
+                    activeTab === 'scheduled' &&
+                    nextUpcomingWorkout?.dateKey === selectedDate &&
+                    nextUpcomingWorkout?.index === idx;
+                  const canConfirmAttendance =
+                    isNextUpcomingScheduledWorkout && isPendingScheduledStatus(workout.status);
+
+                  return (
                   <div
                     key={idx}
                     className={`${
@@ -681,7 +948,7 @@ const Schedule = () => {
                         }`}
                         onClick={() => setSelectedWorkout(workout)}
                       >
-                        {workout.name}
+                        {getWorkoutDisplayName(workout)}
                       </div>
                       <div className="flex flex-wrap gap-1.5 mb-2">
                         <span
@@ -700,7 +967,7 @@ const Schedule = () => {
                               : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                           }`}
                         >
-                          {workout.type}
+                          {activeTab === 'booking' ? 'Khung giờ PT' : workout.type}
                         </span>
                       </div>
                       <div
@@ -714,7 +981,7 @@ const Schedule = () => {
                           onClick={() => setSelectedTrainer(workout.trainer)}
                           className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer transition-colors"
                         >
-                          PT {workout.trainer}
+                          {activeTab === 'booking' ? 'Xem hồ sơ PT' : `PT ${workout.trainer}`}
                         </button>
                       </div>
                     </div>
@@ -748,6 +1015,14 @@ const Schedule = () => {
                         >
                           {workout.status}
                         </div>
+                        {activeTab === 'scheduled' && canConfirmAttendance && (
+                          <button
+                            onClick={() => handleConfirmAttendance(selectedDate, idx)}
+                            className="text-xs font-semibold px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                          >
+                            Xác nhận
+                          </button>
+                        )}
                         {activeTab === 'requests' && workout.status === 'Từ chối' && (
                           <button
                             onClick={() => setSelectedDeniedRequest(workout)}
@@ -759,7 +1034,8 @@ const Schedule = () => {
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -796,7 +1072,7 @@ const Schedule = () => {
             >
               <div>
                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Tên buổi tập</div>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">{selectedWorkout.name}</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{getWorkoutDisplayName(selectedWorkout)}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -813,7 +1089,7 @@ const Schedule = () => {
               <div>
                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Giáo trình</div>
                 <p className="text-sm text-gray-900 dark:text-white bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-2 rounded-lg inline-block">
-                  {selectedWorkout.type}
+                  {activeTab === 'booking' ? 'Khung giờ PT' : selectedWorkout.type}
                 </p>
               </div>
 
@@ -987,8 +1263,8 @@ const Schedule = () => {
 
             <form onSubmit={handleBookingSubmit} className="p-6 space-y-4">
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <div className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-2">{bookingForm.name}</div>
-                <div className="text-xs text-blue-800 dark:text-blue-400">
+                <div className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-2">{bookingForm.trainer}</div>
+                <div className="text-xs text-blue-800 dark:text-blue-400"> {/* Changed bookingForm.trainer to bookingForm.name */}
                   <div>
                     {bookingForm.startTime} - {bookingForm.endTime} • {bookingForm.location}
                   </div>
@@ -1021,36 +1297,45 @@ const Schedule = () => {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
-                <input
-                  type="email"
-                  placeholder="Nhập email..."
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Địa chỉ</label>
-                <input
-                  type="text"
-                  placeholder="Nhập địa chỉ..."
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Giáo trình mong muốn</label>
                 <input
                   type="text"
-                  value={bookingForm.type}
-                  readOnly
-                  className="h-10 rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-200"
+                  placeholder="Nhập giáo trình mong muốn..."
+                  value={formData.curriculum}
+                  onChange={(e) => setFormData({ ...formData, curriculum: e.target.value })}
+                  required
+                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
                 />
               </div>
+
+              {/* New fields for recurrence */}
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Chọn các ngày trong tuần (cho lịch lặp lại)</label>
+                <div className="grid grid-cols-7 gap-2">
+                  {DAYS.map((dayName, index) => (
+                    <label key={index} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        value={index}
+                        checked={formData.selectedDaysOfWeek.includes(index)}
+                        onChange={(e) => {
+                          const dayValue = parseInt(e.target.value);
+                          setFormData((prev) => ({
+                            ...prev,
+                            selectedDaysOfWeek: e.target.checked
+                              ? [...prev.selectedDaysOfWeek, dayValue]
+                              : prev.selectedDaysOfWeek.filter((day) => day !== dayValue)
+                          }));
+                        }}
+                        className="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:checked:bg-blue-500"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-200">{dayName}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              {/* End new fields for recurrence */}
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Ghi chú thêm</label>
@@ -1204,9 +1489,6 @@ const Schedule = () => {
                   className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                 >
                   Đóng
-                </button>
-                <button className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-                  Liên hệ
                 </button>
               </div>
             </div>
