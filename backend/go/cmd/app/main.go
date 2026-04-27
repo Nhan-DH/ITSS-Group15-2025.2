@@ -14,6 +14,7 @@ import (
 	"gym-management/internal/domain/usecase/equipment_usecase"
 	"gym-management/internal/domain/usecase/facility_usecase"
 	"gym-management/internal/domain/usecase/feedback_usecase"
+	"gym-management/internal/domain/usecase/invoice_usecase"
 	"gym-management/internal/domain/usecase/member_usecase"
 	"gym-management/internal/domain/usecase/package_usecase"
 	"gym-management/internal/domain/usecase/pt_detail_usecase"
@@ -74,6 +75,7 @@ func main() {
 	packageRepo := repository.NewPackageRepository(db)
 	equipmentRepo := repository.NewEquipmentRepository(db)
 	feedbackRepo := repository.NewFeedbackRepository(db)
+	invoiceRepo := repository.NewInvoiceRepository(db)
 	roleRepo := repository.NewRoleRepository(db)
 	facilityRepo := repository.NewFacilityRepository(db)
 	accountRepo := repository.NewAccountRepository(db)
@@ -90,6 +92,7 @@ func main() {
 	packageUsecase := package_usecase.NewPackageUsecase(packageRepo)
 	equipmentUsecase := equipment_usecase.NewEquipmentUsecase(equipmentRepo)
 	feedbackUsecase := feedback_usecase.NewFeedbackUsecase(feedbackRepo)
+	invoiceUsecase := invoice_usecase.NewInvoiceUsecase(invoiceRepo)
 	roleUsecase := role_usecase.NewRoleUsecase(roleRepo)
 	facilityUsecase := facility_usecase.NewFacilityUsecase(facilityRepo)
 	accountUsecase := account_usecase.NewAccountUsecase(accountRepo)
@@ -106,6 +109,7 @@ func main() {
 	packageHandler := handlers.NewPackageHandler(packageUsecase)
 	equipmentHandler := handlers.NewEquipmentHandler(equipmentUsecase)
 	feedbackHandler := handlers.NewFeedbackHandler(feedbackUsecase)
+	invoiceHandler := handlers.NewInvoiceHandler(invoiceUsecase)
 	roleHandler := handlers.NewRoleHandler(roleUsecase)
 	facilityHandler := handlers.NewFacilityHandler(facilityUsecase)
 	accountHandler := handlers.NewAccountHandler(accountUsecase)
@@ -117,7 +121,7 @@ func main() {
 	ptDetailHandler := handlers.NewPTDetailHandler(ptDetailUsecase)
 
 	// Setup routes
-	router := routes.NewRouter(authHandler, memberHandler, employeeHandler, packageHandler, equipmentHandler, feedbackHandler, roleHandler, facilityHandler, accountHandler, serviceCategoryHandler, subscriptionHandler, trainingBookingHandler, trainingSessionHandler, ptDetailHandler)
+	router := routes.NewRouter(authHandler, memberHandler, employeeHandler, packageHandler, equipmentHandler, feedbackHandler, invoiceHandler, roleHandler, facilityHandler, accountHandler, serviceCategoryHandler, subscriptionHandler, trainingBookingHandler, trainingSessionHandler, ptDetailHandler)
 
 	// Bọc router trong CORS middleware
 	handler := corsMiddleware(router)
