@@ -13,15 +13,19 @@ type FeedbackUsecase interface {
 	GetAllFeedbacksPaginated(page, limit int, status string) ([]*entity.Feedback, int, error)
 	UpdateFeedback(feedback *entity.Feedback) error
 	DeleteFeedback(id int) error
+	GetFeedbacksByMemberID(memberID int) ([]*entity.Feedback, error)
+	UpdateFeedbackStatus(id int, status, resolutionNote string) error
 }
 
 type feedbackUsecase struct {
-	create        ICreateFeedbackUseCase
-	get           IGetFeedbackUseCase
-	list          IListFeedbacksUseCase
-	listPaginated IListFeedbacksPaginatedUseCase
-	update        IUpdateFeedbackUseCase
-	delete        IDeleteFeedbackUseCase
+	create              ICreateFeedbackUseCase
+	get                 IGetFeedbackUseCase
+	list                IListFeedbacksUseCase
+	listPaginated       IListFeedbacksPaginatedUseCase
+	update              IUpdateFeedbackUseCase
+	delete              IDeleteFeedbackUseCase
+	getByMember         IGetFeedbacksByMemberUseCase
+	updateStatus        IUpdateFeedbackStatusUseCase
 }
 
 func NewFeedbackUsecase(repo adapter.FeedbackRepository) FeedbackUsecase {
@@ -32,6 +36,8 @@ func NewFeedbackUsecase(repo adapter.FeedbackRepository) FeedbackUsecase {
 		listPaginated: NewListFeedbacksPaginatedUseCase(repo),
 		update:        NewUpdateFeedbackUseCase(repo),
 		delete:        NewDeleteFeedbackUseCase(repo),
+		getByMember:  NewGetFeedbacksByMemberUseCase(repo),
+		updateStatus: NewUpdateFeedbackStatusUseCase(repo),
 	}
 }
 
@@ -67,4 +73,12 @@ func (u *feedbackUsecase) UpdateFeedback(feedback *entity.Feedback) error {
 
 func (u *feedbackUsecase) DeleteFeedback(id int) error {
 	return u.delete.Execute(context.Background(), id)
+}
+
+func (u *feedbackUsecase) GetFeedbacksByMemberID(memberID int) ([]*entity.Feedback, error) {
+	return u.getByMember.Execute(context.Background(), memberID)
+}
+
+func (u *feedbackUsecase) UpdateFeedbackStatus(id int, status, resolutionNote string) error {
+	return u.updateStatus.Execute(context.Background(), id, status, resolutionNote)
 }

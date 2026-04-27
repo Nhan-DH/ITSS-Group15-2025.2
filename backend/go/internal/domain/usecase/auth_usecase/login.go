@@ -7,7 +7,8 @@ import (
 	"strings"
 
 	"gym-management/internal/domain/adapter"
-	//"golang.org/x/crypto/bcrypt"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (u *authUsecase) Login(ctx context.Context, input LoginInput) (*AuthResult, error) {
@@ -25,12 +26,13 @@ func (u *authUsecase) Login(ctx context.Context, input LoginInput) (*AuthResult,
 		return nil, err
 	}
 
-	if account.Password != input.Password {
-		return nil, errors.New("invalid password")
+	// Prefer bcrypt verification for secure password storage.
+	if err := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password)); err != nil {
+		// Backward compatibility: allow legacy plaintext rows if any still exist.
+		if account.Password != password {
+			return nil, ErrInvalidCredentials
+		}
 	}
-	// if err := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(input.Password)); err != nil {
-	// 	return nil, ErrInvalidCredentials
-	// }
 
 	roleName, err := u.repo.GetRoleNameByID(ctx, account.RoleID)
 	if err != nil {

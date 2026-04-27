@@ -146,7 +146,8 @@ CREATE TABLE "TrainingSession" (
   "sent_at" timestamp,
   "resolution_note" text,
   "status" varchar,
-  "rating" int CHECK ("rating" >= 1 AND "rating" <= 5)
+  "rating" int CHECK ("rating" >= 1 AND "rating" <= 5),
+  "feedback_type" varchar
 );
 
 

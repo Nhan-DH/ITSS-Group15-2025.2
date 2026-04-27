@@ -10,6 +10,7 @@ import (
 type MemberUsecase interface {
 	CreateMember(member *entity.Member) error
 	GetMemberByID(id int) (*entity.Member, error)
+	GetMemberByAccountID(accountID int) (*entity.Member, error)
 	GetAllMembers() ([]*entity.Member, error)
 	GetAllMembersPaginated(page, limit int) ([]*entity.Member, int, error)
 	GetAllMembersWithDetails() ([]*dto.MemberListItemDTO, error)
@@ -52,6 +53,10 @@ func (u *memberUsecase) CreateMember(member *entity.Member) error {
 
 func (u *memberUsecase) GetMemberByID(id int) (*entity.Member, error) {
 	return u.get.Execute(context.Background(), id)
+}
+
+func (u *memberUsecase) GetMemberByAccountID(accountID int) (*entity.Member, error) {
+	return u.repo.GetByAccountID(accountID)
 }
 
 func (u *memberUsecase) GetAllMembers() ([]*entity.Member, error) {

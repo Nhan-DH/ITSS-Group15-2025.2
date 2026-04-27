@@ -2,22 +2,15 @@ package repository
 
 import (
 	"database/sql"
+	"gym-management/internal/domain/adapter"
 	"gym-management/internal/domain/entity"
 )
-
-type TrainingSessionRepository interface {
-	Create(trainingSession *entity.TrainingSession) error
-	GetByID(id int) (*entity.TrainingSession, error)
-	GetAll() ([]*entity.TrainingSession, error)
-	Update(trainingSession *entity.TrainingSession) error
-	Delete(id int) error
-}
 
 type trainingSessionRepository struct {
 	db *sql.DB
 }
 
-func NewTrainingSessionRepository(db *sql.DB) TrainingSessionRepository {
+func NewTrainingSessionRepository(db *sql.DB) adapter.TrainingSessionRepository {
 	return &trainingSessionRepository{db: db}
 }
 
@@ -70,4 +63,50 @@ func (r *trainingSessionRepository) Delete(id int) error {
 	query := `DELETE FROM "TrainingSession" WHERE id = $1`
 	_, err := r.db.Exec(query, id)
 	return err
+}
+
+// GetPastByMemberID trả về các session đã qua của member (join TrainingBooking để lấy member_id).
+func (r *trainingSessionRepository) GetPastByMemberID(memberID int) ([]*entity.TrainingSession, error) {
+	query := `SELECT ts.id, ts.booking_id, ts.facility_id, ts.session_time, ts.attendance_status, ts.pt_feedback
+		FROM "TrainingSession" ts
+		INNER JOIN "TrainingBooking" tb ON ts.booking_id = tb.id
+		WHERE tb.member_id = $1 AND ts.session_time < NOW()
+		ORDER BY ts.session_time DESC`
+	rows, err := r.db.Query(query, memberID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var sessions []*entity.TrainingSession
+	for rows.Next() {
+		var s entity.TrainingSession
+		if err := rows.Scan(&s.ID, &s.BookingID, &s.FacilityID, &s.SessionTime, &s.AttendanceStatus, &s.PTFeedback); err != nil {
+			return nil, err
+		}
+		sessions = append(sessions, &s)
+	}
+	return sessions, nil
+}
+
+// GetUpcomingByMemberID trả về các session sắp tới của member (session_time >= NOW()).
+func (r *trainingSessionRepository) GetUpcomingByMemberID(memberID int) ([]*entity.TrainingSession, error) {
+	query := `SELECT ts.id, ts.booking_id, ts.facility_id, ts.session_time, ts.attendance_status, ts.pt_feedback
+		FROM "TrainingSession" ts
+		INNER JOIN "TrainingBooking" tb ON ts.booking_id = tb.id
+		WHERE tb.member_id = $1 AND ts.session_time >= NOW()
+		ORDER BY ts.session_time ASC`
+	rows, err := r.db.Query(query, memberID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var sessions []*entity.TrainingSession
+	for rows.Next() {
+		var s entity.TrainingSession
+		if err := rows.Scan(&s.ID, &s.BookingID, &s.FacilityID, &s.SessionTime, &s.AttendanceStatus, &s.PTFeedback); err != nil {
+			return nil, err
+		}
+		sessions = append(sessions, &s)
+	}
+	return sessions, nil
 }

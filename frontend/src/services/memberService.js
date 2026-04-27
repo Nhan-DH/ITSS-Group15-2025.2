@@ -59,4 +59,26 @@ export const memberService = {
     }
     return axios.delete(`/members/${id}`);
   },
+
+  // --- Member self-service APIs ---
+
+  getMe: async () => {
+    return axios.get('/members/me');
+  },
+
+  updateMe: async (data) => {
+    return axios.put('/members/me', data);
+  },
+
+  getMyTrainingHistory: async () => {
+    return axios.get('/members/me/training-history');
+  },
+
+  getMySchedule: async () => {
+    return axios.get('/members/me/schedule');
+  },
+
+  getMyFeedbacks: async () => {
+    return axios.get('/members/me/feedbacks');
+  },
 };

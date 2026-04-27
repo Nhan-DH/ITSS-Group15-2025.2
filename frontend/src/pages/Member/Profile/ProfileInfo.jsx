@@ -1,14 +1,65 @@
-import React from 'react';
-import { User, Phone, Mail, MapPin, Edit3, ShieldCheck, Calendar } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { User, Phone, Mail, MapPin, Edit3, ShieldCheck, Calendar, Loader2 } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '@/components/Common/Button';
+import { memberService } from '@/services/memberService';
+
+const formatGender = (raw) => {
+  if (!raw) return '—';
+  const map = {
+    male: 'Nam', nam: 'Nam',
+    female: 'Nữ', nữ: 'Nữ', nu: 'Nữ',
+    other: 'Khác', khác: 'Khác', khac: 'Khác',
+  };
+  return map[raw.toLowerCase().trim()] ?? raw;
+};
 
 const ProfileInfo = () => {
+  const location = useLocation();
+  const [profile, setProfile] = useState(location.state?.profile || null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await memberService.getMe();
+        setProfile(data?.data ?? data);
+      } catch (err) {
+        console.error(err);
+        setError('Không thể tải thông tin hồ sơ.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [location.state?.refreshedAt]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500 mt-10">{error}</p>;
+  }
+
+  const fullName = profile?.full_name || profile?.fullName || profile?.name || '—';
+  const phone = profile?.phone || '—';
+  const email = profile?.email || '—';
+  const gender = formatGender(profile?.gender);
+  const dob = profile?.dob ? new Date(profile.dob).toLocaleDateString('vi-VN') : '—';
+  const address = profile?.address || '—';
+  const memberCode = profile?.member_code || profile?.id ? `MEM-${String(profile?.id).padStart(6, '0')}` : '—';
+
   return (
     <div className="mx-auto max-w-lg space-y-6 pb-20 md:max-w-2xl">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tài Khoản</h1>
-        <Link to="/member/profile/edit">
+        <Link to="/member/profile/edit" state={{ profile }}>
           <Button
             variant="outline"
             size="sm"
@@ -31,45 +82,43 @@ const ProfileInfo = () => {
         </div>
 
         <div className="px-6 pb-6 pt-16 sm:px-8">
-          <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">Nguyễn Tuấn A</h2>
-          <p className="mt-1 font-mono text-sm font-semibold tracking-wide text-blue-600">MEM-982312</p>
+          <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">{fullName}</h2>
+          <p className="mt-1 font-mono text-sm font-semibold tracking-wide text-blue-600">{memberCode}</p>
 
           <div className="mt-8 space-y-5">
             <div className="flex items-center gap-4 text-gray-700 dark:text-gray-300">
               <div className="rounded-xl bg-gray-50 p-2.5 text-gray-500 dark:bg-gray-900">
                 <Phone className="h-5 w-5" />
               </div>
-              <span className="text-lg font-medium leading-none">090 123 4567</span>
+              <span className="text-lg font-medium leading-none">{phone}</span>
             </div>
 
             <div className="flex items-center gap-4 text-gray-700 dark:text-gray-300">
               <div className="rounded-xl bg-gray-50 p-2.5 text-gray-500 dark:bg-gray-900">
                 <Mail className="h-5 w-5" />
               </div>
-              <span className="font-medium leading-none text-gray-600 dark:text-gray-400">tuana@gym.com</span>
+              <span className="font-medium leading-none text-gray-600 dark:text-gray-400">{email}</span>
             </div>
 
             <div className="flex items-center gap-4 text-gray-700 dark:text-gray-300">
               <div className="rounded-xl bg-gray-50 p-2.5 text-gray-500 dark:bg-gray-900">
                 <User className="h-5 w-5" />
               </div>
-              <span className="font-medium leading-none text-gray-600 dark:text-gray-400">Giới tính: Nam</span>
+              <span className="font-medium leading-none text-gray-600 dark:text-gray-400">Giới tính: {gender}</span>
             </div>
 
             <div className="flex items-center gap-4 text-gray-700 dark:text-gray-300">
               <div className="rounded-xl bg-gray-50 p-2.5 text-gray-500 dark:bg-gray-900">
                 <Calendar className="h-5 w-5" />
               </div>
-              <span className="font-medium leading-none text-gray-600 dark:text-gray-400">Ngày sinh: 1995-03-15</span>
+              <span className="font-medium leading-none text-gray-600 dark:text-gray-400">Ngày sinh: {dob}</span>
             </div>
 
             <div className="flex items-center gap-4 text-gray-700 dark:text-gray-300">
               <div className="shrink-0 rounded-xl bg-gray-50 p-2.5 text-gray-500 dark:bg-gray-900">
                 <MapPin className="h-5 w-5" />
               </div>
-              <span className="font-medium leading-snug text-gray-600 dark:text-gray-400">
-                Số 123 Đường B, Phường C, Quận 1, TPHCM
-              </span>
+              <span className="font-medium leading-snug text-gray-600 dark:text-gray-400">{address}</span>
             </div>
           </div>
         </div>

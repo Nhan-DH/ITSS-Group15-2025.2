@@ -12,23 +12,26 @@ type TrainingBookingUsecase interface {
 	GetAllTrainingBookings() ([]*entity.TrainingBooking, error)
 	UpdateTrainingBooking(trainingBooking *entity.TrainingBooking) error
 	DeleteTrainingBooking(id int) error
+	GetTrainingBookingsByMemberID(memberID int) ([]*entity.TrainingBooking, error)
 }
 
 type trainingBookingUsecase struct {
-	create ICreateTrainingBookingUseCase
-	get    IGetTrainingBookingUseCase
-	list   IListTrainingBookingsUseCase
-	update IUpdateTrainingBookingUseCase
-	delete IDeleteTrainingBookingUseCase
+	create      ICreateTrainingBookingUseCase
+	get         IGetTrainingBookingUseCase
+	list        IListTrainingBookingsUseCase
+	update      IUpdateTrainingBookingUseCase
+	delete      IDeleteTrainingBookingUseCase
+	getByMember IGetTrainingBookingsByMemberUseCase
 }
 
 func NewTrainingBookingUsecase(repo adapter.TrainingBookingRepository) TrainingBookingUsecase {
 	return &trainingBookingUsecase{
-		create: NewCreateTrainingBookingUseCase(repo),
-		get:    NewGetTrainingBookingUseCase(repo),
-		list:   NewListTrainingBookingsUseCase(repo),
-		update: NewUpdateTrainingBookingUseCase(repo),
-		delete: NewDeleteTrainingBookingUseCase(repo),
+		create:      NewCreateTrainingBookingUseCase(repo),
+		get:         NewGetTrainingBookingUseCase(repo),
+		list:        NewListTrainingBookingsUseCase(repo),
+		update:      NewUpdateTrainingBookingUseCase(repo),
+		delete:      NewDeleteTrainingBookingUseCase(repo),
+		getByMember: NewGetTrainingBookingsByMemberUseCase(repo),
 	}
 }
 
@@ -60,4 +63,8 @@ func (u *trainingBookingUsecase) UpdateTrainingBooking(trainingBooking *entity.T
 
 func (u *trainingBookingUsecase) DeleteTrainingBooking(id int) error {
 	return u.delete.Execute(context.Background(), id)
+}
+
+func (u *trainingBookingUsecase) GetTrainingBookingsByMemberID(memberID int) ([]*entity.TrainingBooking, error) {
+	return u.getByMember.Execute(context.Background(), memberID)
 }

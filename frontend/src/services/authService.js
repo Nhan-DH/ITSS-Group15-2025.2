@@ -9,10 +9,10 @@ export const authService = {
     const data = await axios.post('/auth/login', payload);
 
     return {
-      user: data?.user || {
+      user: data?.user ? { ...data.user, role: data.user.role?.toLowerCase() } : {
         id: data?.account_id,
         email: data?.username,
-        role: data?.role,
+        role: data?.role?.toLowerCase(),
       },
       token: data?.token || data?.access_token,
       refreshToken: data?.refresh_token,
@@ -21,6 +21,9 @@ export const authService = {
 
   getCurrentUser: async () => {
     const data = await axios.get('/auth/me');
-    return data?.user || null;
+    if (data?.user) {
+      return { ...data.user, role: data.user.role?.toLowerCase() };
+    }
+    return null;
   },
 };

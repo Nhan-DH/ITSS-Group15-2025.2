@@ -15,19 +15,20 @@ func NewFeedbackRepository(db *sql.DB) adapter.FeedbackRepository {
 }
 
 func (r *feedbackRepository) Create(feedback *entity.Feedback) error {
-	query := `INSERT INTO "Feedback" (member_id, processor_id, equipment_id, content, sent_at, resolution_note, status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
-	return r.db.QueryRow(query, feedback.MemberID, feedback.ProcessorID, feedback.EquipmentID, feedback.Content, feedback.SentAt, feedback.ResolutionNote, feedback.Status).Scan(&feedback.ID)
+	// Use NULLIF to convert 0 to NULL for optional foreign keys
+	query := `INSERT INTO "Feedback" (member_id, processor_id, equipment_id, content, sent_at, resolution_note, status, rating, feedback_type) VALUES ($1, NULLIF($2, 0), NULLIF($3, 0), $4, $5, $6, $7, $8, $9) RETURNING id`
+	return r.db.QueryRow(query, feedback.MemberID, feedback.ProcessorID, feedback.EquipmentID, feedback.Content, feedback.SentAt, feedback.ResolutionNote, feedback.Status, feedback.Rating, feedback.FeedbackType).Scan(&feedback.ID)
 }
 
 func (r *feedbackRepository) GetByID(id int) (*entity.Feedback, error) {
 	feedback := &entity.Feedback{}
-	query := `SELECT id, member_id, processor_id, equipment_id, content, sent_at, resolution_note, status FROM "Feedback" WHERE id = $1`
-	err := r.db.QueryRow(query, id).Scan(&feedback.ID, &feedback.MemberID, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status)
+	query := `SELECT id, member_id, COALESCE(processor_id, 0), COALESCE(equipment_id, 0), content, sent_at, COALESCE(resolution_note, ''), status, COALESCE(rating, 0), COALESCE(feedback_type, '') FROM "Feedback" WHERE id = $1`
+	err := r.db.QueryRow(query, id).Scan(&feedback.ID, &feedback.MemberID, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status, &feedback.Rating, &feedback.FeedbackType)
 	return feedback, err
 }
 
 func (r *feedbackRepository) GetAll() ([]*entity.Feedback, error) {
-	rows, err := r.db.Query(`SELECT id, member_id, processor_id, equipment_id, content, sent_at, resolution_note, status FROM "Feedback"`)
+	rows, err := r.db.Query(`SELECT id, member_id, COALESCE(processor_id, 0), COALESCE(equipment_id, 0), content, sent_at, COALESCE(resolution_note, ''), status, COALESCE(rating, 0), COALESCE(feedback_type, '') FROM "Feedback"`)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +36,7 @@ func (r *feedbackRepository) GetAll() ([]*entity.Feedback, error) {
 	var feedbacks []*entity.Feedback
 	for rows.Next() {
 		feedback := &entity.Feedback{}
-		err := rows.Scan(&feedback.ID, &feedback.MemberID, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status)
+		err := rows.Scan(&feedback.ID, &feedback.MemberID, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status, &feedback.Rating, &feedback.FeedbackType)
 		if err != nil {
 			return nil, err
 		}
@@ -73,7 +74,7 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 	var err error
 
 	if status != "" {
-		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0), 'service'
+		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), COALESCE(f.processor_id, 0), COALESCE(f.equipment_id, 0), f.content, f.sent_at, COALESCE(f.resolution_note, ''), f.status, COALESCE(f.rating, 0), COALESCE(f.feedback_type, '')
 			FROM "Feedback" f
 			LEFT JOIN "Member" m ON f.member_id = m.id
 			WHERE f.status = $1 
@@ -81,7 +82,7 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 			LIMIT $2 OFFSET $3`
 		rows, err = r.db.Query(query, status, limit, offset)
 	} else {
-		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), f.processor_id, f.equipment_id, f.content, f.sent_at, f.resolution_note, f.status, COALESCE(f.rating, 0), 'service'
+		query = `SELECT f.id, f.member_id, COALESCE(m.full_name, 'Unknown'), COALESCE(f.processor_id, 0), COALESCE(f.equipment_id, 0), f.content, f.sent_at, COALESCE(f.resolution_note, ''), f.status, COALESCE(f.rating, 0), COALESCE(f.feedback_type, '')
 			FROM "Feedback" f
 			LEFT JOIN "Member" m ON f.member_id = m.id
 			ORDER BY f.id DESC 
@@ -114,5 +115,33 @@ func (r *feedbackRepository) Update(feedback *entity.Feedback) error {
 
 func (r *feedbackRepository) Delete(id int) error {
 	_, err := r.db.Exec(`DELETE FROM "Feedback" WHERE id = $1`, id)
+	return err
+}
+
+func (r *feedbackRepository) GetByMemberID(memberID int) ([]*entity.Feedback, error) {
+	query := `SELECT f.id, f.member_id, COALESCE(m.full_name, ''), COALESCE(f.processor_id, 0), COALESCE(f.equipment_id, 0), f.content, f.sent_at, COALESCE(f.resolution_note, ''), f.status, COALESCE(f.rating, 0), COALESCE(f.feedback_type, '')
+		FROM "Feedback" f
+		LEFT JOIN "Member" m ON f.member_id = m.id
+		WHERE f.member_id = $1
+		ORDER BY f.sent_at DESC`
+	rows, err := r.db.Query(query, memberID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var feedbacks []*entity.Feedback
+	for rows.Next() {
+		fb := &entity.Feedback{}
+		if err := rows.Scan(&fb.ID, &fb.MemberID, &fb.MemberName, &fb.ProcessorID, &fb.EquipmentID, &fb.Content, &fb.SentAt, &fb.ResolutionNote, &fb.Status, &fb.Rating, &fb.FeedbackType); err != nil {
+			return nil, err
+		}
+		feedbacks = append(feedbacks, fb)
+	}
+	return feedbacks, nil
+}
+
+func (r *feedbackRepository) UpdateStatus(id int, status, resolutionNote string) error {
+	query := `UPDATE "Feedback" SET status = $1, resolution_note = $2 WHERE id = $3`
+	_, err := r.db.Exec(query, status, resolutionNote, id)
 	return err
 }

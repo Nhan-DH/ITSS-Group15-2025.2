@@ -38,6 +38,7 @@ export const feedbackService = {
       await delay(600);
       return { id, status, responseText };
     }
+    // BE mới hỗ trợ PATCH /feedbacks/{id}/status
     return axios.patch(`/feedbacks/${id}/status`, { status, responseText });
   }
 };

@@ -8,4 +8,5 @@ type TrainingBookingRepository interface {
 	GetAll() ([]*entity.TrainingBooking, error)
 	Update(tb *entity.TrainingBooking) error
 	Delete(id int) error
+	GetByMemberID(memberID int) ([]*entity.TrainingBooking, error)
 }

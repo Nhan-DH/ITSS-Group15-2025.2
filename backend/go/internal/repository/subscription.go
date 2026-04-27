@@ -8,6 +8,8 @@ import (
 type SubscriptionRepository interface {
 	Create(subscription *entity.Subscription) error
 	GetByID(id int) (*entity.Subscription, error)
+	GetLatestByMemberID(memberID int) (*entity.Subscription, error)
+	GetByMemberID(memberID int) ([]*entity.Subscription, error)
 	GetAll() ([]*entity.Subscription, error)
 	Update(subscription *entity.Subscription) error
 	Delete(id int) error
@@ -37,6 +39,51 @@ func (r *subscriptionRepository) GetByID(id int) (*entity.Subscription, error) {
 	}
 
 	return &subscription, nil
+}
+
+func (r *subscriptionRepository) GetLatestByMemberID(memberID int) (*entity.Subscription, error) {
+	query := `
+		SELECT id, member_id, package_id, registration_date, start_date, end_date, status
+		FROM "Subscription"
+		WHERE member_id = $1
+		ORDER BY end_date DESC, id DESC
+		LIMIT 1
+	`
+	row := r.db.QueryRow(query, memberID)
+
+	var subscription entity.Subscription
+	err := row.Scan(&subscription.ID, &subscription.MemberID, &subscription.PackageID, &subscription.RegistrationDate, &subscription.StartDate, &subscription.EndDate, &subscription.Status)
+	if err != nil {
+		return nil, err
+	}
+
+	return &subscription, nil
+}
+
+func (r *subscriptionRepository) GetByMemberID(memberID int) ([]*entity.Subscription, error) {
+	query := `
+		SELECT id, member_id, package_id, registration_date, start_date, end_date, status
+		FROM "Subscription"
+		WHERE member_id = $1
+		ORDER BY end_date DESC, id DESC
+	`
+	rows, err := r.db.Query(query, memberID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var subscriptions []*entity.Subscription
+	for rows.Next() {
+		var subscription entity.Subscription
+		err := rows.Scan(&subscription.ID, &subscription.MemberID, &subscription.PackageID, &subscription.RegistrationDate, &subscription.StartDate, &subscription.EndDate, &subscription.Status)
+		if err != nil {
+			return nil, err
+		}
+		subscriptions = append(subscriptions, &subscription)
+	}
+
+	return subscriptions, nil
 }
 
 func (r *subscriptionRepository) GetAll() ([]*entity.Subscription, error) {

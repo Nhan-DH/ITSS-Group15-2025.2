@@ -26,5 +26,5 @@ func (u *UpdateMemberUseCase) Execute(ctx context.Context, member *entity.Member
 	if err := u.repo.Update(member); err != nil {
 		return nil, err
 	}
-	return member, nil
+	return u.repo.GetByID(member.ID)
 }

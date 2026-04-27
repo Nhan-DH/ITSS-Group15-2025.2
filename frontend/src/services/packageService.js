@@ -120,7 +120,9 @@ export const packageService = {
       // Return the newly registered package
       return registeredPackage;
     }
-    return axios.post('/members/packages/register', packageData);
+    return axios.post('/members/me/packages/register', {
+      package_id: packageData?.id || packageData?.packageId,
+    });
   },
 
   getMemberPackages: async () => {
@@ -129,7 +131,7 @@ export const packageService = {
       // Retrieve member packages from localStorage
       return getMemberPackagesFromStorage();
     }
-    return axios.get('/members/packages');
+    return axios.get('/members/me/packages');
   },
 
   renewPackage: async (renewalData) => {
@@ -159,6 +161,9 @@ export const packageService = {
 
       return { success: false, message: 'Không tìm thấy gói tập' };
     }
-    return axios.post('/members/packages/renew', renewalData);
+    return axios.post('/members/me/packages/renew', {
+      subscription_id: renewalData?.subscriptionId || renewalData?.packageId,
+      renewal_months: renewalData?.renewalMonths || 1,
+    });
   }
 };

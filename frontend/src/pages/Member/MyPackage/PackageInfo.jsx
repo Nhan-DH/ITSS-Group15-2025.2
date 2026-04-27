@@ -48,8 +48,8 @@ const PackageInfo = () => {
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gói Tập Của Tôi</h1>
       
       {/* Display all packages */}
-      {packages.map((pkg, idx) => {
-        const isActive = pkg.status === 'active' || idx === 0;
+      {packages.map((pkg) => {
+        const isActive = pkg.status === 'active';
         const endDate = new Date(pkg.endDate);
         const today = new Date();
         const daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));

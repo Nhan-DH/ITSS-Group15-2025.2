@@ -9,12 +9,15 @@ import (
 type SubscriptionUsecase interface {
 	CreateSubscription(subscription *entity.Subscription) error
 	GetSubscriptionByID(id int) (*entity.Subscription, error)
+	GetLatestSubscriptionByMemberID(memberID int) (*entity.Subscription, error)
+	GetSubscriptionsByMemberID(memberID int) ([]*entity.Subscription, error)
 	GetAllSubscriptions() ([]*entity.Subscription, error)
 	UpdateSubscription(subscription *entity.Subscription) error
 	DeleteSubscription(id int) error
 }
 
 type subscriptionUsecase struct {
+	repo   adapter.SubscriptionRepository
 	create ICreateSubscriptionUseCase
 	get    IGetSubscriptionUseCase
 	list   IListSubscriptionsUseCase
@@ -24,6 +27,7 @@ type subscriptionUsecase struct {
 
 func NewSubscriptionUsecase(repo adapter.SubscriptionRepository) SubscriptionUsecase {
 	return &subscriptionUsecase{
+		repo:   repo,
 		create: NewCreateSubscriptionUseCase(repo),
 		get:    NewGetSubscriptionUseCase(repo),
 		list:   NewListSubscriptionsUseCase(repo),
@@ -43,6 +47,14 @@ func (u *subscriptionUsecase) CreateSubscription(subscription *entity.Subscripti
 
 func (u *subscriptionUsecase) GetSubscriptionByID(id int) (*entity.Subscription, error) {
 	return u.get.Execute(context.Background(), id)
+}
+
+func (u *subscriptionUsecase) GetLatestSubscriptionByMemberID(memberID int) (*entity.Subscription, error) {
+	return u.repo.GetLatestByMemberID(memberID)
+}
+
+func (u *subscriptionUsecase) GetSubscriptionsByMemberID(memberID int) ([]*entity.Subscription, error) {
+	return u.repo.GetByMemberID(memberID)
 }
 
 func (u *subscriptionUsecase) GetAllSubscriptions() ([]*entity.Subscription, error) {

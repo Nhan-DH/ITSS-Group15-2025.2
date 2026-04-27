@@ -8,6 +8,7 @@ import (
 type MemberRepository interface {
 	Create(member *entity.Member) error
 	GetByID(id int) (*entity.Member, error)
+	GetByAccountID(accountID int) (*entity.Member, error)
 	GetAll() ([]*entity.Member, error)
 	GetAllPaginated(page, limit int) ([]*entity.Member, int, error)
 	GetAllMembersWithDetails() ([]*dto.MemberListItemDTO, error)
