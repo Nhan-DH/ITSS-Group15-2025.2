@@ -38,6 +38,6 @@ export const feedbackService = {
       await delay(600);
       return { id, status, responseText };
     }
-    return axios.patch(`/feedbacks/${id}/status`, { status, responseText });
+    return axios.put(`/feedbacks/${id}`, { status, response_text: responseText });
   }
 };

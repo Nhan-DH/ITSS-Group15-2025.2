@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Star, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, MessageSquare, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { useFeedbacks } from '@/hooks/queries/useFeedbacks';
+import { useUpdateFeedbackStatus } from '@/hooks/mutations/useFeedbackMutations';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Input from '@/components/Common/Input';
 import Button from '@/components/Common/Button';
+import Modal from '@/components/Common/Modal';
 
 const FeedbackList = () => {
   const [page, setPage] = useState(1);
@@ -14,6 +16,29 @@ const FeedbackList = () => {
   const limit = 10;
 
   const { data: feedbackResponse, isLoading, isError } = useFeedbacks(page, limit, statusFilter);
+  const updateMutation = useUpdateFeedbackStatus();
+
+  const [editModal, setEditModal] = useState({ isOpen: false, feedback: null });
+  const [editStatus, setEditStatus] = useState('pending');
+  const [editResponseText, setEditResponseText] = useState('');
+
+  const handleEditClick = (fb) => {
+    setEditModal({ isOpen: true, feedback: fb });
+    const currentStatus = fb.status?.toLowerCase() || 'pending';
+    setEditStatus(currentStatus);
+    setEditResponseText(fb.response_text || fb.responseText || '');
+  };
+
+  const handleSaveEdit = () => {
+    if (editModal.feedback) {
+      updateMutation.mutate({
+        id: editModal.feedback.id,
+        status: editStatus,
+        responseText: editResponseText
+      });
+      setEditModal({ isOpen: false, feedback: null });
+    }
+  };
 
   // Mock data fallback
   const mockFeedbacks = [
@@ -168,7 +193,7 @@ const FeedbackList = () => {
                 <TableHead>Loại phản hồi / Đánh giá</TableHead>
                 <TableHead className="w-[35%]">Nội dung</TableHead>
                 <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-right">Ngày gửi</TableHead>
+                <TableHead className="text-right">Ngày gửi / Hành động</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -210,8 +235,15 @@ const FeedbackList = () => {
                       </span>
                     </TableCell>
                     <TableCell className="text-right text-sm text-gray-500">
-                      {fb.sent_at ? new Date(fb.sent_at).toLocaleDateString('vi-VN') : 
-                       fb.created_at || fb.createdAt || fb.date || 'N/A'}
+                      <div className="flex items-center justify-end gap-2">
+                        <span>
+                          {fb.sent_at ? new Date(fb.sent_at).toLocaleDateString('vi-VN') : 
+                           fb.created_at || fb.createdAt || fb.date || 'N/A'}
+                        </span>
+                        <Button variant="ghost" size="icon" title="Cập nhật trạng thái" className="h-8 w-8 text-blue-500" onClick={(e) => { e.stopPropagation(); handleEditClick(fb); }}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -247,6 +279,46 @@ const FeedbackList = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Feedback Modal */}
+      <Modal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, feedback: null })}
+        title="Cập nhật trạng thái phản hồi"
+      >
+        <div className="p-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Trạng thái</label>
+            <select
+              value={editStatus}
+              onChange={(e) => setEditStatus(e.target.value)}
+              className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
+            >
+              <option value="pending">Chờ xử lý</option>
+              <option value="processing">Đang xử lý</option>
+              <option value="resolved">Đã xử lý</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Ghi chú phản hồi (Tùy chọn)</label>
+            <textarea
+              value={editResponseText}
+              onChange={(e) => setEditResponseText(e.target.value)}
+              className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
+              rows={3}
+              placeholder="Nhập ghi chú xử lý..."
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setEditModal({ isOpen: false, feedback: null })}>
+              Hủy
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

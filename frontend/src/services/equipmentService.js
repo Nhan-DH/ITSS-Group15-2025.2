@@ -19,6 +19,14 @@ export const equipmentService = {
     return response;
   },
 
+  getEquipmentById: async (id) => {
+    if (IS_MOCK) {
+      await delay(300);
+      return MOCK_EQUIPMENTS.find(e => e.id === parseInt(id));
+    }
+    return axios.get(`/equipments/${id}`);
+  },
+
   createEquipment: async (data) => {
     if (IS_MOCK) {
       await delay(600);
@@ -40,7 +48,7 @@ export const equipmentService = {
       await delay(400);
       return { id, status };
     }
-    return axios.patch(`/equipments/${id}/status`, { status });
+    return axios.put(`/equipments/${id}`, { status });
   },
 
   deleteEquipment: async (id) => {

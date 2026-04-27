@@ -136,7 +136,14 @@ const MemberList = () => {
                       onClick={() => navigate(`/owner/members/${member.id}`)}
                     >
                       <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
-                        {member.full_name || member.FullName || member.name || 'N/A'}
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={(member.gender || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'} 
+                            alt="avatar" 
+                            className="h-8 w-8 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                          />
+                          <span>{member.full_name || member.FullName || member.name || 'N/A'}</span>
+                        </div>
                       </TableCell>
                       <TableCell className="text-gray-600 dark:text-gray-300">
                         {member.package_name || member.packageName || member.package || 'N/A'}

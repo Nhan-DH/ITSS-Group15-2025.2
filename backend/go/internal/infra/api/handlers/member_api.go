@@ -34,6 +34,16 @@ func (h *MemberHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *MemberHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(mux.Vars(r)["id"])
+
+	// Try to get member with details first
+	memberDetail, err := h.usecase.GetMemberByIDWithDetails(id)
+	if err == nil && memberDetail != nil {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(memberDetail)
+		return
+	}
+
+	// Fallback to basic member data
 	member, err := h.usecase.GetMemberByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -48,6 +58,56 @@ func (h *MemberHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
 
+	// Try to get members with details
+	membersDetail, err := h.usecase.GetAllMembersWithDetails()
+	if err == nil && membersDetail != nil {
+		// Apply pagination if requested
+		if pageStr != "" && limitStr != "" {
+			page, errPage := strconv.Atoi(pageStr)
+			if errPage != nil || page < 1 {
+				page = 1
+			}
+			limit, errLimit := strconv.Atoi(limitStr)
+			if errLimit != nil || limit < 1 {
+				limit = 10
+			}
+
+			totalItems := len(membersDetail)
+			totalPages := (totalItems + limit - 1) / limit
+			startIdx := (page - 1) * limit
+			endIdx := startIdx + limit
+
+			if startIdx >= totalItems {
+				startIdx = 0
+				endIdx = 0
+			} else if endIdx > totalItems {
+				endIdx = totalItems
+			}
+
+			var paginatedData []*dto.MemberListItemDTO
+			if endIdx > startIdx {
+				paginatedData = membersDetail[startIdx:endIdx]
+			}
+
+			response := dto.PaginationResponse{
+				Data:       paginatedData,
+				Page:       page,
+				Limit:      limit,
+				TotalItems: totalItems,
+				TotalPages: totalPages,
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(response)
+			return
+		}
+
+		// Return all data without pagination
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(membersDetail)
+		return
+	}
+
+	// Fallback to basic member list with pagination
 	if pageStr != "" && limitStr != "" {
 		page, err := strconv.Atoi(pageStr)
 		if err != nil || page < 1 {
@@ -87,13 +147,57 @@ func (h *MemberHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MemberHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil || id <= 0 {
+		http.Error(w, "invalid member id", http.StatusBadRequest)
+		return
+	}
+
 	var member entity.Member
-	json.NewDecoder(r.Body).Decode(&member)
-	err := h.usecase.UpdateMember(&member)
+	if err := json.NewDecoder(r.Body).Decode(&member); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	member.ID = id
+
+	if member.AccountID == 0 {
+		existing, getErr := h.usecase.GetMemberByID(id)
+		if getErr != nil {
+			http.Error(w, getErr.Error(), http.StatusNotFound)
+			return
+		}
+		member.AccountID = existing.AccountID
+	}
+
+	err = h.usecase.UpdateMember(&member)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *MemberHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil || id <= 0 {
+		http.Error(w, "invalid member id", http.StatusBadRequest)
+		return
+	}
+
+	var payload struct {
+		IsActive bool `json:"is_active"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.usecase.UpdateMemberStatus(id, payload.IsActive); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 

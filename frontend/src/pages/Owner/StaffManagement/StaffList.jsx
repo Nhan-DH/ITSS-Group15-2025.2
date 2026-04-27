@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Edit, Trash2, Shield, UserCog, Eye, EyeOff, Lock, Key, ChevronLeft, ChevronRight, Power, PowerOff } from 'lucide-react';
 import { useEmployees } from '@/hooks/queries/useEmployees';
-import { useDeleteEmployee, useUpdateEmployeeStatus } from '@/hooks/mutations/useEmployeeMutation';
+import { useDeleteEmployee, useUpdateEmployeeStatus, useUpdateEmployee } from '@/hooks/mutations/useEmployeeMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
@@ -23,6 +23,7 @@ const StaffList = () => {
   const { data: employeeResponse, isLoading, isError } = useEmployees(page, limit);
   const deleteMutation = useDeleteEmployee();
   const statusMutation = useUpdateEmployeeStatus();
+  const updateMutation = useUpdateEmployee();
 
   const handleDelete = () => {
     if (deleteModal.staff) {
@@ -110,7 +111,7 @@ const StaffList = () => {
   };
 
   const handleSaveStaff = () => {
-    setStaffs((prev) => prev.map((item) => (item.id === staffForm.id ? staffForm : item)));
+    updateMutation.mutate({ id: staffForm.id, data: staffForm });
     setSelectedStaff(staffForm);
     setIsEditing(false);
   };
@@ -170,7 +171,7 @@ const StaffList = () => {
                 <TableHead>Tên nhân viên</TableHead>
                 <TableHead>Vị trí</TableHead>
                 <TableHead>Liên hệ</TableHead>
-                <TableHead>Trạng thái</TableHead>
+                <TableHead>Địa chỉ</TableHead>
                 <TableHead className="text-right">Hành động</TableHead>
               </TableRow>
             </TableHeader>
@@ -191,8 +192,8 @@ const StaffList = () => {
                 filteredStaffs.map((staff) => (
                   <TableRow key={staff.id} className="hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer" onClick={() => handleOpenStaffDetail(staff)}>
                     <TableCell className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                      <div className="h-9 w-9 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-                        <img src={staff.photo || staff.Photo || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80'} alt={staff.full_name || staff.FullName || staff.fullName} className="h-full w-full object-cover" />
+                      <div className="h-9 w-9 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                        <img src={(staff.gender || '').toLowerCase() === 'female' || (staff.gender || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'} alt={staff.full_name || staff.FullName || staff.fullName} className="h-full w-full object-cover" />
                       </div>
                       {staff.full_name || staff.FullName || staff.fullName || 'N/A'}
                     </TableCell>
@@ -202,26 +203,13 @@ const StaffList = () => {
                       <div className="text-xs text-gray-500">{staff.email || staff.Email || 'N/A'}</div>
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${
-                        staff.status === 'active' || staff.Status === 'active'
-                          ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-400'
-                          : 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-900/30 dark:text-rose-400'
-                      }`}>
-                        {staff.status === 'active' || staff.Status === 'active' ? 'Hoạt động' : 'Ngừng'}
-                      </span>
+                      <div className="text-sm text-gray-900 dark:text-gray-100 truncate max-w-[200px]" title={staff.address || staff.Address || 'N/A'}>
+                        {staff.address || staff.Address || 'N/A'}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right pr-4">
                       <div className="flex items-center justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          title={staff.status === 'active' ? 'Ngừng hoạt động' : 'Kích hoạt'}
-                          className={`h-8 w-8 ${staff.status === 'active' ? 'text-amber-500' : 'text-green-500'}`}
-                          onClick={(e) => { e.stopPropagation(); handleToggleStatus(staff); }}
-                        >
-                          {staff.status === 'active' ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
-                        </Button>
+                        {/* Kích hoạt button removed as requested */}
                         <Button
                           type="button"
                           variant="ghost"
@@ -371,7 +359,9 @@ const StaffList = () => {
                 <Button variant="outline" onClick={() => { setIsEditing(false); setStaffForm(selectedStaff); }}>
                   Hủy
                 </Button>
-                <Button onClick={handleSaveStaff}>Lưu thay đổi</Button>
+                <Button onClick={handleSaveStaff} disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+                </Button>
               </>
             ) : (
               <>
@@ -385,64 +375,65 @@ const StaffList = () => {
         {staffForm && (
           <div className="space-y-5">
             <div className="flex items-center gap-4">
-              <img src={staffForm.photo} alt={staffForm.fullName} className="h-20 w-20 rounded-2xl object-cover" />
+              <img src={(staffForm.gender || '').toLowerCase() === 'female' || (staffForm.gender || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'} alt={staffForm.full_name || staffForm.fullName || 'Avatar'} className="h-20 w-20 rounded-2xl object-cover flex-shrink-0 border border-gray-200 dark:border-gray-800" />
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Vai trò</p>
-                <p className="text-base font-semibold text-gray-900 dark:text-white">{staffForm.position}</p>
+                <p className="text-base font-semibold text-gray-900 dark:text-white">{staffForm.position || staffForm.Position}</p>
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Họ tên</label>
                 <input
-                  value={staffForm.fullName}
+                  value={staffForm.full_name || staffForm.fullName || staffForm.FullName || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, fullName: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, full_name: e.target.value, fullName: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Giới tính</label>
                 <input
-                  value={staffForm.gender}
+                  value={staffForm.gender || staffForm.Gender || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, gender: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, gender: e.target.value, Gender: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Ngày sinh</label>
                 <input
-                  value={staffForm.dob}
+                  type="date"
+                  value={staffForm.dob ? (staffForm.dob.split('T')[0] || staffForm.dob) : ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, dob: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, dob: e.target.value, DOB: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Chức vụ</label>
                 <input
-                  value={staffForm.position}
+                  value={staffForm.position || staffForm.Position || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, position: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, position: e.target.value, Position: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">SĐT</label>
                 <input
-                  value={staffForm.phone}
+                  value={staffForm.phone || staffForm.Phone || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value, Phone: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
                 <input
-                  value={staffForm.email}
+                  value={staffForm.email || staffForm.Email || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value, Email: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
@@ -450,9 +441,9 @@ const StaffList = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Địa chỉ</label>
               <textarea
-                value={staffForm.address}
+                value={staffForm.address || staffForm.Address || ''}
                 disabled={!isEditing}
-                onChange={(e) => setStaffForm({ ...staffForm, address: e.target.value })}
+                onChange={(e) => setStaffForm({ ...staffForm, address: e.target.value, Address: e.target.value })}
                 className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 rows={3}
               />
@@ -515,3 +506,6 @@ const StaffList = () => {
 };
 
 export default StaffList;
+
+
+

@@ -12,6 +12,6 @@ type Member struct {
 	Address      string    `json:"address"`
 	AccountID    int       `json:"account_id"`
 	PackageName  string    `json:"package_name"`
-	Status       string    `json:"status"`
+	IsActive     bool      `json:"is_active"`
 	RegisteredAt time.Time `json:"registered_at"`
 }

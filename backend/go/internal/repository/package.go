@@ -15,19 +15,29 @@ func NewPackageRepository(db *sql.DB) adapter.MembershipPackageRepository {
 }
 
 func (r *packageRepository) Create(pkg *entity.MembershipPackage) error {
+	var categoryID interface{} = pkg.CategoryID
+	if pkg.CategoryID == 0 {
+		categoryID = nil
+	}
 	query := `INSERT INTO "MembershipPackage" (category_id, package_name, duration_days, price) VALUES ($1, $2, $3, $4) RETURNING id`
-	return r.db.QueryRow(query, pkg.CategoryID, pkg.PackageName, pkg.DurationDays, pkg.Price).Scan(&pkg.ID)
+	return r.db.QueryRow(query, categoryID, pkg.PackageName, pkg.DurationDays, pkg.Price).Scan(&pkg.ID)
 }
 
 func (r *packageRepository) GetByID(id int) (*entity.MembershipPackage, error) {
 	pkg := &entity.MembershipPackage{}
-	query := `SELECT id, category_id, package_name, duration_days, price FROM "MembershipPackage" WHERE id = $1`
-	err := r.db.QueryRow(query, id).Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price)
+	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, '')
+	FROM "MembershipPackage" p
+	LEFT JOIN "ServiceCategory" c ON p.category_id = c.id
+	WHERE p.id = $1`
+	err := r.db.QueryRow(query, id).Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description)
 	return pkg, err
 }
 
 func (r *packageRepository) GetAll() ([]*entity.MembershipPackage, error) {
-	rows, err := r.db.Query(`SELECT id, category_id, package_name, duration_days, price, COALESCE(is_active, true) FROM "MembershipPackage"`)
+	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, '')
+	FROM "MembershipPackage" p
+	LEFT JOIN "ServiceCategory" c ON p.category_id = c.id`
+	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +45,7 @@ func (r *packageRepository) GetAll() ([]*entity.MembershipPackage, error) {
 	var packages []*entity.MembershipPackage
 	for rows.Next() {
 		pkg := &entity.MembershipPackage{}
-		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive)
+		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description)
 		if err != nil {
 			return nil, err
 		}
@@ -57,7 +67,10 @@ func (r *packageRepository) GetAllPaginated(page, limit int) ([]*entity.Membersh
 	offset := (page - 1) * limit
 
 	// Get paginated data
-	query := `SELECT id, category_id, package_name, duration_days, price, COALESCE(is_active, true) FROM "MembershipPackage" ORDER BY id DESC LIMIT $1 OFFSET $2`
+	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, '')
+	FROM "MembershipPackage" p
+	LEFT JOIN "ServiceCategory" c ON p.category_id = c.id
+	ORDER BY p.id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -67,7 +80,7 @@ func (r *packageRepository) GetAllPaginated(page, limit int) ([]*entity.Membersh
 	var packages []*entity.MembershipPackage
 	for rows.Next() {
 		pkg := &entity.MembershipPackage{}
-		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive)
+		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -77,8 +90,12 @@ func (r *packageRepository) GetAllPaginated(page, limit int) ([]*entity.Membersh
 }
 
 func (r *packageRepository) Update(pkg *entity.MembershipPackage) error {
+	var categoryID interface{} = pkg.CategoryID
+	if pkg.CategoryID == 0 {
+		categoryID = nil
+	}
 	query := `UPDATE "MembershipPackage" SET category_id = $1, package_name = $2, duration_days = $3, price = $4 WHERE id = $5`
-	_, err := r.db.Exec(query, pkg.CategoryID, pkg.PackageName, pkg.DurationDays, pkg.Price, pkg.ID)
+	_, err := r.db.Exec(query, categoryID, pkg.PackageName, pkg.DurationDays, pkg.Price, pkg.ID)
 	return err
 }
 

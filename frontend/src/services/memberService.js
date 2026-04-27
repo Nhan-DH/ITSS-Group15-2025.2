@@ -19,6 +19,15 @@ export const memberService = {
     return response;
   },
 
+  getMemberDetail: async (id) => {
+    if (IS_MOCK) {
+      await delay(600);
+      return { id: 1, name: 'Mock Member', phone: '0901234567' };
+    }
+    const response = await axios.get(`/members/${id}`);
+    return response;
+  },
+
   createMember: async (data) => {
     if (IS_MOCK) {
       await delay(800);
@@ -35,15 +44,19 @@ export const memberService = {
     return axios.put(`/members/${id}`, data);
   },
 
+  updateMemberStatus: async (id, isActive) => {
+    if (IS_MOCK) {
+      await delay(500);
+      return { id, is_active: isActive };
+    }
+    return axios.put(`/members/${id}/status`, { is_active: isActive });
+  },
+
   deleteMember: async (id) => {
     if (IS_MOCK) {
       await delay(500);
       return { success: true };
     }
     return axios.delete(`/members/${id}`);
-  },
-
-  updateMemberStatus: async (id, status) => {
-    return axios.put(`/members/${id}`, { status });
   },
 };
