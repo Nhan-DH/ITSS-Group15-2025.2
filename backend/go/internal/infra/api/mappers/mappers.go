@@ -42,7 +42,7 @@ func FeedbackRequestToEntity(req *dto.FeedbackRequest) *entity.Feedback {
 }
 
 func FeedbackEntityToResponse(ent *entity.Feedback) *dto.FeedbackResponse {
-	return &dto.FeedbackResponse{ID: ent.ID, MemberID: ent.MemberID, ProcessorID: ent.ProcessorID, EquipmentID: ent.EquipmentID, Content: ent.Content, Status: ent.Status}
+	return &dto.FeedbackResponse{ID: ent.ID, MemberID: ent.MemberID, MemberName: ent.MemberName, ProcessorID: ent.ProcessorID, EquipmentID: ent.EquipmentID, Content: ent.Content, SentAt: ent.SentAt, ResolutionNote: ent.ResolutionNote, Status: ent.Status, Rating: ent.Rating}
 }
 
 func MemberRequestToEntity(req *dto.MemberRequest) *entity.Member {

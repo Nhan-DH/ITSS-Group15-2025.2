@@ -13,5 +13,4 @@ type Feedback struct {
 	ResolutionNote string    `json:"resolution_note"`
 	Status         string    `json:"status"`
 	Rating         int       `json:"rating"`
-	FeedbackType   string    `json:"feedback_type"`
 }

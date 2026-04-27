@@ -171,8 +171,8 @@ const ManagerDashboard = () => {
           <Link to="/manager/transactions">
             <Button variant="outline">Giao dịch</Button>
           </Link>
-          <Link to="/manager/complaints">
-            <Button variant="outline">Khiếu nại</Button>
+          <Link to="/manager/feedbacks">
+            <Button variant="outline">Phản hồi</Button>
           </Link>
           <Link to="/manager/report">
             <Button variant="outline">Báo cáo</Button>

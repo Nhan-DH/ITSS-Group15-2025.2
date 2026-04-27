@@ -8,6 +8,7 @@ import (
 	"gym-management/internal/domain/entity"
 	"gym-management/internal/domain/usecase/feedback_usecase"
 	"gym-management/internal/infra/api/dto"
+	"gym-management/internal/infra/api/mappers"
 
 	"github.com/gorilla/mux"
 )
@@ -40,7 +41,7 @@ func (h *FeedbackHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(feedback)
+	json.NewEncoder(w).Encode(mappers.FeedbackEntityToResponse(feedback))
 }
 
 func (h *FeedbackHandler) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -65,9 +66,14 @@ func (h *FeedbackHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		feedbackResponses := make([]*dto.FeedbackResponse, len(feedbacks))
+		for i, fb := range feedbacks {
+			feedbackResponses[i] = mappers.FeedbackEntityToResponse(fb)
+		}
+
 		totalPages := (total + limit - 1) / limit
 		response := dto.PaginationResponse{
-			Data:       feedbacks,
+			Data:       feedbackResponses,
 			Page:       page,
 			Limit:      limit,
 			TotalItems: total,
@@ -84,7 +90,11 @@ func (h *FeedbackHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(feedbacks)
+	responses := make([]*dto.FeedbackResponse, len(feedbacks))
+	for i, fb := range feedbacks {
+		responses[i] = mappers.FeedbackEntityToResponse(fb)
+	}
+	json.NewEncoder(w).Encode(responses)
 }
 
 func (h *FeedbackHandler) Update(w http.ResponseWriter, r *http.Request) {

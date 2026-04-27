@@ -32,9 +32,8 @@ import MemberListView from '@/pages/Manager/MemberManagement/MemberListView';
 import MemberDetailView from '@/pages/Manager/MemberManagement/MemberDetailView';
 import TransactionsView from '@/pages/Manager/Transactions/TransactionsView';
 import ScheduleCalendarView from '@/pages/Manager/Schedule/ScheduleCalendarView';
-import ComplaintsView from '@/pages/Manager/Complaints/ComplaintsView';
+import FeedbacksView from '@/pages/Manager/FeedbackManagement/FeedbacksView';
 import ReportsView from '@/pages/Manager/Reports/ReportsView';
-import ManagerFeedbackList from '@/pages/Manager/FeedbackManagement/FeedbackList';
 import ManagerPackageList from '@/pages/Manager/PackageManagement/PackageListView';
 import ManagerPackageDetail from '@/pages/Manager/PackageManagement/PackageDetail';
 
@@ -157,15 +156,13 @@ export const router = createBrowserRouter([
               { path: 'transactions', element: <TransactionsView /> },
               // Schedule
               { path: 'schedule', element: <ScheduleCalendarView /> },
-              // Complaints
-              { path: 'complaints', element: <ComplaintsView /> },
+              // Feedbacks
+              { path: 'feedbacks', element: <FeedbacksView /> },
               // Reports
               { path: 'report', element: <ReportsView /> },
               // Packages (View Only)
               { path: 'packages', element: <ManagerPackageList /> },
-              { path: 'packages/:id', element: <ManagerPackageDetail /> },
-
-              { path: 'feedbacks', element: <ManagerFeedbackList /> }
+              { path: 'packages/:id', element: <ManagerPackageDetail /> }
             ]
           }
         ]

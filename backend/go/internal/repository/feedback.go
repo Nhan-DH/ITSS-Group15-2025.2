@@ -21,13 +21,19 @@ func (r *feedbackRepository) Create(feedback *entity.Feedback) error {
 
 func (r *feedbackRepository) GetByID(id int) (*entity.Feedback, error) {
 	feedback := &entity.Feedback{}
-	query := `SELECT id, COALESCE(member_id, 0), COALESCE(processor_id, 0), COALESCE(equipment_id, 0), COALESCE(content, ''), sent_at, COALESCE(resolution_note, ''), COALESCE(status, '') FROM "Feedback" WHERE id = $1`
-	err := r.db.QueryRow(query, id).Scan(&feedback.ID, &feedback.MemberID, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status)
+	query := `SELECT f.id, COALESCE(f.member_id, 0), COALESCE(m.full_name, 'Unknown'), COALESCE(f.processor_id, 0), COALESCE(f.equipment_id, 0), COALESCE(f.content, ''), f.sent_at, COALESCE(f.resolution_note, ''), COALESCE(f.status, ''), COALESCE(f.rating, 0)
+	FROM "Feedback" f
+	LEFT JOIN "Member" m ON f.member_id = m.id
+	WHERE f.id = $1`
+	err := r.db.QueryRow(query, id).Scan(&feedback.ID, &feedback.MemberID, &feedback.MemberName, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status, &feedback.Rating)
 	return feedback, err
 }
 
 func (r *feedbackRepository) GetAll() ([]*entity.Feedback, error) {
-	rows, err := r.db.Query(`SELECT id, COALESCE(member_id, 0), COALESCE(processor_id, 0), COALESCE(equipment_id, 0), COALESCE(content, ''), sent_at, COALESCE(resolution_note, ''), COALESCE(status, '') FROM "Feedback"`)
+	rows, err := r.db.Query(`SELECT f.id, COALESCE(f.member_id, 0), COALESCE(m.full_name, 'Unknown'), COALESCE(f.processor_id, 0), COALESCE(f.equipment_id, 0), COALESCE(f.content, ''), f.sent_at, COALESCE(f.resolution_note, ''), COALESCE(f.status, ''), COALESCE(f.rating, 0)
+	FROM "Feedback" f
+	LEFT JOIN "Member" m ON f.member_id = m.id
+	ORDER BY f.id DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +41,7 @@ func (r *feedbackRepository) GetAll() ([]*entity.Feedback, error) {
 	var feedbacks []*entity.Feedback
 	for rows.Next() {
 		feedback := &entity.Feedback{}
-		err := rows.Scan(&feedback.ID, &feedback.MemberID, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status)
+		err := rows.Scan(&feedback.ID, &feedback.MemberID, &feedback.MemberName, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status, &feedback.Rating)
 		if err != nil {
 			return nil, err
 		}
@@ -73,7 +79,7 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 	var err error
 
 	if status != "" {
-		query = `SELECT f.id, COALESCE(f.member_id, 0), COALESCE(m.full_name, 'Unknown'), COALESCE(f.processor_id, 0), COALESCE(f.equipment_id, 0), COALESCE(f.content, ''), f.sent_at, COALESCE(f.resolution_note, ''), COALESCE(f.status, ''), COALESCE(f.rating, 0), 'service'
+		query = `SELECT f.id, COALESCE(f.member_id, 0), COALESCE(m.full_name, 'Unknown'), COALESCE(f.processor_id, 0), COALESCE(f.equipment_id, 0), COALESCE(f.content, ''), f.sent_at, COALESCE(f.resolution_note, ''), COALESCE(f.status, ''), COALESCE(f.rating, 0)
 			FROM "Feedback" f
 			LEFT JOIN "Member" m ON f.member_id = m.id
 			WHERE f.status = $1 
@@ -81,7 +87,7 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 			LIMIT $2 OFFSET $3`
 		rows, err = r.db.Query(query, status, limit, offset)
 	} else {
-		query = `SELECT f.id, COALESCE(f.member_id, 0), COALESCE(m.full_name, 'Unknown'), COALESCE(f.processor_id, 0), COALESCE(f.equipment_id, 0), COALESCE(f.content, ''), f.sent_at, COALESCE(f.resolution_note, ''), COALESCE(f.status, ''), COALESCE(f.rating, 0), 'service'
+		query = `SELECT f.id, COALESCE(f.member_id, 0), COALESCE(m.full_name, 'Unknown'), COALESCE(f.processor_id, 0), COALESCE(f.equipment_id, 0), COALESCE(f.content, ''), f.sent_at, COALESCE(f.resolution_note, ''), COALESCE(f.status, ''), COALESCE(f.rating, 0)
 			FROM "Feedback" f
 			LEFT JOIN "Member" m ON f.member_id = m.id
 			ORDER BY f.id DESC 
@@ -97,7 +103,7 @@ func (r *feedbackRepository) GetAllPaginated(page, limit int, status string) ([]
 	var feedbacks []*entity.Feedback
 	for rows.Next() {
 		feedback := &entity.Feedback{}
-		err := rows.Scan(&feedback.ID, &feedback.MemberID, &feedback.MemberName, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status, &feedback.Rating, &feedback.FeedbackType)
+		err := rows.Scan(&feedback.ID, &feedback.MemberID, &feedback.MemberName, &feedback.ProcessorID, &feedback.EquipmentID, &feedback.Content, &feedback.SentAt, &feedback.ResolutionNote, &feedback.Status, &feedback.Rating)
 		if err != nil {
 			return nil, 0, err
 		}

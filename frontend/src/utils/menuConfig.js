@@ -16,7 +16,7 @@ export const menus = {
     { title: "Hội viên", path: "/manager/members", icon: "Users" },
     { title: "Giao dịch", path: "/manager/transactions", icon: "CreditCard" },
     { title: "Lịch PT", path: "/manager/schedule", icon: "Calendar" },
-    { title: "Khiếu nại", path: "/manager/complaints", icon: "AlertCircle" },
+    { title: "Phản hồi", path: "/manager/feedbacks", icon: "MessageSquare" },
     { title: "Báo cáo", path: "/manager/report", icon: "BarChartBig" },
     { title: "Gói tập", path: "/manager/packages", icon: "Package" },
   ],
