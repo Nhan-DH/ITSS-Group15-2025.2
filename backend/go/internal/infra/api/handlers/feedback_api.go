@@ -8,6 +8,7 @@ import (
 	"gym-management/internal/domain/entity"
 	"gym-management/internal/domain/usecase/feedback_usecase"
 	"gym-management/internal/infra/api/dto"
+	"gym-management/internal/infra/api/mappers"
 
 	"github.com/gorilla/mux"
 )
@@ -40,7 +41,7 @@ func (h *FeedbackHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(feedback)
+	json.NewEncoder(w).Encode(mappers.FeedbackEntityToResponse(feedback))
 }
 
 func (h *FeedbackHandler) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -65,9 +66,14 @@ func (h *FeedbackHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		feedbackResponses := make([]*dto.FeedbackResponse, len(feedbacks))
+		for i, fb := range feedbacks {
+			feedbackResponses[i] = mappers.FeedbackEntityToResponse(fb)
+		}
+
 		totalPages := (total + limit - 1) / limit
 		response := dto.PaginationResponse{
-			Data:       feedbacks,
+			Data:       feedbackResponses,
 			Page:       page,
 			Limit:      limit,
 			TotalItems: total,
@@ -84,13 +90,34 @@ func (h *FeedbackHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(feedbacks)
+	responses := make([]*dto.FeedbackResponse, len(feedbacks))
+	for i, fb := range feedbacks {
+		responses[i] = mappers.FeedbackEntityToResponse(fb)
+	}
+	json.NewEncoder(w).Encode(responses)
 }
 
 func (h *FeedbackHandler) Update(w http.ResponseWriter, r *http.Request) {
-	var feedback entity.Feedback
-	json.NewDecoder(r.Body).Decode(&feedback)
-	err := h.usecase.UpdateFeedback(&feedback)
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
+	var req map[string]interface{}
+	json.NewDecoder(r.Body).Decode(&req)
+
+	existing, err := h.usecase.GetFeedbackByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if status, ok := req["status"].(string); ok {
+		existing.Status = status
+	}
+	if responseText, ok := req["response_text"].(string); ok {
+		existing.ResolutionNote = responseText
+	} else if resolutionNote, ok := req["resolution_note"].(string); ok {
+		existing.ResolutionNote = resolutionNote
+	}
+
+	err = h.usecase.UpdateFeedback(existing)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

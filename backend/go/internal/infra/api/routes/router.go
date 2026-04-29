@@ -14,6 +14,7 @@ func NewRouter(
 	packageHandler *handlers.PackageHandler,
 	equipmentHandler *handlers.EquipmentHandler,
 	feedbackHandler *handlers.FeedbackHandler,
+	invoiceHandler *handlers.InvoiceHandler,
 	roleHandler *handlers.RoleHandler,
 	facilityHandler *handlers.FacilityHandler,
 	accountHandler *handlers.AccountHandler,
@@ -90,6 +91,7 @@ func NewRouter(
 	ownerManager.HandleFunc("/feedbacks", feedbackHandler.GetAll).Methods("GET")
 	ownerManager.HandleFunc("/feedbacks/{id}", feedbackHandler.Update).Methods("PUT")
 	ownerManager.HandleFunc("/feedbacks/{id}", feedbackHandler.Delete).Methods("DELETE")
+	ownerManager.HandleFunc("/transactions", invoiceHandler.GetTransactions).Methods("GET")
 
 	ownerManager.HandleFunc("/subscriptions", subscriptionHandler.Create).Methods("POST")
 	ownerManager.HandleFunc("/subscriptions/{id}", subscriptionHandler.Update).Methods("PUT")

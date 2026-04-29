@@ -28,10 +28,10 @@ const EquipmentFormPage = () => {
             name: data.equipment_name || data.name,
             code: data.serial_number || data.code || '',
             quantity: data.quantity || 1,
-            status: data.status || 'active',
+            status: data.status || 'Operating',
             purchaseDate: data.purchase_date ? data.purchase_date.split('T')[0] : '',
             warrantyUntil: data.maintenance_deadline ? data.maintenance_deadline.split('T')[0] : '',
-            facility_id: data.facility_id || '',
+            facility_id: data.facility_id || 1,
             origin: data.origin || ''
           });
         })

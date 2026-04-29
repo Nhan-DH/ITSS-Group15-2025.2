@@ -70,12 +70,16 @@ type FeedbackRequest struct {
 }
 
 type FeedbackResponse struct {
-	ID          int    `json:"id"`
-	MemberID    int    `json:"member_id"`
-	ProcessorID int    `json:"processor_id"`
-	EquipmentID int    `json:"equipment_id"`
-	Content     string `json:"content"`
-	Status      string `json:"status"`
+	ID             int       `json:"id"`
+	MemberID       int       `json:"member_id"`
+	MemberName     string    `json:"member_name"`
+	ProcessorID    int       `json:"processor_id"`
+	EquipmentID    int       `json:"equipment_id"`
+	Content        string    `json:"content"`
+	SentAt         time.Time `json:"sent_at"`
+	ResolutionNote string    `json:"resolution_note"`
+	Status         string    `json:"status"`
+	Rating         int       `json:"rating"`
 }
 
 type MemberRequest struct {
@@ -112,6 +116,7 @@ type PackageResponse struct {
 	PackageName  string  `json:"package_name"`
 	DurationDays int     `json:"duration_days"`
 	Price        float64 `json:"price"`
+	Description  string  `json:"description"`
 }
 
 type PTDetailRequest struct {

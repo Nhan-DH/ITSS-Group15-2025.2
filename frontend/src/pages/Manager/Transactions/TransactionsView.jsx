@@ -1,119 +1,76 @@
-import React, { useState } from 'react';
-import { Search, Filter, Eye, Check, X } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Search, Eye } from 'lucide-react';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
 import Badge from '@/components/Common/Badge';
 import Modal from '@/components/Common/Modal';
-
-// Mock Transactions Data
-const transactionsMockData = [
-    {
-        id: 1,
-        type: 'registration',
-        customerName: 'Nguyễn Văn A',
-        phone: '0901234567',
-        package: 'Gói VIP',
-        date: '2026-04-10',
-        amount: 2500000,
-        status: 'completed',
-        paymentMethod: 'Credit Card',
-        notes: 'Thanh toán thành công'
-    },
-    {
-        id: 2,
-        type: 'renewal',
-        customerName: 'Trần Thị B',
-        phone: '0912345678',
-        package: 'Gói Cơ Bản',
-        date: '2026-04-09',
-        amount: 1000000,
-        status: 'completed',
-        paymentMethod: 'Cash',
-        notes: 'Gia hạn tự động'
-    },
-    {
-        id: 3,
-        type: 'registration',
-        customerName: 'Lê Văn C',
-        phone: '0923456789',
-        package: 'Lớp Nhóm',
-        date: '2026-04-08',
-        amount: 800000,
-        status: 'pending',
-        paymentMethod: 'Bank Transfer',
-        notes: 'Chờ xác nhận'
-    },
-    {
-        id: 4,
-        type: 'renewal',
-        customerName: 'Phạm Minh D',
-        phone: '0934567890',
-        package: 'Gói Nâng Cao',
-        date: '2026-04-07',
-        amount: 1500000,
-        status: 'completed',
-        paymentMethod: 'Credit Card',
-        notes: 'Thanh toán thành công'
-    },
-    {
-        id: 5,
-        type: 'registration',
-        customerName: 'Hoàng Thị E',
-        phone: '0945678901',
-        package: 'Gói VIP',
-        date: '2026-04-06',
-        amount: 2500000,
-        status: 'failed',
-        paymentMethod: 'E-wallet',
-        notes: 'Thanh toán thất bại - Thử lại'
-    },
-    {
-        id: 6,
-        type: 'renewal',
-        customerName: 'Vũ Văn F',
-        phone: '0956789012',
-        package: 'Gói Cơ Bản',
-        date: '2026-04-05',
-        amount: 1000000,
-        status: 'completed',
-        paymentMethod: 'Cash',
-        notes: 'Thanh toán thành công'
-    },
-    {
-        id: 7,
-        type: 'registration',
-        customerName: 'Đỗ Thị G',
-        phone: '0967890123',
-        package: 'Lớp Nhóm',
-        date: '2026-04-04',
-        amount: 800000,
-        status: 'completed',
-        paymentMethod: 'Bank Transfer',
-        notes: 'Thanh toán thành công'
-    },
-    {
-        id: 8,
-        type: 'renewal',
-        customerName: 'Bùi Văn H',
-        phone: '0978901234',
-        package: 'Gói Nâng Cao',
-        date: '2026-04-03',
-        amount: 1500000,
-        status: 'pending',
-        paymentMethod: 'E-wallet',
-        notes: 'Chờ xác nhận từ ví điện tử'
-    }
-];
+import { useTransactions } from '@/hooks/queries/useTransactions';
 
 const transactionTypeConfig = {
     registration: { label: 'Đăng ký mới', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
-    renewal: { label: 'Gia hạn', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' }
+    renewal: { label: 'Gia hạn', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+    unknown: { label: 'Không xác định', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400' }
 };
 
 const statusConfig = {
     completed: { label: 'Hoàn thành', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
     pending: { label: 'Chờ xác nhận', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
-    failed: { label: 'Thất bại', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' }
+    failed: { label: 'Thất bại', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
+    unknown: { label: 'Không xác định', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400' }
+};
+
+const normalizeStatus = (status) => {
+    const value = String(status || '').trim().toLowerCase();
+
+    if (['paid', 'completed', 'complete', 'success', 'successful'].includes(value)) return 'completed';
+    if (['pending', 'waiting', 'processing'].includes(value)) return 'pending';
+    if (['cancelled', 'canceled', 'failed', 'fail', 'rejected'].includes(value)) return 'failed';
+
+    return 'unknown';
+};
+
+const normalizeType = (type) => {
+    const value = String(type || '').trim().toLowerCase();
+    return ['registration', 'renewal'].includes(value) ? value : 'unknown';
+};
+
+const normalizeTransaction = (transaction) => {
+    const normalizedStatus = normalizeStatus(transaction.status);
+    const normalizedType = normalizeType(transaction.type);
+
+    return {
+        ...transaction,
+        amount: Number(transaction.amount || 0),
+        customerName: transaction.customerName || 'N/A',
+        phone: transaction.phone || 'N/A',
+        package: transaction.package || 'Chưa có gói',
+        paymentMethod: transaction.paymentMethod || 'N/A',
+        notes: transaction.notes || 'Không có ghi chú',
+        rawStatus: transaction.status || '',
+        rawType: transaction.type || '',
+        status: normalizedStatus,
+        type: normalizedType,
+        date: transaction.date || null,
+    };
+};
+
+const formatAmount = (amount) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(amount || 0));
+};
+
+const formatDate = (date) => {
+    if (!date) return 'N/A';
+
+    const parsedDate = new Date(date);
+    if (Number.isNaN(parsedDate.getTime())) return 'N/A';
+
+    return new Intl.DateTimeFormat('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(parsedDate);
 };
 
 const TransactionsView = () => {
@@ -123,70 +80,116 @@ const TransactionsView = () => {
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
 
-    // Filter transactions
-    const filteredTransactions = transactionsMockData.filter(txn => {
-        const matchSearch =
-            txn.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            txn.phone.includes(searchTerm) ||
-            txn.id.toString().includes(searchTerm);
+    const { data: apiTransactions = [], isLoading, isError, error } = useTransactions();
 
-        const matchType = typeFilter === 'all' || txn.type === typeFilter;
-        const matchStatus = statusFilter === 'all' || txn.status === statusFilter;
+    const transactions = useMemo(() => {
+        const list = Array.isArray(apiTransactions?.data)
+            ? apiTransactions.data
+            : Array.isArray(apiTransactions)
+                ? apiTransactions
+                : [];
 
-        return matchSearch && matchType && matchStatus;
-    });
+        return list.map(normalizeTransaction);
+    }, [apiTransactions]);
+
+    const filteredTransactions = useMemo(() => {
+        const keyword = searchTerm.trim().toLowerCase();
+
+        return transactions.filter((txn) => {
+            const matchSearch = !keyword
+                || txn.customerName.toLowerCase().includes(keyword)
+                || String(txn.phone).toLowerCase().includes(keyword)
+                || String(txn.id).includes(keyword)
+                || txn.package.toLowerCase().includes(keyword);
+
+            const matchType = typeFilter === 'all' || txn.type === typeFilter;
+            const matchStatus = statusFilter === 'all' || txn.status === statusFilter;
+
+            return matchSearch && matchType && matchStatus;
+        });
+    }, [transactions, searchTerm, typeFilter, statusFilter]);
+
+    const stats = useMemo(() => {
+        const completedTransactions = transactions.filter((txn) => txn.status === 'completed');
+
+        return {
+            total: transactions.length,
+            completed: completedTransactions.length,
+            revenue: completedTransactions.reduce((sum, txn) => sum + txn.amount, 0),
+        };
+    }, [transactions]);
 
     const handleViewDetail = (transaction) => {
         setSelectedTransaction(transaction);
         setShowDetailModal(true);
     };
 
-    const formatAmount = (amount) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-    };
+    const getTypeConfig = (type) => transactionTypeConfig[type] || transactionTypeConfig.unknown;
+    const getStatusConfig = (status) => statusConfig[status] || statusConfig.unknown;
+
+    if (isLoading) {
+        return (
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Quản lý giao dịch</h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Danh sách đăng ký mới và gia hạn gói tập</p>
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-white p-12 text-center shadow-sm dark:border-gray-800 dark:bg-gray-950">
+                    <p className="text-gray-500 dark:text-gray-400">Đang tải dữ liệu giao dịch...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Quản lý giao dịch</h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Danh sách đăng ký mới và gia hạn gói tập</p>
+                </div>
+                <div className="rounded-xl border border-red-100 bg-red-50 p-6 dark:border-red-900 dark:bg-red-900/20">
+                    <p className="font-medium text-red-700 dark:text-red-300">Không tải được dữ liệu giao dịch.</p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error?.message || 'Vui lòng kiểm tra backend và thử lại.'}</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
-            {/* Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Quản Lý Giao Dịch</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Quản lý giao dịch</h1>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Danh sách đăng ký mới và gia hạn gói tập
+                        Dữ liệu thanh toán từ bảng Invoice, liên kết hội viên và gói tập
                     </p>
                 </div>
             </div>
 
-            {/* Stats */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
                     <p className="text-sm text-gray-500 dark:text-gray-400">Tổng giao dịch</p>
-                    <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{transactionsMockData.length}</p>
+                    <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
                 </div>
                 <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
                     <p className="text-sm text-gray-500 dark:text-gray-400">Hoàn thành</p>
-                    <p className="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">
-                        {transactionsMockData.filter(t => t.status === 'completed').length}
-                    </p>
+                    <p className="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">{stats.completed}</p>
                 </div>
                 <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
                     <p className="text-sm text-gray-500 dark:text-gray-400">Tổng doanh thu</p>
-                    <p className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {formatAmount(transactionsMockData.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.amount, 0))}
-                    </p>
+                    <p className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">{formatAmount(stats.revenue)}</p>
                 </div>
             </div>
 
-            {/* Filters */}
             <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    {/* Search */}
                     <div className="flex-1">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                             <Input
                                 type="text"
-                                placeholder="Tìm theo tên, SĐT hoặc ID..."
+                                placeholder="Tìm theo tên, SĐT, ID hoặc gói tập..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10"
@@ -194,7 +197,6 @@ const TransactionsView = () => {
                         </div>
                     </div>
 
-                    {/* Type Filter */}
                     <select
                         value={typeFilter}
                         onChange={(e) => setTypeFilter(e.target.value)}
@@ -205,7 +207,6 @@ const TransactionsView = () => {
                         <option value="renewal">Gia hạn</option>
                     </select>
 
-                    {/* Status Filter */}
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
@@ -219,11 +220,10 @@ const TransactionsView = () => {
                 </div>
 
                 <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                    Hiển thị <span className="font-medium">{filteredTransactions.length}</span> trong <span className="font-medium">{transactionsMockData.length}</span> giao dịch
+                    Hiển thị <span className="font-medium">{filteredTransactions.length}</span> trong <span className="font-medium">{transactions.length}</span> giao dịch
                 </div>
             </div>
 
-            {/* Transactions Table */}
             <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
                 <table className="w-full">
                     <thead className="border-b border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
@@ -246,45 +246,45 @@ const TransactionsView = () => {
                                 </td>
                             </tr>
                         ) : (
-                            filteredTransactions.map((txn) => (
-                                <tr key={txn.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
-                                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">#{txn.id}</td>
-                                    <td className="px-6 py-4">
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{txn.customerName}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{txn.phone}</p>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <Badge className={transactionTypeConfig[txn.type].color}>
-                                            {transactionTypeConfig[txn.type].label}
-                                        </Badge>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{txn.package}</td>
-                                    <td className="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">{formatAmount(txn.amount)}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{txn.date}</td>
-                                    <td className="px-6 py-4">
-                                        <Badge className={statusConfig[txn.status].color}>
-                                            {statusConfig[txn.status].label}
-                                        </Badge>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <button
-                                            onClick={() => handleViewDetail(txn)}
-                                            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                                        >
-                                            <Eye size={16} />
-                                            <span className="text-sm">Chi tiết</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
+                            filteredTransactions.map((txn) => {
+                                const typeConfig = getTypeConfig(txn.type);
+                                const currentStatusConfig = getStatusConfig(txn.status);
+
+                                return (
+                                    <tr key={txn.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">#{txn.id}</td>
+                                        <td className="px-6 py-4">
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900 dark:text-white">{txn.customerName}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{txn.phone}</p>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <Badge className={typeConfig.color}>{typeConfig.label}</Badge>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{txn.package}</td>
+                                        <td className="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">{formatAmount(txn.amount)}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{formatDate(txn.date)}</td>
+                                        <td className="px-6 py-4">
+                                            <Badge className={currentStatusConfig.color}>{currentStatusConfig.label}</Badge>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <button
+                                                onClick={() => handleViewDetail(txn)}
+                                                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                            >
+                                                <Eye size={16} />
+                                                <span className="text-sm">Chi tiết</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>
             </div>
 
-            {/* Detail Modal */}
             {showDetailModal && selectedTransaction && (
                 <Modal
                     isOpen={showDetailModal}
@@ -299,7 +299,7 @@ const TransactionsView = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Ngày</p>
-                                <p className="text-lg font-semibold text-gray-900 dark:text-white">{selectedTransaction.date}</p>
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatDate(selectedTransaction.date)}</p>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Khách hàng</p>
@@ -311,9 +311,7 @@ const TransactionsView = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Loại giao dịch</p>
-                                <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                                    {transactionTypeConfig[selectedTransaction.type].label}
-                                </p>
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{getTypeConfig(selectedTransaction.type).label}</p>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Gói tập</p>
@@ -335,27 +333,12 @@ const TransactionsView = () => {
                         </div>
 
                         <div className="flex gap-2">
-                            <Badge className={statusConfig[selectedTransaction.status].color}>
-                                {statusConfig[selectedTransaction.status].label}
+                            <Badge className={getStatusConfig(selectedTransaction.status).color}>
+                                {getStatusConfig(selectedTransaction.status).label}
                             </Badge>
                         </div>
 
                         <div className="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
-                            {selectedTransaction.status === 'pending' && (
-                                <>
-                                    <Button variant="outline">
-                                        <X size={16} /> Từ chối
-                                    </Button>
-                                    <Button>
-                                        <Check size={16} /> Xác nhận
-                                    </Button>
-                                </>
-                            )}
-                            {selectedTransaction.status === 'failed' && (
-                                <Button>
-                                    <Check size={16} /> Thử lại
-                                </Button>
-                            )}
                             <Button variant="outline" onClick={() => setShowDetailModal(false)}>
                                 Đóng
                             </Button>

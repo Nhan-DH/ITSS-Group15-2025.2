@@ -16,19 +16,39 @@ func NewMemberRepository(db *sql.DB) adapter.MemberRepository {
 }
 
 func (r *memberRepository) Create(member *entity.Member) error {
+	var accountID interface{} = member.AccountID
+	if member.AccountID == 0 {
+		accountID = nil
+	}
 	query := `INSERT INTO "Member" (full_name, phone, email, gender, dob, address, account_id, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
-	return r.db.QueryRow(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, member.AccountID, member.IsActive).Scan(&member.ID)
+	return r.db.QueryRow(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, accountID, member.IsActive).Scan(&member.ID)
 }
 
 func (r *memberRepository) GetByID(id int) (*entity.Member, error) {
 	member := &entity.Member{}
-	query := `SELECT id, full_name, COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), is_active FROM "Member" WHERE id = $1`
-	err := r.db.QueryRow(query, id).Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive)
+	query := `SELECT m.id, COALESCE(m.full_name, ''), COALESCE(m.phone, ''), COALESCE(m.email, ''), COALESCE(m.gender, ''), COALESCE(m.dob, CURRENT_DATE), COALESCE(m.address, ''), COALESCE(m.account_id, 0), COALESCE(m.is_active, true), COALESCE(p.package_name, ''), COALESCE(s.registration_date, CURRENT_DATE) 
+	FROM "Member" m
+	LEFT JOIN (
+		SELECT DISTINCT ON (member_id) member_id, package_id, registration_date 
+		FROM "Subscription" 
+		ORDER BY member_id, id DESC
+	) s ON m.id = s.member_id
+	LEFT JOIN "MembershipPackage" p ON s.package_id = p.id
+	WHERE m.id = $1`
+	err := r.db.QueryRow(query, id).Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive, &member.PackageName, &member.RegisteredAt)
 	return member, err
 }
 
 func (r *memberRepository) GetAll() ([]*entity.Member, error) {
-	rows, err := r.db.Query(`SELECT id, full_name, COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), is_active FROM "Member"`)
+	query := `SELECT m.id, COALESCE(m.full_name, ''), COALESCE(m.phone, ''), COALESCE(m.email, ''), COALESCE(m.gender, ''), COALESCE(m.dob, CURRENT_DATE), COALESCE(m.address, ''), COALESCE(m.account_id, 0), COALESCE(m.is_active, true), COALESCE(p.package_name, ''), COALESCE(s.registration_date, CURRENT_DATE) 
+	FROM "Member" m
+	LEFT JOIN (
+		SELECT DISTINCT ON (member_id) member_id, package_id, registration_date 
+		FROM "Subscription" 
+		ORDER BY member_id, id DESC
+	) s ON m.id = s.member_id
+	LEFT JOIN "MembershipPackage" p ON s.package_id = p.id`
+	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +56,7 @@ func (r *memberRepository) GetAll() ([]*entity.Member, error) {
 	var members []*entity.Member
 	for rows.Next() {
 		member := &entity.Member{}
-		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive)
+		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive, &member.PackageName, &member.RegisteredAt)
 		if err != nil {
 			return nil, err
 		}
@@ -57,8 +77,15 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 	// Calculate offset
 	offset := (page - 1) * limit
 
-	// Get paginated data
-	query := `SELECT id, full_name, COALESCE(phone, ''), COALESCE(email, ''), COALESCE(gender, ''), COALESCE(dob, CURRENT_DATE), COALESCE(address, ''), COALESCE(account_id, 0), is_active FROM "Member" ORDER BY id DESC LIMIT $1 OFFSET $2`
+	query := `SELECT m.id, COALESCE(m.full_name, ''), COALESCE(m.phone, ''), COALESCE(m.email, ''), COALESCE(m.gender, ''), COALESCE(m.dob, CURRENT_DATE), COALESCE(m.address, ''), COALESCE(m.account_id, 0), COALESCE(m.is_active, true), COALESCE(p.package_name, ''), COALESCE(s.registration_date, CURRENT_DATE) 
+	FROM "Member" m
+	LEFT JOIN (
+		SELECT DISTINCT ON (member_id) member_id, package_id, registration_date 
+		FROM "Subscription" 
+		ORDER BY member_id, id DESC
+	) s ON m.id = s.member_id
+	LEFT JOIN "MembershipPackage" p ON s.package_id = p.id
+	ORDER BY m.id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -68,7 +95,7 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 	var members []*entity.Member
 	for rows.Next() {
 		member := &entity.Member{}
-		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive)
+		err := rows.Scan(&member.ID, &member.FullName, &member.Phone, &member.Email, &member.Gender, &member.DOB, &member.Address, &member.AccountID, &member.IsActive, &member.PackageName, &member.RegisteredAt)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -82,8 +109,12 @@ func (r *memberRepository) GetAllPaginated(page, limit int) ([]*entity.Member, i
 }
 
 func (r *memberRepository) Update(member *entity.Member) error {
+	var accountID interface{} = member.AccountID
+	if member.AccountID == 0 {
+		accountID = nil
+	}
 	query := `UPDATE "Member" SET full_name = $1, phone = $2, email = $3, gender = $4, dob = $5, address = $6, account_id = $7, is_active = $8 WHERE id = $9`
-	_, err := r.db.Exec(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, member.AccountID, member.IsActive, member.ID)
+	_, err := r.db.Exec(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, accountID, member.IsActive, member.ID)
 	return err
 }
 
@@ -173,7 +204,7 @@ func (r *memberRepository) GetMemberByIDWithDetails(id int) (*dto.MemberDetailDT
 		CASE WHEN m.is_active = true THEN 'active' ELSE 'inactive' END as status,
 		COALESCE(TO_CHAR(s.end_date, 'YYYY-MM-DD'), '') as end_date,
 		COALESCE(TO_CHAR(s.start_date, 'YYYY-MM-DD'), '') as start_date,
-		m.is_active
+		COALESCE(m.is_active, true) as is_active
 	FROM "Member" m
 	LEFT JOIN "Subscription" s ON m.id = s.member_id AND s.status NOT IN ('Expired', 'Cancelled')
 	LEFT JOIN "MembershipPackage" mp ON s.package_id = mp.id

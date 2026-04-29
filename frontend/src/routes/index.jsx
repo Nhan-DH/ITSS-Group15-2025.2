@@ -4,8 +4,6 @@ import MainLayout from '@/components/Layout/MainLayout';
 import TrainerLayout from '@/components/Layout/TrainerLayout';
 import PrivateRoute from './PrivateRoute';
 import RoleBasedRoute from './RoleBasedRoute';
-
-
 import Login from '@/pages/Login/Login';
 import OwnerDashboard from '@/pages/Owner/OwnerDashboard';
 import MemberList from '@/pages/Owner/MemberManagement/MemberList';
@@ -32,20 +30,15 @@ import MemberListView from '@/pages/Manager/MemberManagement/MemberListView';
 import MemberDetailView from '@/pages/Manager/MemberManagement/MemberDetailView';
 import TransactionsView from '@/pages/Manager/Transactions/TransactionsView';
 import ScheduleCalendarView from '@/pages/Manager/Schedule/ScheduleCalendarView';
-import ComplaintsView from '@/pages/Manager/Complaints/ComplaintsView';
+import FeedbacksView from '@/pages/Manager/FeedbackManagement/FeedbacksView';
 import ReportsView from '@/pages/Manager/Reports/ReportsView';
-import ManagerFeedbackList from '@/pages/Manager/FeedbackManagement/FeedbackList';
 import ManagerPackageList from '@/pages/Manager/PackageManagement/PackageListView';
 import ManagerPackageDetail from '@/pages/Manager/PackageManagement/PackageDetail';
-
 import TrainerDashboard from '@/pages/Trainer/TrainerDashboard';
 import TrainerProfile from '@/pages/Trainer/TrainerProfile';
 import StudentList from '@/pages/Trainer/StudentManagement/StudentList';
-import StudentDetail from '@/pages/Trainer/StudentManagement/StudentDetail';
 import TrackProgress from '@/pages/Trainer/StudentManagement/TrackProgress';
 import ScheduleList from '@/pages/Trainer/Schedule/ScheduleList';
-import EvaluationForm from '@/pages/Trainer/Evaluation/EvaluationForm';
-
 import MemberDashboard from '@/pages/Member/MemberDashboard';
 import PackageInfo from '@/pages/Member/MyPackage/PackageInfo';
 import TrainingHistory from '@/pages/Member/MyPackage/TrainingHistory';
@@ -57,7 +50,6 @@ import SendFeedback from '@/pages/Member/Feedback/SendFeedback';
 import ProfileInfo from '@/pages/Member/Profile/ProfileInfo';
 import EditProfile from '@/pages/Member/Profile/EditProfile';
 import Schedule from '@/pages/Member/Schedule/Schedule';
-import BookTraining from '@/pages/Member/BookTraining/BookTraining';
 
 export const router = createBrowserRouter([
   // Public Route: Bất kỳ ai cũng vào được (Login, Register)
@@ -66,6 +58,7 @@ export const router = createBrowserRouter([
     element: <Login />,
   },
   // Private Routes: Phải có Token JWT (Bọc bởi PrivateRoute)
+
   {
     path: '/',
     element: <PrivateRoute />,
@@ -87,10 +80,8 @@ export const router = createBrowserRouter([
               { path: 'profile', element: <TrainerProfile /> },
               { path: 'dashboard', element: <TrainerDashboard /> },
               { path: 'students', element: <StudentList /> },
-              { path: 'students/:id', element: <StudentDetail /> },
               { path: 'students/:id/progress', element: <TrackProgress /> },
-              { path: 'schedule', element: <ScheduleList /> },
-              { path: 'evaluation', element: <EvaluationForm /> }
+              { path: 'schedule', element: <ScheduleList /> }
             ]
           }
         ]
@@ -106,7 +97,6 @@ export const router = createBrowserRouter([
             children: [
               { path: 'dashboard', element: <MemberDashboard /> },
               { path: 'schedule', element: <Schedule /> },
-              { path: 'book-training', element: <BookTraining /> },
               { path: 'my-package', element: <PackageInfo /> },
               { path: 'history', element: <TrainingHistory /> },
               { path: 'register', element: <RegisterGymPackage /> },
@@ -161,15 +151,13 @@ export const router = createBrowserRouter([
               { path: 'transactions', element: <TransactionsView /> },
               // Schedule
               { path: 'schedule', element: <ScheduleCalendarView /> },
-              // Complaints
-              { path: 'complaints', element: <ComplaintsView /> },
+              // Feedbacks
+              { path: 'feedbacks', element: <FeedbacksView /> },
               // Reports
               { path: 'report', element: <ReportsView /> },
               // Packages (View Only)
               { path: 'packages', element: <ManagerPackageList /> },
-              { path: 'packages/:id', element: <ManagerPackageDetail /> },
-
-              { path: 'feedbacks', element: <ManagerFeedbackList /> }
+              { path: 'packages/:id', element: <ManagerPackageDetail /> }
             ]
           }
         ]

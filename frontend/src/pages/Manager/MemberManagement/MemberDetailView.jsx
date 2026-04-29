@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Phone, Mail, Calendar, Pause, Edit2, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Phone, Mail, Calendar, Pause, Play, AlertCircle } from 'lucide-react';
 import { useMemberDetails } from '@/hooks/queries/useMembers';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/Common/Button';
@@ -95,10 +95,15 @@ const MemberDetailView = () => {
                     <span>Quay lại</span>
                 </button>
                 <div className="flex gap-2">
-                    {/* Kích hoạt button removed as requested */}
-                    <Button variant="outline" size="sm">
-                        <Edit2 size={16} />
-                        Chỉnh sửa
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handleToggleStatus}
+                        disabled={toggleStatusMutation.isPending}
+                        title={member?.is_active ? 'Tạm dừng tài khoản' : 'Kích hoạt tài khoản'}
+                        leftIcon={member?.is_active ? <Pause size={16} /> : <Play size={16} />}
+                    >
+                        {member?.is_active ? 'Tạm dừng tài khoản' : 'Kích hoạt tài khoản'}
                     </Button>
                 </div>
             </div>
@@ -106,10 +111,10 @@ const MemberDetailView = () => {
             {/* Member Card */}
             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
-                    <img 
-                      src={(getMemberGender(member) || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'} 
-                      alt="avatar" 
-                      className="h-32 w-32 rounded-lg object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
+                    <img
+                        src={(getMemberGender(member) || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'}
+                        alt="avatar"
+                        className="h-32 w-32 rounded-lg object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
                     />
 
                     <div className="flex-1">
@@ -117,9 +122,15 @@ const MemberDetailView = () => {
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{getMemberName(member)}</h1>
                                 <div className="mt-2 flex flex-wrap gap-2">
-                                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                        ✓ {getMemberStatus(member)}
-                                    </Badge>
+                                    {member?.is_active ? (
+                                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                            ✓ {getMemberStatus(member)}
+                                        </Badge>
+                                    ) : (
+                                        <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                                            X {getMemberStatus(member)}
+                                        </Badge>
+                                    )}
                                     <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
                                         {getMemberPackage(member)}
                                     </Badge>

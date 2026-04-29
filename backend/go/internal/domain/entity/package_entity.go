@@ -7,4 +7,5 @@ type MembershipPackage struct {
 	DurationDays int     `json:"duration_days"`
 	Price        float64 `json:"price"`
 	IsActive     bool    `json:"is_active"`
+	Description  string  `json:"description"`
 }

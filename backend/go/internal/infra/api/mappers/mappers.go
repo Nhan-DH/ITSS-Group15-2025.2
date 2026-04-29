@@ -42,7 +42,7 @@ func FeedbackRequestToEntity(req *dto.FeedbackRequest) *entity.Feedback {
 }
 
 func FeedbackEntityToResponse(ent *entity.Feedback) *dto.FeedbackResponse {
-	return &dto.FeedbackResponse{ID: ent.ID, MemberID: ent.MemberID, ProcessorID: ent.ProcessorID, EquipmentID: ent.EquipmentID, Content: ent.Content, Status: ent.Status}
+	return &dto.FeedbackResponse{ID: ent.ID, MemberID: ent.MemberID, MemberName: ent.MemberName, ProcessorID: ent.ProcessorID, EquipmentID: ent.EquipmentID, Content: ent.Content, SentAt: ent.SentAt, ResolutionNote: ent.ResolutionNote, Status: ent.Status, Rating: ent.Rating}
 }
 
 func MemberRequestToEntity(req *dto.MemberRequest) *entity.Member {
@@ -58,7 +58,7 @@ func PackageRequestToEntity(req *dto.PackageRequest) *entity.MembershipPackage {
 }
 
 func PackageEntityToResponse(ent *entity.MembershipPackage) *dto.PackageResponse {
-	return &dto.PackageResponse{ID: ent.ID, CategoryID: ent.CategoryID, PackageName: ent.PackageName, DurationDays: ent.DurationDays, Price: ent.Price}
+	return &dto.PackageResponse{ID: ent.ID, CategoryID: ent.CategoryID, PackageName: ent.PackageName, DurationDays: ent.DurationDays, Price: ent.Price, Description: ent.Description}
 }
 
 func PTDetailRequestToEntity(req *dto.PTDetailRequest) *entity.PTDetail {
