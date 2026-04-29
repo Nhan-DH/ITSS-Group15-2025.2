@@ -12,6 +12,8 @@ const statusConfig = {
     resolved: { label: 'Đã xử lý', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' }
 };
 
+const normalizeStatus = (status) => (status || '').toString().trim().toLowerCase();
+
 const FeedbacksView = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -21,16 +23,15 @@ const FeedbacksView = () => {
     const [processingNote, setProcessingNote] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const { mutate: updateFeedback } = useUpdateFeedbackStatus();
-    const { data: response, isLoading } = useFeedbacks(1, 10, statusFilter === 'all' ? '' : statusFilter);
+    const { data: response, isLoading } = useFeedbacks(1, 10);
 
     const feedbacks = response?.data || [];
 
-    // Filter feedbacks by search term
+    // Filter feedbacks by member name and selected status for the lower list only
     const filteredFeedbacks = feedbacks.filter(fb => {
-        const matchSearch =
-            (fb.member_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (fb.content || '').toLowerCase().includes(searchTerm.toLowerCase());
-        return matchSearch;
+        const matchSearch = (fb.member_name || '').toLowerCase().includes(searchTerm.toLowerCase());
+        const matchStatus = statusFilter === 'all' || normalizeStatus(fb.status) === statusFilter;
+        return matchSearch && matchStatus;
     });
 
     const handleViewDetail = (feedback) => {
@@ -47,8 +48,8 @@ const FeedbacksView = () => {
     const getStatusStats = () => {
         return {
             total: feedbacks.length,
-            pending: feedbacks.filter(f => f.status === 'Pending').length,
-            resolved: feedbacks.filter(f => f.status === 'Resolved').length
+            pending: feedbacks.filter(f => normalizeStatus(f.status) === 'pending').length,
+            resolved: feedbacks.filter(f => normalizeStatus(f.status) === 'resolved').length
         };
     };
 
@@ -152,8 +153,8 @@ const FeedbacksView = () => {
                                     <div className="mb-2 flex flex-wrap items-center gap-2">
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{feedback.member_name}</h3>
                                         <div>{renderStars(feedback.rating)}</div>
-                                        <Badge className={statusConfig[feedback.status?.toLowerCase()]?.color || 'bg-gray-100'}>
-                                            {statusConfig[feedback.status?.toLowerCase()]?.label || feedback.status}
+                                        <Badge className={statusConfig[normalizeStatus(feedback.status)]?.color || 'bg-gray-100'}>
+                                            {statusConfig[normalizeStatus(feedback.status)]?.label || feedback.status}
                                         </Badge>
                                     </div>
 
@@ -198,8 +199,8 @@ const FeedbacksView = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Trạng thái</p>
-                                <Badge className={statusConfig[selectedFeedback.status?.toLowerCase()]?.color || 'bg-gray-100'}>
-                                    {statusConfig[selectedFeedback.status?.toLowerCase()]?.label || selectedFeedback.status}
+                                <Badge className={statusConfig[normalizeStatus(selectedFeedback.status)]?.color || 'bg-gray-100'}>
+                                    {statusConfig[normalizeStatus(selectedFeedback.status)]?.label || selectedFeedback.status}
                                 </Badge>
                             </div>
                         </div>
@@ -212,7 +213,7 @@ const FeedbacksView = () => {
                         )}
 
                         <div className="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
-                            {selectedFeedback.status === 'Pending' && (
+                            {normalizeStatus(selectedFeedback.status) === 'pending' && (
                                 <Button onClick={() => setShowProcessModal(true)}>Xử lý</Button>
                             )}
                             <Button variant="outline" onClick={() => setShowDetailModal(false)}>

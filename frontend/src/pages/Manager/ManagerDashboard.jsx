@@ -3,6 +3,7 @@ import { Users, UserCheck, UserX, Calendar, Dumbbell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Button from '@/components/Common/Button';
 import StatsCard from '@/components/Dashboard/StatsCard';
+import { useMembers } from '@/hooks/queries/useMembers';
 
 // Mock Data - Stats
 const dashboardStats = [
@@ -62,6 +63,46 @@ const todaySchedules = [
 ];
 
 const ManagerDashboard = () => {
+  const { data: memberResponse = {} } = useMembers(1, 1000);
+
+  const members = Array.isArray(memberResponse?.data) ? memberResponse.data : [];
+  const totalMembers = memberResponse?.total ?? members.length;
+  const activeMembers = members.filter((member) => member?.is_active === true || member?.status === 'active').length;
+
+  const dashboardStats = [
+    {
+      title: 'Tổng hội viên',
+      value: String(totalMembers),
+      icon: Users,
+      trend: 'up',
+      trendValue: '+12',
+      trendLabel: 'tháng này'
+    },
+    {
+      title: 'Hội viên đang active',
+      value: String(activeMembers),
+      icon: UserCheck,
+      trend: 'up',
+      trendValue: '+8',
+      trendLabel: 'so với tuần trước'
+    },
+    {
+      title: 'Lịch PT hôm nay',
+      value: '24',
+      icon: Calendar,
+      trend: 'neutral',
+      trendValue: 'Bình thường'
+    },
+    {
+      title: 'PT đang làm việc',
+      value: '12',
+      icon: Dumbbell,
+      trend: 'up',
+      trendValue: '+3',
+      trendLabel: 'hôm nay'
+    }
+  ];
+
   return (
     <div className="space-y-8">
       {/* Header */}
