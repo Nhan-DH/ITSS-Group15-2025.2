@@ -25,13 +25,13 @@ func (r *equipmentRepository) Create(equipment *entity.Equipment) error {
 
 func (r *equipmentRepository) GetByID(id int) (*entity.Equipment, error) {
 	equipment := &entity.Equipment{}
-	query := `SELECT id, COALESCE(facility_id, 0), equipment_name, COALESCE(serial_number, ''), COALESCE(quantity, 1), COALESCE(origin, ''), COALESCE(purchase_date, CURRENT_DATE), COALESCE(maintenance_deadline, CURRENT_DATE), COALESCE(status, 'Operating') FROM "Equipment" WHERE id = $1`
-	err := r.db.QueryRow(query, id).Scan(&equipment.ID, &equipment.FacilityID, &equipment.EquipmentName, &equipment.SerialNumber, &equipment.Quantity, &equipment.Origin, &equipment.PurchaseDate, &equipment.MaintenanceDeadline, &equipment.Status)
+	query := `SELECT e.id, COALESCE(e.facility_id, 0), e.equipment_name, COALESCE(e.serial_number, ''), COALESCE(e.quantity, 1), COALESCE(e.origin, ''), COALESCE(e.purchase_date, CURRENT_DATE), COALESCE(e.maintenance_deadline, CURRENT_DATE), COALESCE(e.status, 'Operating'), COALESCE(f.facility_name, 'Chưa xác định') FROM "Equipment" e LEFT JOIN "Facility" f ON e.facility_id = f.id WHERE e.id = $1`
+	err := r.db.QueryRow(query, id).Scan(&equipment.ID, &equipment.FacilityID, &equipment.EquipmentName, &equipment.SerialNumber, &equipment.Quantity, &equipment.Origin, &equipment.PurchaseDate, &equipment.MaintenanceDeadline, &equipment.Status, &equipment.FacilityName)
 	return equipment, err
 }
 
 func (r *equipmentRepository) GetAll() ([]*entity.Equipment, error) {
-	rows, err := r.db.Query(`SELECT id, COALESCE(facility_id, 0), equipment_name, COALESCE(serial_number, ''), COALESCE(quantity, 1), COALESCE(origin, ''), COALESCE(purchase_date, CURRENT_DATE), COALESCE(maintenance_deadline, CURRENT_DATE), COALESCE(status, 'Operating') FROM "Equipment"`)
+	rows, err := r.db.Query(`SELECT e.id, COALESCE(e.facility_id, 0), e.equipment_name, COALESCE(e.serial_number, ''), COALESCE(e.quantity, 1), COALESCE(e.origin, ''), COALESCE(e.purchase_date, CURRENT_DATE), COALESCE(e.maintenance_deadline, CURRENT_DATE), COALESCE(e.status, 'Operating'), COALESCE(f.facility_name, 'Chưa xác định') FROM "Equipment" e LEFT JOIN "Facility" f ON e.facility_id = f.id ORDER BY e.id DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (r *equipmentRepository) GetAll() ([]*entity.Equipment, error) {
 	var equipments []*entity.Equipment
 	for rows.Next() {
 		equipment := &entity.Equipment{}
-		err := rows.Scan(&equipment.ID, &equipment.FacilityID, &equipment.EquipmentName, &equipment.SerialNumber, &equipment.Quantity, &equipment.Origin, &equipment.PurchaseDate, &equipment.MaintenanceDeadline, &equipment.Status)
+		err := rows.Scan(&equipment.ID, &equipment.FacilityID, &equipment.EquipmentName, &equipment.SerialNumber, &equipment.Quantity, &equipment.Origin, &equipment.PurchaseDate, &equipment.MaintenanceDeadline, &equipment.Status, &equipment.FacilityName)
 		if err != nil {
 			return nil, err
 		}
@@ -61,7 +61,7 @@ func (r *equipmentRepository) GetAllPaginated(page, limit int) ([]*entity.Equipm
 	offset := (page - 1) * limit
 
 	// Get paginated data
-	query := `SELECT id, COALESCE(facility_id, 0), equipment_name, COALESCE(serial_number, ''), COALESCE(quantity, 1), COALESCE(origin, ''), COALESCE(purchase_date, CURRENT_DATE), COALESCE(maintenance_deadline, CURRENT_DATE), COALESCE(status, 'Operating') FROM "Equipment" ORDER BY id LIMIT $1 OFFSET $2`
+	query := `SELECT e.id, COALESCE(e.facility_id, 0), e.equipment_name, COALESCE(e.serial_number, ''), COALESCE(e.quantity, 1), COALESCE(e.origin, ''), COALESCE(e.purchase_date, CURRENT_DATE), COALESCE(e.maintenance_deadline, CURRENT_DATE), COALESCE(e.status, 'Operating'), COALESCE(f.facility_name, 'Chưa xác định') FROM "Equipment" e LEFT JOIN "Facility" f ON e.facility_id = f.id ORDER BY e.id DESC LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -71,7 +71,7 @@ func (r *equipmentRepository) GetAllPaginated(page, limit int) ([]*entity.Equipm
 	var equipments []*entity.Equipment
 	for rows.Next() {
 		equipment := &entity.Equipment{}
-		err := rows.Scan(&equipment.ID, &equipment.FacilityID, &equipment.EquipmentName, &equipment.SerialNumber, &equipment.Quantity, &equipment.Origin, &equipment.PurchaseDate, &equipment.MaintenanceDeadline, &equipment.Status)
+		err := rows.Scan(&equipment.ID, &equipment.FacilityID, &equipment.EquipmentName, &equipment.SerialNumber, &equipment.Quantity, &equipment.Origin, &equipment.PurchaseDate, &equipment.MaintenanceDeadline, &equipment.Status, &equipment.FacilityName)
 		if err != nil {
 			return nil, 0, err
 		}

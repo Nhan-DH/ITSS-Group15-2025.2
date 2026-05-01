@@ -113,7 +113,7 @@ const EquipmentList = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Tên thiết bị / Thuộc máy</TableHead>
-                  <TableHead>Phân loại</TableHead>
+                  <TableHead>Tên phòng tập</TableHead>
                   <TableHead>Trạng thái sửa chữa</TableHead>
                   <TableHead>Bảo trì tiếp theo</TableHead>
                   <TableHead className="text-right">Hành động</TableHead>
@@ -137,17 +137,17 @@ const EquipmentList = () => {
                         <div className="text-xs text-gray-500 mt-1">Xuất xứ: {item.origin || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="text-gray-600 dark:text-gray-300">
-                        {item.facility_id || 'N/A'}
+                        {item.facility_name || item.FacilityName || 'Chưa xác định'}
                       </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${
-                          item.status === 'active'
+                          item.status === 'active' || item.status === 'Operating'
                             ? 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
-                            : item.status === 'maintenance'
+                            : item.status === 'maintenance' || item.status === 'Maintenance'
                             ? 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400'
                             : 'bg-gray-50 text-gray-700 ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
                         }`}>
-                          {item.status === 'active' ? 'Hoạt động tốt' : item.status === 'maintenance' ? 'Đang bảo trì' : item.status || 'N/A'}
+                          {item.status === 'active' || item.status === 'Operating' ? 'Hoạt động tốt' : item.status === 'maintenance' || item.status === 'Maintenance' ? 'Đang bảo trì' : item.status || 'N/A'}
                         </span>
                       </TableCell>
                       <TableCell className="text-sm font-medium text-gray-600 dark:text-gray-300">

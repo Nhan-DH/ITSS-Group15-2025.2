@@ -27,11 +27,11 @@ const EquipmentFormPage = () => {
           setInitialData({
             name: data.equipment_name || data.name,
             code: data.serial_number || data.code || '',
-            quantity: data.quantity || 1,
+            quantity: String(data.quantity || 1),
             status: data.status || 'Operating',
             purchaseDate: data.purchase_date ? data.purchase_date.split('T')[0] : '',
             warrantyUntil: data.maintenance_deadline ? data.maintenance_deadline.split('T')[0] : '',
-            facility_id: data.facility_id || 1,
+            facility_id: String(data.facility_id || 1),
             origin: data.origin || ''
           });
         })
@@ -56,7 +56,7 @@ const EquipmentFormPage = () => {
       status: data.status,
       purchase_date: data.purchaseDate ? new Date(data.purchaseDate).toISOString() : new Date().toISOString(),
       maintenance_deadline: data.warrantyUntil ? new Date(data.warrantyUntil).toISOString() : new Date().toISOString(),
-      facility_id: parseInt(data.facility_id || 1, 10), // You might want to update the form to select facility
+      facility_id: parseInt(data.facility_id || 1, 10),
       origin: data.origin || 'Chưa rõ'
     };
 

@@ -87,14 +87,28 @@ func (h *EquipmentHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EquipmentHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
 	var equipment entity.Equipment
-	json.NewDecoder(r.Body).Decode(&equipment)
-	err := h.usecase.UpdateEquipment(&equipment)
+	err := json.NewDecoder(r.Body).Decode(&equipment)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	equipment.ID = id
+	err = h.usecase.UpdateEquipment(&equipment)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	// Fetch updated equipment with facility_name from JOIN
+	updated, err := h.usecase.GetEquipmentByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updated)
 }
 
 func (h *EquipmentHandler) Delete(w http.ResponseWriter, r *http.Request) {

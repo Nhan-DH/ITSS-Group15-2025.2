@@ -16,14 +16,18 @@ const EquipmentForm = ({ initialData, onSubmit, isLoading }) => {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(equipmentSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData ? {
+      ...initialData,
+      facility_id: String(initialData.facility_id || 1), // Convert to string for select
+      quantity: String(initialData.quantity || 1),
+    } : {
       name: '',
       code: '',
-      quantity: 1,
+      quantity: '1',
       status: 'Operating',
       purchaseDate: '',
       warrantyUntil: '',
-      facility_id: 1,
+      facility_id: '1',
       origin: '',
     }
   });
