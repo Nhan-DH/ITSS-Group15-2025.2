@@ -71,9 +71,9 @@ INSERT INTO "MembershipPackage" ("category_id", "package_name", "duration_days",
 (1, 'Gói VIP Tháng', 30, 1000000, true),
 (2, 'Gói Cơ Bản Tháng', 30, 500000, true),
 (3, 'Gói Nữ Tháng', 30, 50000, true),
-(4, 'Gói VIP nửa năm', 180, 5000000, true),
-(5, 'Gói Nữ nửa năm', 180, 2500000, true),
-(6, 'Gói VIP 1 năm', 365, 10000000, true);
+(1, 'Gói VIP nửa năm', 180, 5000000, true),
+(3, 'Gói Nữ nửa năm', 180, 2500000, true),
+(1, 'Gói VIP 1 năm', 365, 10000000, true);
 
 
 INSERT INTO "Subscription" ("member_id", "package_id", "registration_date", "start_date", "end_date", "status") VALUES
