@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import PackageFormComponent from '@/components/Forms/PackageForm';
 import { ArrowLeft } from 'lucide-react';
@@ -23,7 +23,7 @@ const PackageFormPage = () => {
           durationMonths: 1,
           price: 500000,
           description: 'Truy cập không giới hạn khu tập Yoga cơ bản',
-          type: 'basic',
+          type: 'Normal',
         });
         setIsLoading(false);
       }, 500);

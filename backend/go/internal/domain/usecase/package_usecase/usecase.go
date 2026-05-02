@@ -12,6 +12,7 @@ type PackageUsecase interface {
 	GetAllPackages() ([]*entity.MembershipPackage, error)
 	GetAllPackagesPaginated(page, limit int) ([]*entity.MembershipPackage, int, error)
 	UpdatePackage(membershipPackage *entity.MembershipPackage) error
+	UpdatePackageStatus(id int, isActive bool) error
 	DeletePackage(id int) error
 }
 
@@ -21,6 +22,7 @@ type membershipPackageUsecase struct {
 	list          IListPackagesUseCase
 	listPaginated IListPackagesPaginatedUseCase
 	update        IUpdatePackageUseCase
+	updateStatus  IUpdatePackageStatusUseCase
 	delete        IDeletePackageUseCase
 }
 
@@ -31,6 +33,7 @@ func NewPackageUsecase(repo adapter.MembershipPackageRepository) PackageUsecase 
 		list:          NewListPackagesUseCase(repo),
 		listPaginated: NewListPackagesPaginatedUseCase(repo),
 		update:        NewUpdatePackageUseCase(repo),
+		updateStatus:  NewUpdatePackageStatusUseCase(repo),
 		delete:        NewDeletePackageUseCase(repo),
 	}
 }
@@ -63,6 +66,10 @@ func (u *membershipPackageUsecase) UpdatePackage(membershipPackage *entity.Membe
 	}
 	*membershipPackage = *updated
 	return nil
+}
+
+func (u *membershipPackageUsecase) UpdatePackageStatus(id int, isActive bool) error {
+	return u.updateStatus.Execute(context.Background(), id, isActive)
 }
 
 func (u *membershipPackageUsecase) DeletePackage(id int) error {

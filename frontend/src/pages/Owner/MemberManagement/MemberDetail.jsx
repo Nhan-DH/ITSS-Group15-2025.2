@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Edit, CalendarDays, Activity, DollarSign, Clock } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Activity, DollarSign, Clock } from 'lucide-react';
 import Button from '@/components/Common/Button';
 import { useMemberDetails, useMemberSubscriptionHistory } from '@/hooks/queries/useMembers';
 
@@ -59,11 +59,6 @@ const MemberDetail = () => {
             <p className="mt-1 text-sm text-gray-500">Xem toàn bộ thông tin về {member.full_name || 'Hội viên'}</p>
           </div>
         </div>
-        <Link to={`/owner/members/${id}/edit`}>
-          <Button leftIcon={<Edit className="h-4 w-4" />}>
-            Chỉnh sửa
-          </Button>
-        </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -78,9 +73,9 @@ const MemberDetail = () => {
             <h2 className="mt-4 text-xl font-bold text-gray-900 dark:text-white">{member.full_name || 'N/A'}</h2>
             <p className="text-sm font-medium text-blue-600 dark:text-blue-400">MEM-{member.id || id}</p>
             <span className={`mt-3 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${
-              member.is_active ? 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
+              member.status === 'active' ? 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
             }`}>
-              {member.is_active ? 'Đang hoạt động' : 'Không hoạt động'}
+              {member.status === 'active' ? 'Đang hoạt động' : 'Không hoạt động'}
             </span>
           </div>
           <div className="mt-6 space-y-4">
@@ -95,7 +90,7 @@ const MemberDetail = () => {
             <div>
               <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Ngày tham gia</p>
               <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                {member.registered_at ? new Date(member.registered_at).toLocaleDateString('vi-VN') : 'N/A'}
+                {(member.joinDate || member.registered_at) ? new Date(member.joinDate || member.registered_at).toLocaleDateString('vi-VN') : 'N/A'}
               </p>
             </div>
           </div>
@@ -109,85 +104,87 @@ const MemberDetail = () => {
             </h3>
             <div className="rounded-lg bg-gray-50 p-4 border border-gray-100 dark:bg-gray-900/50 dark:border-gray-800 flex justify-between items-center">
                <div>
-                 <p className="font-bold text-lg text-gray-900 dark:text-white">{member.package_name || 'Chưa có gói tập'}</p>
+                 <div className="flex items-center gap-3">
+                   <p className="font-bold text-lg text-gray-900 dark:text-white">
+                     {member.package || 'Chưa có gói tập'}
+                   </p>
+                   {/* Hiển thị badge trạng thái cho gói hiện tại */}
+                   {member.package && member.package !== 'Chưa đăng ký' && (
+                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                       new Date(member.expiryDate) >= new Date() 
+                        ? "bg-green-100 text-green-700" 
+                        : "bg-red-100 text-red-700"
+                     }`}>
+                       {new Date(member.expiryDate) >= new Date() ? "Đang dùng" : "Hết hạn"}
+                     </span>
+                   )}
+                 </div>
                  <p className="text-sm text-gray-500 mt-1">
-                   {member.package_name ? 'Gói tập hiện tại' : 'Hội viên chưa đăng ký gói tập nào'}
+                   {member.package && member.package !== 'Chưa đăng ký'
+                    ? `Hạn sử dụng: ${new Date(member.expiryDate).toLocaleDateString('vi-VN')}`
+                    : 'Hội viên chưa đăng ký gói tập nào'}
                  </p>
                </div>
-               {member.package_name && (
-                 <Button variant="outline" size="sm">Gia hạn ngay</Button>
-               )}
+          
             </div>
           </div>
 
           <div className="flex-1 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
-  <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white mb-4">
-    <Activity className="h-5 w-5 text-green-500" />
-    Lịch sử đăng ký gói tập
-  </h3>
+            <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white mb-4">
+              <Activity className="h-5 w-5 text-green-500" />
+              Lịch sử đăng ký gói tập
+            </h3>
 
-  {historyLoading ? (
-    <div className="text-sm text-gray-500 text-center py-8">
-      Đang tải lịch sử...
-    </div>
-  ) : historyResponse?.data?.length > 0 ? (
-    <div className="space-y-4">
-      {historyResponse.data.map((item) => (
-        <div
-          key={item.id}
-          className="rounded-lg border border-gray-100 p-4 dark:border-gray-800"
-        >
-          <div className="flex justify-between items-start">
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white">
-                {item.package_name}
-              </h4>
-
-              <div className="mt-2 space-y-1 text-sm text-gray-500">
-                <p className="flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4" />
-                  Ngày đăng ký:{" "}
-                  {new Date(item.registration_date).toLocaleDateString("vi-VN")}
-                </p>
-
-                <p className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Thời hạn:{" "}
-                  {new Date(item.start_date).toLocaleDateString("vi-VN")} -{" "}
-                  {new Date(item.end_date).toLocaleDateString("vi-VN")}
-                </p>
-
-                <p className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  {item.price?.toLocaleString("vi-VN")} VNĐ
-                </p>
+            {historyLoading ? (
+              <div className="text-sm text-gray-500 text-center py-8">
+                Đang tải lịch sử...
               </div>
-            </div>
+            ) : historyResponse?.data?.length > 0 ? (
+              <div className="space-y-4">
+                {historyResponse.data.map((item) => {
+                  const isExpired = new Date(item.end_date) < new Date();
+                  
+                  return (
+                    <div key={item.id} className="relative pl-6 border-l-2 border-gray-100 dark:border-gray-800 pb-4 last:pb-0">
+                      {/* Dấu chấm mốc thời gian */}
+                      <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-blue-500 border-2 border-white dark:border-gray-950"></div>
+                      
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            Ngày {new Date(item.registration_date).toLocaleDateString("vi-VN")}: 
+                            <span className="ml-1 text-blue-600">Đăng ký gói {item.package_name}</span>
+                          </p>
+                          
+                          <div className="mt-1 flex items-center gap-4 text-xs text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> 
+                              Thời hạn: {new Date(item.start_date).toLocaleDateString("vi-VN")} - {new Date(item.end_date).toLocaleDateString("vi-VN")}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <DollarSign className="h-3 w-3" /> 
+                              {item.price?.toLocaleString("vi-VN")} VNĐ
+                            </span>
+                          </div>
+                        </div>
 
-            <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                item.status === "active"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-700"
-              }`}
-            >
-              {item.status === "active" ? "Đang hoạt động" : "Hết hạn"}
-            </span>
+            
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500 mt-8 flex flex-col items-center justify-center">
+                <Activity className="h-10 w-10 text-gray-200 dark:text-gray-700 mb-2" />
+                Chưa có lịch sử gói tập.
+              </div>
+            )}
           </div>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <div className="text-sm text-gray-500 mt-8 flex flex-col items-center justify-center">
-      <Activity className="h-10 w-10 text-gray-200 dark:text-gray-700 mb-2" />
-      Chưa có lịch sử gói tập.
-    </div>
-  )}
-</div>
         </div>
       </div>
     </div>
-  );
+);
 };
 
 export default MemberDetail;

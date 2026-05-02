@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import PackageFormComponent from '@/components/Forms/PackageForm';
 import { ArrowLeft } from 'lucide-react';
@@ -29,7 +29,7 @@ const PackageFormPage = () => {
             durationMonths: data.duration_days ? Math.round(data.duration_days / 30) : 1,
             price: data.price || 0,
             description: data.description || '',
-            type: data.category_id === 1 ? 'basic' : 'premium',
+            type: { 1: 'VIP', 2: 'Normal', 3: 'Female-only' }[data.category_id] || 'Normal',
             status: data.is_active === true ? 'active' : 'inactive',
           });
         })
@@ -47,7 +47,7 @@ const PackageFormPage = () => {
     setIsLoading(true);
     const payload = {
       package_name: data.name,
-      category_id: data.type === 'premium' ? 2 : 1,
+      category_id: { 'VIP': 1, 'Normal': 2, 'Female-only': 3 }[data.type] || 2,
       duration_days: data.durationMonths * 30,
       price: parseFloat(data.price),
       is_active: data.status === 'active' || data.status === true,

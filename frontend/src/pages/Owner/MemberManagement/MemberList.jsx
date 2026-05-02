@@ -139,8 +139,8 @@ const MemberList = () => {
                       </TableCell>
                       <TableCell>{member.phone || member.Phone || 'N/A'}</TableCell>
                       <TableCell>
-                        {member.registered_at || member.registeredAt || member.created_at || member.createdAt || member.registeredAt 
-                          ? new Date(member.registered_at || member.registeredAt || member.created_at || member.createdAt || member.registeredAt).toLocaleDateString('vi-VN')
+                        {member.joinDate
+                          ? new Date(member.joinDate).toLocaleDateString('vi-VN')
                           : 'N/A'}
                       </TableCell>
                       <TableCell>

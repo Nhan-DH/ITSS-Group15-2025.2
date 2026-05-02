@@ -100,6 +100,11 @@ func (r *packageRepository) Update(pkg *entity.MembershipPackage) error {
 	return err
 }
 
+func (r *packageRepository) UpdateStatus(id int, isActive bool) error {
+	_, err := r.db.Exec(`UPDATE "MembershipPackage" SET is_active = $1 WHERE id = $2`, isActive, id)
+	return err
+}
+
 func (r *packageRepository) Delete(id int) error {
 	_, err := r.db.Exec(`DELETE FROM "MembershipPackage" WHERE id = $1`, id)
 	return err

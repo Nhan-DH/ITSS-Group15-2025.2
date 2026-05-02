@@ -80,6 +80,7 @@ func NewRouter(
 
 	ownerManager.HandleFunc("/packages", packageHandler.Create).Methods("POST")
 	ownerManager.HandleFunc("/packages/{id}", packageHandler.Update).Methods("PUT")
+	ownerManager.HandleFunc("/packages/{id}/status", packageHandler.UpdateStatus).Methods("PATCH")
 	ownerManager.HandleFunc("/packages/{id}", packageHandler.Delete).Methods("DELETE")
 
 	ownerManager.HandleFunc("/members", memberHandler.Create).Methods("POST")

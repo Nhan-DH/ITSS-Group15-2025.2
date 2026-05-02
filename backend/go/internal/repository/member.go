@@ -134,20 +134,20 @@ func (r *memberRepository) GetAllMembersWithDetails() ([]*dto.MemberListItemDTO,
 	// SQL query join Member với Subscription và MembershipPackage
 	// Tính sessionsRemaining = số ngày còn lại từ end_date - today
 	query := `
-	SELECT DISTINCT
-		m.id,
-		COALESCE(m.full_name, ''),
-		COALESCE(m.phone, ''),
-		COALESCE(mp.package_name, 'Chưa đăng ký') as package_name,
-		CASE WHEN m.is_active = true THEN 'active' ELSE 'inactive' END as status,
-		COALESCE(TO_CHAR(s.end_date, 'YYYY-MM-DD'), TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD')) as end_date,
-		COALESCE(TO_CHAR(s.start_date, 'YYYY-MM-DD'), TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD')) as start_date,
-		COALESCE((s.end_date::date - CURRENT_DATE), 0) as sessions_remaining
-	FROM "Member" m
-	LEFT JOIN "Subscription" s ON m.id = s.member_id AND s.status NOT IN ('Expired', 'Cancelled') AND s.end_date >= CURRENT_DATE
-	LEFT JOIN "MembershipPackage" mp ON s.package_id = mp.id
-	ORDER BY m.id DESC
-	`
+SELECT DISTINCT ON (m.id)
+    m.id,
+    COALESCE(m.full_name, ''),
+    COALESCE(m.phone, ''),
+    COALESCE(mp.package_name, 'Chưa đăng ký') as package_name,
+    CASE WHEN s.end_date IS NOT NULL AND s.end_date >= CURRENT_DATE THEN 'active' ELSE 'inactive' END as status,
+    COALESCE(TO_CHAR(s.end_date, 'YYYY-MM-DD'), '') as end_date,
+    COALESCE(TO_CHAR(s.registration_date, 'YYYY-MM-DD'), '') as registration_date,
+    COALESCE((s.end_date::date - CURRENT_DATE), 0) as sessions_remaining
+FROM "Member" m
+LEFT JOIN "Subscription" s ON m.id = s.member_id
+LEFT JOIN "MembershipPackage" mp ON s.package_id = mp.id
+ORDER BY m.id DESC, s.registration_date DESC
+`
 
 	rows, err := r.db.Query(query)
 	if err != nil {
@@ -192,25 +192,25 @@ func (r *memberRepository) GetMemberByIDWithDetails(id int) (*dto.MemberDetailDT
 	memberDetail := &dto.MemberDetailDTO{}
 
 	query := `
-	SELECT DISTINCT
-		m.id,
-		COALESCE(m.full_name, ''),
-		COALESCE(m.phone, ''),
-		COALESCE(m.email, '') as email,
-		COALESCE(m.gender, '') as gender,
-		COALESCE(TO_CHAR(m.dob, 'YYYY-MM-DD'), '') as dob,
-		COALESCE(m.address, '') as address,
-		COALESCE(mp.package_name, 'Chưa đăng ký') as package_name,
-		CASE WHEN m.is_active = true THEN 'active' ELSE 'inactive' END as status,
-		COALESCE(TO_CHAR(s.end_date, 'YYYY-MM-DD'), '') as end_date,
-		COALESCE(TO_CHAR(s.start_date, 'YYYY-MM-DD'), '') as start_date,
-		COALESCE(m.is_active, true) as is_active
-	FROM "Member" m
-	LEFT JOIN "Subscription" s ON m.id = s.member_id AND s.status NOT IN ('Expired', 'Cancelled')
-	LEFT JOIN "MembershipPackage" mp ON s.package_id = mp.id
-	WHERE m.id = $1
-	LIMIT 1
-	`
+    SELECT 
+        m.id, m.full_name, m.phone, m.email, m.gender, 
+        TO_CHAR(m.dob, 'YYYY-MM-DD'), m.address,
+        COALESCE(sub.package_name, 'Chưa đăng ký'),
+        CASE WHEN sub.end_date IS NOT NULL AND sub.end_date::date >= CURRENT_DATE THEN 'active' ELSE 'inactive' END,
+        COALESCE(TO_CHAR(sub.end_date, 'YYYY-MM-DD'), ''),
+        COALESCE(TO_CHAR(sub.registration_date, 'YYYY-MM-DD'), ''),
+        (sub.end_date IS NOT NULL AND sub.end_date::date >= CURRENT_DATE)
+    FROM "Member" m
+    LEFT JOIN LATERAL (
+        -- Lấy subscription có ngày kết thúc xa nhất (gói hiện tại)
+        SELECT s.end_date, s.registration_date, mp.package_name
+        FROM "Subscription" s
+        JOIN "MembershipPackage" mp ON s.package_id = mp.id
+        WHERE s.member_id = m.id
+        ORDER BY s.end_date DESC
+        LIMIT 1
+    ) sub ON true
+    WHERE m.id = $1`
 
 	err := r.db.QueryRow(query, id).Scan(
 		&memberDetail.ID,

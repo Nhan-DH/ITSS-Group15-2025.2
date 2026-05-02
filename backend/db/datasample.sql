@@ -76,17 +76,18 @@ INSERT INTO "MembershipPackage" ("category_id", "package_name", "duration_days",
 (1, 'Gói VIP 1 năm', 365, 10000000, true);
 
 
+-- Lệnh Insert mẫu chuẩn cho team (Dùng khi DB chưa có dữ liệu)
 INSERT INTO "Subscription" ("member_id", "package_id", "registration_date", "start_date", "end_date", "status") VALUES
-(1, 1, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
-(2, 2, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
-(3, 1, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
-(4, 3, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
-(5, 4, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
-(6, 2, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
-(7, 4, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
-(8, 3, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-19', 'Active'),
-(9, 6, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active'),
-(10, 3, CURRENT_TIMESTAMP, '2026-04-01', '2026-05-01', 'Active');
+(1, 1, CURRENT_TIMESTAMP, CURRENT_DATE, (CURRENT_DATE + INTERVAL '30 days')::date, 'Active'),  -- Gói VIP Tháng
+(2, 2, CURRENT_TIMESTAMP, CURRENT_DATE, (CURRENT_DATE + INTERVAL '30 days')::date, 'Active'),  -- Gói Cơ Bản Tháng
+(3, 1, CURRENT_TIMESTAMP, CURRENT_DATE, (CURRENT_DATE + INTERVAL '30 days')::date, 'Active'),  -- Gói VIP Tháng
+(4, 3, CURRENT_TIMESTAMP, CURRENT_DATE, (CURRENT_DATE + INTERVAL '30 days')::date, 'Active'),  -- Gói Nữ Tháng
+(5, 4, CURRENT_TIMESTAMP, CURRENT_DATE, (CURRENT_DATE + INTERVAL '180 days')::date, 'Active'), -- Gói VIP nửa năm
+(6, 2, CURRENT_TIMESTAMP, CURRENT_DATE, (CURRENT_DATE + INTERVAL '30 days')::date, 'Active'),  -- Gói Cơ Bản Tháng
+(7, 4, CURRENT_TIMESTAMP, CURRENT_DATE, (CURRENT_DATE + INTERVAL '180 days')::date, 'Active'), -- Gói VIP nửa năm
+(8, 3, CURRENT_TIMESTAMP, CURRENT_DATE, (CURRENT_DATE + INTERVAL '30 days')::date, 'Active'),  -- Gói Nữ Tháng
+(9, 6, CURRENT_TIMESTAMP, CURRENT_DATE, (CURRENT_DATE + INTERVAL '365 days')::date, 'Active'), -- Gói VIP 1 năm
+(10, 3, CURRENT_TIMESTAMP, CURRENT_DATE, (CURRENT_DATE + INTERVAL '30 days')::date, 'Active'); -- Gói Nữ Tháng
 
 INSERT INTO "Invoice" ("member_id", "subscription_id", "total_amount", "payment_status", "payment_method", "notes") VALUES
 (1, 1, 1000000, 'Paid', 'Cash', 'Thanh toán gói VIP Tháng'),

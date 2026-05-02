@@ -8,5 +8,6 @@ type MembershipPackageRepository interface {
 	GetAll() ([]*entity.MembershipPackage, error)
 	GetAllPaginated(page, limit int) ([]*entity.MembershipPackage, int, error)
 	Update(pkg *entity.MembershipPackage) error
+	UpdateStatus(id int, isActive bool) error
 	Delete(id int) error
 }

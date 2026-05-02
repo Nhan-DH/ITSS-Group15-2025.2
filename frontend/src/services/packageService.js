@@ -78,7 +78,7 @@ export const packageService = {
   },
 
   updatePackageStatus: async (id, isActive) => {
-    return axios.put(`/packages/${id}`, { is_active: isActive });
+    return axios.patch(`/packages/${id}/status`, { is_active: isActive });
   },
 
   registerPackage: async (packageData) => {
