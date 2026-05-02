@@ -71,6 +71,7 @@ func NewRouter(
 	ownerManager.HandleFunc("/accounts", accountHandler.GetAll).Methods("GET")
 	ownerManager.HandleFunc("/accounts/{id}", accountHandler.GetByID).Methods("GET")
 	ownerManager.HandleFunc("/accounts/{id}", accountHandler.Update).Methods("PUT")
+	ownerManager.HandleFunc("/accounts/{id}/reveal", accountHandler.RevealPassword).Methods("POST")
 	ownerManager.HandleFunc("/accounts/{id}", accountHandler.Delete).Methods("DELETE")
 
 	ownerManager.HandleFunc("/service-categories", serviceCategoryHandler.Create).Methods("POST")

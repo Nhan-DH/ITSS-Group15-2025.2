@@ -2,6 +2,7 @@ package account_usecase
 
 import (
 	"context"
+	"errors"
 	"gym-management/internal/domain/adapter"
 	"gym-management/internal/domain/entity"
 )
@@ -13,6 +14,7 @@ type AccountUsecase interface {
 	GetAllAccountsPaginated(page, limit int) ([]*entity.Account, int, error)
 	UpdateAccount(account *entity.Account) error
 	DeleteAccount(id int) error
+	RevealAccountPassword(requesterID int, requesterPassword string, targetID int) (string, error)
 }
 
 type accountUsecase struct {
@@ -67,4 +69,19 @@ func (u *accountUsecase) UpdateAccount(account *entity.Account) error {
 
 func (u *accountUsecase) DeleteAccount(id int) error {
 	return u.delete.Execute(context.Background(), id)
+}
+
+func (u *accountUsecase) RevealAccountPassword(requesterID int, requesterPassword string, targetID int) (string, error) {
+	requester, err := u.get.Execute(context.Background(), requesterID)
+	if err != nil {
+		return "", errors.New("requester not found")
+	}
+	if requester.Password != requesterPassword {
+		return "", errors.New("wrong password")
+	}
+	target, err := u.get.Execute(context.Background(), targetID)
+	if err != nil {
+		return "", errors.New("account not found")
+	}
+	return target.Password, nil
 }

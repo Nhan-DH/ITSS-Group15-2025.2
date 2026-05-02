@@ -1,18 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Edit, Trash2, Shield, UserCog, Eye, EyeOff, Lock, Key, ChevronLeft, ChevronRight, Power, PowerOff } from 'lucide-react';
+import { Plus, Trash2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEmployees } from '@/hooks/queries/useEmployees';
-import { useDeleteEmployee, useUpdateEmployeeStatus, useUpdateEmployee } from '@/hooks/mutations/useEmployeeMutation';
+import { useDeleteEmployee, useUpdateEmployee } from '@/hooks/mutations/useEmployeeMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
 import Modal from '@/components/Common/Modal';
-
-const initialAccounts = [
-  { id: 1, username: 'manager1', staff: 'Nguyễn Lê Lễ Tân', role: 'manager', password: 'L3Tan@123', status: 'active' },
-  { id: 2, username: 'trainer1', staff: 'Trần Anh HLV', role: 'trainer', password: 'PTMinh!2026', status: 'active' },
-  { id: 3, username: 'staff1', staff: 'Phạm Tạp Vụ', role: 'staff', password: 'TapVu#987', status: 'inactive' },
-];
 
 const StaffList = () => {
   const [page, setPage] = useState(1);
@@ -22,7 +16,6 @@ const StaffList = () => {
 
   const { data: employeeResponse, isLoading, isError } = useEmployees(page, limit);
   const deleteMutation = useDeleteEmployee();
-  const statusMutation = useUpdateEmployeeStatus();
   const updateMutation = useUpdateEmployee();
 
   const handleDelete = () => {
@@ -32,21 +25,14 @@ const StaffList = () => {
     }
   };
 
-  const handleToggleStatus = (staff) => {
-    const newStatus = staff.status === 'active' ? 'inactive' : 'active';
-    statusMutation.mutate({ id: staff.id, status: newStatus });
-  };
-  
-  // Mock data fallback
   const mockStaffs = [
-    { id: 1, full_name: 'Nguyễn Lê Lễ Tân', phone: '0999888777', email: 'letan@activegym.vn', position: 'Quản lý', status: 'active', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80' },
-    { id: 2, full_name: 'Trần Anh HLV', phone: '0999666555', email: 'pt.trananh@activegym.vn', position: 'Huấn luyện viên', status: 'active', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80' },
-    { id: 3, full_name: 'Phạm Tạp Vụ', phone: '0888111222', email: 'tapvu@activegym.vn', position: 'Nhân viên', status: 'inactive', photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80' },
-    { id: 4, full_name: 'Nguyễn Thị Mai', phone: '0977555333', email: 'mai.pt@activegym.vn', position: 'Huấn luyện viên', status: 'active', photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80' },
-    { id: 5, full_name: 'Trần Văn Bảo', phone: '0966444222', email: 'bao@activegym.vn', position: 'Lễ tân', status: 'active', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80' },
+    { id: 1, full_name: 'Nguyễn Lê Lễ Tân', phone: '0999888777', email: 'letan@activegym.vn', position: 'Quản lý', status: 'active' },
+    { id: 2, full_name: 'Trần Anh HLV', phone: '0999666555', email: 'pt.trananh@activegym.vn', position: 'Huấn luyện viên', status: 'active' },
+    { id: 3, full_name: 'Phạm Tạp Vụ', phone: '0888111222', email: 'tapvu@activegym.vn', position: 'Nhân viên', status: 'inactive' },
+    { id: 4, full_name: 'Nguyễn Thị Mai', phone: '0977555333', email: 'mai.pt@activegym.vn', position: 'Huấn luyện viên', status: 'active' },
+    { id: 5, full_name: 'Trần Văn Bảo', phone: '0966444222', email: 'bao@activegym.vn', position: 'Lễ tân', status: 'active' },
   ];
 
-  // Handle employee API response
   const staffs = useMemo(() => {
     if (!employeeResponse) return mockStaffs;
     if (Array.isArray(employeeResponse)) return employeeResponse;
@@ -71,11 +57,6 @@ const StaffList = () => {
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [staffForm, setStaffForm] = useState(null);
-  const [accounts] = useState(initialAccounts);
-  const [accountSearch, setAccountSearch] = useState('');
-  const [accountPasswordModal, setAccountPasswordModal] = useState({ isOpen: false, account: null, password: '' });
-  const [revealedAccounts, setRevealedAccounts] = useState([]);
-  const [passwordError, setPasswordError] = useState('');
 
   const filteredStaffs = useMemo(() => {
     const value = searchTerm.toLowerCase();
@@ -86,15 +67,6 @@ const StaffList = () => {
       (staff.position || staff.Position || '').toLowerCase().includes(value)
     );
   }, [searchTerm, staffs]);
-
-  const filteredAccounts = useMemo(() => {
-    const value = accountSearch.toLowerCase();
-    return accounts.filter((account) =>
-      account.username.toLowerCase().includes(value) ||
-      account.staff.toLowerCase().includes(value) ||
-      account.role.toLowerCase().includes(value)
-    );
-  }, [accountSearch, accounts]);
 
   const handleOpenStaffDetail = (staff) => {
     setSelectedStaff(staff);
@@ -116,30 +88,13 @@ const StaffList = () => {
     setIsEditing(false);
   };
 
-  const handlePasswordReveal = (account) => {
-    setAccountPasswordModal({ isOpen: true, account, password: '' });
-    setPasswordError('');
-  };
-
-  const handleConfirmPassword = () => {
-    if (accountPasswordModal.password === 'owner123') {
-      setRevealedAccounts((prev) => [...prev, accountPasswordModal.account.id]);
-      setAccountPasswordModal({ isOpen: false, account: null, password: '' });
-      setPasswordError('');
-      return;
-    }
-    setPasswordError('Mật khẩu chủ phòng tập không đúng.');
-  };
-
-  const maskPassword = (value) => '•'.repeat(Math.max(8, value.length));
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Quản lý Nhân sự</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Xem chi tiết nhân viên, cập nhật thông tin và tách riêng phần quản lý tài khoản.
+            Xem chi tiết nhân viên, cập nhật thông tin và quản lý nhân sự.
           </p>
         </div>
         <Link to="/owner/staffs/create">
@@ -193,11 +148,17 @@ const StaffList = () => {
                   <TableRow key={staff.id} className="hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer" onClick={() => handleOpenStaffDetail(staff)}>
                     <TableCell className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-3">
                       <div className="h-9 w-9 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-                        <img src={(staff.gender || '').toLowerCase() === 'female' || (staff.gender || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'} alt={staff.full_name || staff.FullName || staff.fullName} className="h-full w-full object-cover" />
+                        <img
+                          src={(staff.gender || '').toLowerCase() === 'female' || (staff.gender || '').toLowerCase() === 'nữ'
+                            ? '/src/assets/nu_ava.jpg'
+                            : '/src/assets/nam_ava.jpg'}
+                          alt={staff.full_name || staff.FullName || staff.fullName}
+                          className="h-full w-full object-cover"
+                        />
                       </div>
                       {staff.full_name || staff.FullName || staff.fullName || 'N/A'}
                     </TableCell>
-                    <TableCell>{staff.position || staff.Position || staff.role_id || 'N/A'}</TableCell>
+                    <TableCell>{staff.position || staff.Position || 'N/A'}</TableCell>
                     <TableCell>
                       <div className="text-sm text-gray-900 dark:text-gray-100">{staff.phone || staff.Phone || 'N/A'}</div>
                       <div className="text-xs text-gray-500">{staff.email || staff.Email || 'N/A'}</div>
@@ -209,17 +170,13 @@ const StaffList = () => {
                     </TableCell>
                     <TableCell className="text-right pr-4">
                       <div className="flex items-center justify-end gap-2">
-                        {/* Kích hoạt button removed as requested */}
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
                           title="Xem chi tiết"
                           className="h-8 w-8 text-blue-500"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenStaffDetail(staff);
-                          }}
+                          onClick={(e) => { e.stopPropagation(); handleOpenStaffDetail(staff); }}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -242,27 +199,16 @@ const StaffList = () => {
           </Table>
         </div>
 
-        {/* Employee Pagination */}
         {totalEmployeePages > 1 && (
           <div className="mt-4 flex items-center justify-between">
             <div className="text-sm text-gray-500 dark:text-gray-400">
               Trang {page} / {totalEmployeePages} (Tổng: {totalEmployeeItems} nhân viên)
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(p => Math.min(totalEmployeePages, p + 1))}
-                disabled={page === totalEmployeePages}
-              >
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalEmployeePages, p + 1))} disabled={page === totalEmployeePages}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -270,87 +216,11 @@ const StaffList = () => {
         )}
       </div>
 
-      <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Quản lý Tài khoản nhân viên</h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Danh sách tài khoản, mật khẩu ẩn và xác minh bằng mật khẩu chủ.</p>
-          </div>
-          <div className="w-full max-w-sm">
-            <Input
-              value={accountSearch}
-              onChange={(e) => setAccountSearch(e.target.value)}
-              placeholder="Tìm kiếm tài khoản theo tên, nhân viên, vai trò"
-            />
-          </div>
-        </div>
-
-        <div className="mt-6 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Tài khoản</TableHead>
-                <TableHead>Nhân viên</TableHead>
-                <TableHead>Vai trò</TableHead>
-                <TableHead>Mật khẩu</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-right">Hành động</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredAccounts.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-gray-500 h-24">
-                    Không có tài khoản phù hợp.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredAccounts.map((account) => (
-                  <TableRow key={account.id}>
-                    <TableCell className="font-semibold text-gray-900 dark:text-gray-100">{account.username}</TableCell>
-                    <TableCell>{account.staff}</TableCell>
-                    <TableCell className="capitalize">{account.role}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
-                        {revealedAccounts.includes(account.id) ? account.password : maskPassword(account.password)}
-                        <button
-                          onClick={() => handlePasswordReveal(account)}
-                          className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                        >
-                          {revealedAccounts.includes(account.id) ? 'Ẩn' : 'Xem'}
-                        </button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${
-                        account.status === 'active'
-                          ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-400'
-                          : 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-900/30 dark:text-rose-400'
-                      }`}>
-                        {account.status === 'active' ? 'Kích hoạt' : 'Đã khóa'}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link to={`/owner/staffs/${account.id}/edit`}>
-                          <Button variant="ghost" size="icon" title="Chỉnh sửa tài khoản" className="h-8 w-8 text-blue-500">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-
+      {/* Staff Detail Modal */}
       <Modal
         isOpen={isStaffModalOpen}
         onClose={handleCloseStaffDetail}
-        title={selectedStaff?.fullName || 'Chi tiết nhân sự'}
+        title={selectedStaff?.full_name || selectedStaff?.fullName || 'Chi tiết nhân sự'}
         description="Xem thông tin cá nhân và chỉnh sửa khi cần thiết."
         footer={
           <>
@@ -375,7 +245,13 @@ const StaffList = () => {
         {staffForm && (
           <div className="space-y-5">
             <div className="flex items-center gap-4">
-              <img src={(staffForm.gender || '').toLowerCase() === 'female' || (staffForm.gender || '').toLowerCase() === 'nữ' ? '/src/assets/nu_ava.jpg' : '/src/assets/nam_ava.jpg'} alt={staffForm.full_name || staffForm.fullName || 'Avatar'} className="h-20 w-20 rounded-2xl object-cover flex-shrink-0 border border-gray-200 dark:border-gray-800" />
+              <img
+                src={(staffForm.gender || '').toLowerCase() === 'female' || (staffForm.gender || '').toLowerCase() === 'nữ'
+                  ? '/src/assets/nu_ava.jpg'
+                  : '/src/assets/nam_ava.jpg'}
+                alt={staffForm.full_name || staffForm.fullName || 'Avatar'}
+                className="h-20 w-20 rounded-2xl object-cover flex-shrink-0 border border-gray-200 dark:border-gray-800"
+              />
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Vai trò</p>
                 <p className="text-base font-semibold text-gray-900 dark:text-white">{staffForm.position || staffForm.Position}</p>
@@ -387,7 +263,7 @@ const StaffList = () => {
                 <input
                   value={staffForm.full_name || staffForm.fullName || staffForm.FullName || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, full_name: e.target.value, fullName: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, full_name: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
@@ -396,7 +272,7 @@ const StaffList = () => {
                 <input
                   value={staffForm.gender || staffForm.Gender || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, gender: e.target.value, Gender: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, gender: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
@@ -404,9 +280,9 @@ const StaffList = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Ngày sinh</label>
                 <input
                   type="date"
-                  value={staffForm.dob ? (staffForm.dob.split('T')[0] || staffForm.dob) : ''}
+                  value={staffForm.dob ? staffForm.dob.split('T')[0] : ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, dob: e.target.value, DOB: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, dob: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
@@ -415,7 +291,7 @@ const StaffList = () => {
                 <input
                   value={staffForm.position || staffForm.Position || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, position: e.target.value, Position: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, position: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
@@ -424,7 +300,7 @@ const StaffList = () => {
                 <input
                   value={staffForm.phone || staffForm.Phone || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value, Phone: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
@@ -433,7 +309,7 @@ const StaffList = () => {
                 <input
                   value={staffForm.email || staffForm.Email || ''}
                   disabled={!isEditing}
-                  onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value, Email: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })}
                   className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 />
               </div>
@@ -443,41 +319,13 @@ const StaffList = () => {
               <textarea
                 value={staffForm.address || staffForm.Address || ''}
                 disabled={!isEditing}
-                onChange={(e) => setStaffForm({ ...staffForm, address: e.target.value, Address: e.target.value })}
+                onChange={(e) => setStaffForm({ ...staffForm, address: e.target.value })}
                 className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
                 rows={3}
               />
             </div>
           </div>
         )}
-      </Modal>
-
-      <Modal
-        isOpen={accountPasswordModal.isOpen}
-        onClose={() => setAccountPasswordModal({ isOpen: false, account: null, password: '' })}
-        title="Xác minh mật khẩu chủ"
-        description="Nhập lại mật khẩu chủ phòng tập để xem mật khẩu tài khoản nhân viên."
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setAccountPasswordModal({ isOpen: false, account: null, password: '' })}>Hủy</Button>
-            <Button onClick={handleConfirmPassword}>Xác nhận</Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <div className="grid gap-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Mật khẩu chủ</label>
-            <input
-              type="password"
-              value={accountPasswordModal.password}
-              onChange={(e) => setAccountPasswordModal({ ...accountPasswordModal, password: e.target.value })}
-              className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-950 dark:text-white"
-            />
-          </div>
-          {passwordError && (
-            <p className="text-sm text-red-500">{passwordError}</p>
-          )}
-        </div>
       </Modal>
 
       {/* Delete Confirmation Modal */}
@@ -492,9 +340,7 @@ const StaffList = () => {
           </p>
           <p className="text-sm text-red-500 mb-4">Hành động này không thể hoàn tác.</p>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setDeleteModal({ isOpen: false, staff: null })}>
-              Hủy
-            </Button>
+            <Button variant="outline" onClick={() => setDeleteModal({ isOpen: false, staff: null })}>Hủy</Button>
             <Button variant="danger" onClick={handleDelete} disabled={deleteMutation.isPending}>
               {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
             </Button>
@@ -506,6 +352,3 @@ const StaffList = () => {
 };
 
 export default StaffList;
-
-
-

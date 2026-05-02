@@ -26,4 +26,8 @@ export const accountService = {
   getAccountById: async (id) => {
     return axios.get(`/accounts/${id}`);
   },
+
+  revealPassword: async (id, ownerPassword) => {
+    return axios.post(`/accounts/${id}/reveal`, { owner_password: ownerPassword });
+  },
 };

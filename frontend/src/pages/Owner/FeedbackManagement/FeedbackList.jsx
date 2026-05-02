@@ -74,10 +74,11 @@ const FeedbackList = () => {
     const query = searchTerm.toLowerCase();
     const now = new Date();
     return feedbacks.filter((fb) => {
-      const matchSearch = 
-        (fb.member_name || fb.memberName || '').toLowerCase().includes(query) || 
+      const matchSearch =
+        (fb.member_name || fb.memberName || '').toLowerCase().includes(query) ||
         (fb.content || fb.Content || '').toLowerCase().includes(query);
       const matchRating = ratingFilter === 'all' || (fb.rating || fb.Rating || 0).toString() === ratingFilter;
+      const matchStatus = !statusFilter || (fb.status || '').toLowerCase() === statusFilter.toLowerCase();
       const feedbackDate = new Date(fb.sent_at || fb.created_at || fb.createdAt || fb.date || '2024-01-01');
       let matchDate = true;
 
@@ -98,9 +99,9 @@ const FeedbackList = () => {
         matchDate = feedbackDate.getFullYear() === now.getFullYear();
       }
 
-      return matchSearch && matchRating && matchDate;
+      return matchSearch && matchRating && matchDate && matchStatus;
     });
-  }, [feedbacks, searchTerm, ratingFilter, dateFilter]);
+  }, [feedbacks, searchTerm, ratingFilter, dateFilter, statusFilter]);
 
   const renderStars = (rating) => {
     return (

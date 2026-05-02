@@ -8,6 +8,7 @@ import (
 	"gym-management/internal/domain/usecase/account_usecase"
 	"gym-management/internal/infra/api/dto"
 	"gym-management/internal/infra/api/mappers"
+	"gym-management/internal/infra/api/middleware"
 
 	"github.com/gorilla/mux"
 )
@@ -137,6 +138,33 @@ func (h *AccountHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(mappers.AccountEntityToResponse(account))
+}
+
+func (h *AccountHandler) RevealPassword(w http.ResponseWriter, r *http.Request) {
+	targetID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+	user, ok := middleware.GetAuthenticatedUser(r)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	var body struct {
+		OwnerPassword string `json:"owner_password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	password, err := h.usecase.RevealAccountPassword(user.AccountID, body.OwnerPassword, targetID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"password": password})
 }
 
 func (h *AccountHandler) Delete(w http.ResponseWriter, r *http.Request) {

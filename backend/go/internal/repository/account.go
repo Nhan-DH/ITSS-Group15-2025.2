@@ -41,7 +41,7 @@ func (r *accountRepository) GetByID(id int) (*entity.Account, error) {
 }
 
 func (r *accountRepository) GetAll() ([]*entity.Account, error) {
-	query := `SELECT id, username, password, role_id FROM "Account"`
+	query := `SELECT id, username, password, role_id FROM "Account" WHERE role_id != 4`
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (r *accountRepository) GetAll() ([]*entity.Account, error) {
 func (r *accountRepository) GetAllPaginated(page, limit int) ([]*entity.Account, int, error) {
 	// Count total items
 	var total int
-	countQuery := `SELECT COUNT(*) FROM "Account"`
+	countQuery := `SELECT COUNT(*) FROM "Account" WHERE role_id != 4`
 	err := r.db.QueryRow(countQuery).Scan(&total)
 	if err != nil {
 		return nil, 0, err
@@ -73,8 +73,8 @@ func (r *accountRepository) GetAllPaginated(page, limit int) ([]*entity.Account,
 	// Calculate offset
 	offset := (page - 1) * limit
 
-	// Get paginated data (exclude password from results for security)
-	query := `SELECT id, username, role_id FROM "Account" ORDER BY id LIMIT $1 OFFSET $2`
+	// Get paginated data (exclude password from results for security, exclude MEMBER role)
+	query := `SELECT id, username, role_id FROM "Account" WHERE role_id != 4 ORDER BY id LIMIT $1 OFFSET $2`
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, 0, err

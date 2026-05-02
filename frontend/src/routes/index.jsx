@@ -21,6 +21,7 @@ import RoomList from '@/pages/Owner/RoomManagement/RoomList';
 import RoomDetail from '@/pages/Owner/RoomManagement/RoomDetail';
 import RoomFormPage from '@/pages/Owner/RoomManagement/RoomForm';
 import FeedbackList from '@/pages/Owner/FeedbackManagement/FeedbackList';
+import AccountList from '@/pages/Owner/AccountManagement/AccountList';
 import RevenueReport from '@/pages/Owner/Reports/RevenueReport';
 
 import MemberReport from '@/pages/Owner/Reports/MemberReport';
@@ -137,6 +138,7 @@ export const router = createBrowserRouter([
               { path: 'rooms/:id', element: <RoomDetail /> },
               { path: 'rooms/:id/edit', element: <RoomFormPage /> },
               { path: 'feedbacks', element: <FeedbackList /> },
+              { path: 'accounts', element: <AccountList /> },
               { path: 'reports', element: <ReportsOverview /> },
               { path: 'reports/revenue', element: <RevenueReport /> },
               { path: 'reports/members', element: <MemberReport /> },

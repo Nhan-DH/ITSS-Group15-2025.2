@@ -5,8 +5,6 @@ import (
 	"errors"
 	"gym-management/internal/domain/adapter"
 	"gym-management/internal/domain/entity"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type IUpdateAccountUseCase interface {
@@ -40,18 +38,10 @@ func (u *UpdateAccountUseCase) Execute(ctx context.Context, account *entity.Acco
 	if account.RoleID <= 0 {
 		account.RoleID = existing.RoleID
 	}
-
 	if account.Password == "" {
 		account.Password = existing.Password
-	} else {
-		if len(account.Password) < 6 {
-			return nil, errors.New("password must be at least 6 characters")
-		}
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
-		if err != nil {
-			return nil, err
-		}
-		account.Password = string(hashedPassword)
+	} else if len(account.Password) < 6 {
+		return nil, errors.New("password must be at least 6 characters")
 	}
 
 	if err := u.repo.Update(account); err != nil {

@@ -9,6 +9,7 @@ export const menus = {
     { title: "Gói tập", path: "/owner/packages", icon: "Package" },
     { title: "Thiết bị", path: "/owner/equipment", icon: "Dumbbell" },
     { title: "Phản hồi", path: "/owner/feedbacks", icon: "MessageSquare" },
+    { title: "Tài khoản", path: "/owner/accounts", icon: "KeyRound" },
     { title: "Báo cáo", path: "/owner/reports", icon: "BarChartBig" },
   ],
   [ROLES.MANAGER]: [
