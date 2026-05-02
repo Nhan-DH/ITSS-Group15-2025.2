@@ -101,10 +101,10 @@ INSERT INTO "Invoice" ("member_id", "subscription_id", "total_amount", "payment_
 (10, 10, 50000, 'Paid', 'Card', 'Thanh toán gói Nữ Tháng');
 
 -- Liên kết member với 3 PT đã tạo (ID 2, 5, 9)
-INSERT INTO "TrainingBooking" ("member_id", "pt_id", "requested_schedule", "training_plan_note", "status") VALUES
-(1, 2, 'T2,4,6', 'Giảm cân', 'Accepted'),
-(2, 5, 'T3,5,7', 'Tăng cơ', 'Accepted'),
-(3, 9, 'T2,4,6', 'Yoga', 'Accepted');
+INSERT INTO "TrainingBooking" ("member_id", "pt_id", "requested_start", "requested_end", "training_plan_note", "status") VALUES
+(1, 2, '2026-04-20 18:00:00', '2026-04-20 19:30:00', 'Giảm cân', 'Accepted'),
+(2, 5, '2026-04-21 07:00:00', '2026-04-21 08:30:00', 'Tăng cơ', 'Accepted'),
+(3, 9, '2026-04-22 09:00:00', '2026-04-22 10:30:00', 'Yoga', 'Accepted');
 
 INSERT INTO "TrainingSession" ("booking_id", "facility_id", "session_time", "attendance_status", "pt_feedback") VALUES
 (1, 1, CURRENT_TIMESTAMP, 'Present', 'Học viên rất tích cực'),

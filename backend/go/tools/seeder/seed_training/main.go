@@ -11,7 +11,8 @@ import (
 type TrainingSeed struct {
 	MemberUsername    string
 	PTUsername        string
-	RequestedSchedule string
+	RequestedStart    string
+	RequestedEnd      string
 	TrainingPlanNote  string
 	BookingStatus     string
 	FacilityName      string
@@ -35,7 +36,8 @@ func main() {
 		{
 			MemberUsername:    "member01",
 			PTUsername:        "pt01",
-			RequestedSchedule: "Mon-Wed-Fri 18:00",
+			RequestedStart:    "2026-04-20 18:00:00",
+			RequestedEnd:      "2026-04-20 19:30:00",
 			TrainingPlanNote:  "Strength foundation and posture correction",
 			BookingStatus:     "Accepted",
 			FacilityName:      "Main Weight Room",
@@ -46,7 +48,8 @@ func main() {
 		{
 			MemberUsername:    "member02",
 			PTUsername:        "pt02",
-			RequestedSchedule: "Tue-Thu-Sat 07:00",
+			RequestedStart:    "2026-04-21 07:00:00",
+			RequestedEnd:      "2026-04-21 08:30:00",
 			TrainingPlanNote:  "Fat-loss plan with HIIT and nutrition guidance",
 			BookingStatus:     "Accepted",
 			FacilityName:      "Cardio Zone",
@@ -131,10 +134,11 @@ func ensureTrainingBooking(db *sql.DB, memberID, ptID int, seed TrainingSeed) (i
 	var id int
 	err := db.QueryRow(
 		`SELECT id FROM "TrainingBooking"
-		 WHERE member_id=$1 AND pt_id=$2 AND requested_schedule=$3`,
+		 WHERE member_id=$1 AND pt_id=$2 AND requested_start=$3 AND requested_end=$4`,
 		memberID,
 		ptID,
-		seed.RequestedSchedule,
+		seed.RequestedStart,
+		seed.RequestedEnd,
 	).Scan(&id)
 	if err == nil {
 		return id, nil
@@ -144,12 +148,13 @@ func ensureTrainingBooking(db *sql.DB, memberID, ptID int, seed TrainingSeed) (i
 	}
 
 	err = db.QueryRow(
-		`INSERT INTO "TrainingBooking" (member_id, pt_id, requested_schedule, training_plan_note, status)
-		 VALUES ($1, $2, $3, $4, $5)
+		`INSERT INTO "TrainingBooking" (member_id, pt_id, requested_start, requested_end, training_plan_note, status)
+		 VALUES ($1, $2, $3, $4, $5, $6)
 		 RETURNING id`,
 		memberID,
 		ptID,
-		seed.RequestedSchedule,
+		seed.RequestedStart,
+		seed.RequestedEnd,
 		seed.TrainingPlanNote,
 		seed.BookingStatus,
 	).Scan(&id)
