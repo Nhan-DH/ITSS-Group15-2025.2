@@ -88,11 +88,27 @@ func (h *FacilityHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FacilityHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
 	var facility entity.Facility
 	json.NewDecoder(r.Body).Decode(&facility)
+	facility.ID = id
 	err := h.usecase.UpdateFacility(&facility)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *FacilityHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
+	var body struct {
+		Status string `json:"status"`
+	}
+	json.NewDecoder(r.Body).Decode(&body)
+	err := h.usecase.UpdateFacilityStatus(id, body.Status)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

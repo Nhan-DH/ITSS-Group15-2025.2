@@ -82,6 +82,11 @@ func (r *facilityRepository) Update(facility *entity.Facility) error {
 	return err
 }
 
+func (r *facilityRepository) UpdateStatus(id int, status string) error {
+	_, err := r.db.Exec(`UPDATE "Facility" SET status = $1 WHERE id = $2`, status, id)
+	return err
+}
+
 func (r *facilityRepository) Delete(id int) error {
 	_, err := r.db.Exec(`DELETE FROM "Facility" WHERE id = $1`, id)
 	return err

@@ -1,6 +1,6 @@
 import axios from '@/lib/axios';
 
-const IS_MOCK = false; // Set to false to use real API
+const IS_MOCK = false;
 
 export const facilityService = {
   getFacilities: async (page = 1, limit = 6) => {
@@ -28,6 +28,6 @@ export const facilityService = {
   },
 
   updateFacilityStatus: async (id, status) => {
-    return axios.put(`/facilities/${id}`, { status });
+    return axios.patch(`/facilities/${id}/status`, { status });
   },
 };

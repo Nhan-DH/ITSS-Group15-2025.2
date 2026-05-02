@@ -14,6 +14,7 @@ const RoomFormPage = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [initialData, setInitialData] = useState(null);
+  const [currentStatus, setCurrentStatus] = useState('Operating');
 
   const createMutation = useCreateFacility();
   const updateMutation = useUpdateFacility();
@@ -24,11 +25,14 @@ const RoomFormPage = () => {
       facilityService.getFacilityById(id)
         .then(response => {
           const data = response.data || response;
+          setCurrentStatus(data.status || 'Operating');
           setInitialData({
-            name: data.facility_name || data.name,
-            capacity: data.max_capacity || data.capacity,
-            status: data.status || "active",
-            icon: data.facility_type || "cardio",
+            facility_name: data.facility_name || '',
+            facility_type: data.facility_type || 'Gym',
+            description: data.description || '',
+            max_capacity: data.max_capacity || 30,
+            current_capacity: data.current_capacity || 0,
+            amenities: data.amenities || '',
           });
         })
         .catch(err => {
@@ -44,10 +48,13 @@ const RoomFormPage = () => {
   const handleSubmit = (data) => {
     setIsLoading(true);
     const payload = {
-      facility_name: data.name,
-      max_capacity: parseInt(data.capacity, 10),
-      status: data.status,
-      facility_type: data.icon,
+      facility_name: data.facility_name,
+      facility_type: data.facility_type,
+      description: data.description || '',
+      max_capacity: parseInt(data.max_capacity, 10),
+      current_capacity: parseInt(data.current_capacity || 0, 10),
+      amenities: data.amenities || '',
+      status: isEditing ? currentStatus : 'Operating',
     };
 
     if (isEditing) {
@@ -75,7 +82,7 @@ const RoomFormPage = () => {
     }
   };
 
-  if (isEditing && !initialData)
+  if (isEditing && isLoading && !initialData)
     return (
       <div className="p-8 text-center text-gray-500">Đang tải dữ liệu...</div>
     );
@@ -90,14 +97,12 @@ const RoomFormPage = () => {
         </Link>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-            {isEditing
-              ? "Chỉnh sửa Khu vực / Phòng tập"
-              : "Thiết lập Phòng tập mới"}
+            {isEditing ? "Chỉnh sửa khu vực / phòng tập" : "Thêm phòng tập mới"}
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {isEditing
-              ? "Thay đổi thông tin sức chứa, biểu tượng hoặc trạng thái khu vực."
-              : "Thêm khu vực tập luyện mới để quản lý hệ thống thuận tiện hơn."}
+              ? "Thay đổi thông tin sức chứa, loại khu vực và tiện ích."
+              : "Thêm khu vực tập luyện mới vào hệ thống quản lý."}
           </p>
         </div>
       </div>
@@ -106,7 +111,7 @@ const RoomFormPage = () => {
         <RoomFormComponent
           initialData={initialData}
           onSubmit={handleSubmit}
-          isLoading={isLoading}
+          isLoading={isLoading || createMutation.isPending || updateMutation.isPending}
         />
       </div>
     </div>

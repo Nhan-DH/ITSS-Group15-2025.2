@@ -58,6 +58,7 @@ func NewRouter(
 	ownerManager.HandleFunc("/facilities", facilityHandler.GetAll).Methods("GET")
 	ownerManager.HandleFunc("/facilities/{id}", facilityHandler.GetByID).Methods("GET")
 	ownerManager.HandleFunc("/facilities/{id}", facilityHandler.Update).Methods("PUT")
+	ownerManager.HandleFunc("/facilities/{id}/status", facilityHandler.UpdateStatus).Methods("PATCH")
 	ownerManager.HandleFunc("/facilities/{id}", facilityHandler.Delete).Methods("DELETE")
 
 	ownerManager.HandleFunc("/equipments", equipmentHandler.Create).Methods("POST")

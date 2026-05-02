@@ -12,6 +12,7 @@ type FacilityUsecase interface {
 	GetAllFacilities() ([]*entity.Facility, error)
 	GetAllFacilitiesPaginated(page, limit int) ([]*entity.Facility, int, error)
 	UpdateFacility(facility *entity.Facility) error
+	UpdateFacilityStatus(id int, status string) error
 	DeleteFacility(id int) error
 }
 
@@ -21,6 +22,7 @@ type facilityUsecase struct {
 	list          IListFacilitiesUseCase
 	listPaginated IListFacilitiesPaginatedUseCase
 	update        IUpdateFacilityUseCase
+	updateStatus  IUpdateFacilityStatusUseCase
 	delete        IDeleteFacilityUseCase
 }
 
@@ -31,6 +33,7 @@ func NewFacilityUsecase(repo adapter.FacilityRepository) FacilityUsecase {
 		list:          NewListFacilitiesUseCase(repo),
 		listPaginated: NewListFacilitiesPaginatedUseCase(repo),
 		update:        NewUpdateFacilityUseCase(repo),
+		updateStatus:  NewUpdateFacilityStatusUseCase(repo),
 		delete:        NewDeleteFacilityUseCase(repo),
 	}
 }
@@ -63,6 +66,10 @@ func (u *facilityUsecase) UpdateFacility(facility *entity.Facility) error {
 	}
 	*facility = *updated
 	return nil
+}
+
+func (u *facilityUsecase) UpdateFacilityStatus(id int, status string) error {
+	return u.updateStatus.Execute(context.Background(), id, status)
 }
 
 func (u *facilityUsecase) DeleteFacility(id int) error {
