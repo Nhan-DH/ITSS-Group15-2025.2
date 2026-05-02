@@ -8,4 +8,5 @@ type SubscriptionRepository interface {
 	GetAll() ([]*entity.Subscription, error)
 	Update(sub *entity.Subscription) error
 	Delete(id int) error
+	GetByMemberID(memberID int, page, limit int) ([]*entity.SubscriptionHistory, int, error)
 }

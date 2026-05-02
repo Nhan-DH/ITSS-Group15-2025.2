@@ -8,6 +8,7 @@ import (
 type SubscriptionRepository interface {
 	Create(subscription *entity.Subscription) error
 	GetByID(id int) (*entity.Subscription, error)
+	GetByMemberID(memberID int, page, limit int) ([]*entity.SubscriptionHistory, int, error)
 	GetAll() ([]*entity.Subscription, error)
 	Update(subscription *entity.Subscription) error
 	Delete(id int) error
@@ -64,6 +65,42 @@ func (r *subscriptionRepository) Update(subscription *entity.Subscription) error
 	query := `UPDATE "Subscription" SET member_id = $1, package_id = $2, registration_date = $3, start_date = $4, end_date = $5, status = $6 WHERE id = $7`
 	_, err := r.db.Exec(query, subscription.MemberID, subscription.PackageID, subscription.RegistrationDate, subscription.StartDate, subscription.EndDate, subscription.Status, subscription.ID)
 	return err
+}
+
+func (r *subscriptionRepository) GetByMemberID(memberID int, page, limit int) ([]*entity.SubscriptionHistory, int, error) {
+	// Count total items
+	var total int
+	countQuery := `SELECT COUNT(*) FROM "Subscription" WHERE member_id = $1`
+	err := r.db.QueryRow(countQuery, memberID).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Calculate offset
+	offset := (page - 1) * limit
+
+	query := `SELECT s.id, p.package_name, s.registration_date, s.start_date, s.end_date, s.status, p.price
+	FROM "Subscription" s
+	LEFT JOIN "MembershipPackage" p ON s.package_id = p.id
+	WHERE s.member_id = $1
+	ORDER BY s.registration_date DESC LIMIT $2 OFFSET $3`
+	rows, err := r.db.Query(query, memberID, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var histories []*entity.SubscriptionHistory
+	for rows.Next() {
+		var history entity.SubscriptionHistory
+		err := rows.Scan(&history.ID, &history.PackageName, &history.RegistrationDate, &history.StartDate, &history.EndDate, &history.Status, &history.Price)
+		if err != nil {
+			return nil, 0, err
+		}
+		histories = append(histories, &history)
+	}
+
+	return histories, total, nil
 }
 
 func (r *subscriptionRepository) Delete(id int) error {

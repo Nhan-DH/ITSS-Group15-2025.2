@@ -94,11 +94,11 @@ func SubscriptionEntityToResponse(ent *entity.Subscription) *dto.SubscriptionRes
 }
 
 func TrainingBookingRequestToEntity(req *dto.TrainingBookingRequest) *entity.TrainingBooking {
-	return &entity.TrainingBooking{MemberID: req.MemberID, PTID: req.PTID, RequestedSchedule: req.RequestedSchedule, TrainingPlanNote: req.TrainingPlanNote, Status: req.Status}
+	return &entity.TrainingBooking{MemberID: req.MemberID, PTID: req.PTID, RequestedStart: req.RequestedStart, RequestedEnd: req.RequestedEnd, TrainingPlanNote: req.TrainingPlanNote, Status: req.Status}
 }
 
 func TrainingBookingEntityToResponse(ent *entity.TrainingBooking) *dto.TrainingBookingResponse {
-	return &dto.TrainingBookingResponse{ID: ent.ID, MemberID: ent.MemberID, PTID: ent.PTID, RequestedSchedule: ent.RequestedSchedule, TrainingPlanNote: ent.TrainingPlanNote, Status: ent.Status}
+	return &dto.TrainingBookingResponse{ID: ent.ID, MemberID: ent.MemberID, PTID: ent.PTID, RequestedStart: ent.RequestedStart, RequestedEnd: ent.RequestedEnd, TrainingPlanNote: ent.TrainingPlanNote, Status: ent.Status}
 }
 
 func TrainingSessionRequestToEntity(req *dto.TrainingSessionRequest) *entity.TrainingSession {

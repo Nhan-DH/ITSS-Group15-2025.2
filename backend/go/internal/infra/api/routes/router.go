@@ -96,6 +96,7 @@ func NewRouter(
 	ownerManager.HandleFunc("/subscriptions", subscriptionHandler.Create).Methods("POST")
 	ownerManager.HandleFunc("/subscriptions/{id}", subscriptionHandler.Update).Methods("PUT")
 	ownerManager.HandleFunc("/subscriptions/{id}", subscriptionHandler.Delete).Methods("DELETE")
+	ownerManager.HandleFunc("/members/{memberId}/subscriptions", subscriptionHandler.GetHistoryByMemberID).Methods("GET")
 
 	ownerManager.HandleFunc("/pt-details", ptDetailHandler.Create).Methods("POST")
 	ownerManager.HandleFunc("/pt-details/{employeeID}", ptDetailHandler.Update).Methods("PUT")

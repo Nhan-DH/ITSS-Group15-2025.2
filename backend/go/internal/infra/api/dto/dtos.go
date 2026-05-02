@@ -175,20 +175,22 @@ type SubscriptionResponse struct {
 }
 
 type TrainingBookingRequest struct {
-	MemberID          int    `json:"member_id"`
-	PTID              int    `json:"pt_id"`
-	RequestedSchedule string `json:"requested_schedule"`
-	TrainingPlanNote  string `json:"training_plan_note"`
-	Status            string `json:"status"`
+	MemberID         int       `json:"member_id"`
+	PTID             int       `json:"pt_id"`
+	RequestedStart   time.Time `json:"requested_start"`
+	RequestedEnd     time.Time `json:"requested_end"`
+	TrainingPlanNote string    `json:"training_plan_note"`
+	Status           string    `json:"status"`
 }
 
 type TrainingBookingResponse struct {
-	ID                int    `json:"id"`
-	MemberID          int    `json:"member_id"`
-	PTID              int    `json:"pt_id"`
-	RequestedSchedule string `json:"requested_schedule"`
-	TrainingPlanNote  string `json:"training_plan_note"`
-	Status            string `json:"status"`
+	ID               int       `json:"id"`
+	MemberID         int       `json:"member_id"`
+	PTID             int       `json:"pt_id"`
+	RequestedStart   time.Time `json:"requested_start"`
+	RequestedEnd     time.Time `json:"requested_end"`
+	TrainingPlanNote string    `json:"training_plan_note"`
+	Status           string    `json:"status"`
 }
 
 type TrainingSessionRequest struct {

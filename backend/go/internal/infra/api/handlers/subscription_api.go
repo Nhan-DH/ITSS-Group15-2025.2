@@ -89,15 +89,59 @@ func (h *SubscriptionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(subscription)
 }
 
+func (h *SubscriptionHandler) GetHistoryByMemberID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	memberID, err := strconv.Atoi(vars["memberId"])
+	if err != nil {
+		http.Error(w, "Invalid Member ID", http.StatusBadRequest)
+		return
+	}
+
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	page := 1
+	limit := 5 // Default to 5 records per page
+
+	if pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	histories, total, err := h.usecase.GetSubscriptionHistoryByMemberID(memberID, page, limit)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{
+		"data":       histories,
+		"page":       page,
+		"limit":      limit,
+		"total":      total,
+		"totalPages": (total + limit - 1) / limit,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
 func (h *SubscriptionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.usecase.DeleteSubscription(id); err != nil {
+	err = h.usecase.DeleteSubscription(id)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

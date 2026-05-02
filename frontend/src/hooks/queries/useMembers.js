@@ -9,11 +9,19 @@ export const useMembers = (page = 1, limit = 10) => {
   });
 };
 
-// Hook lấy chi tiết một hội viên
+// Hook lấy lịch sử đăng ký gói tập của hội viên
+export const useMemberSubscriptionHistory = (memberId, page = 1, limit = 5) => {
+  return useQuery({
+    queryKey: ['memberSubscriptions', memberId, page, limit],
+    queryFn: () => memberService.getMemberSubscriptionHistory(memberId, page, limit),
+    enabled: !!memberId,
+  });
+};
+
 export const useMemberDetails = (id) => {
   return useQuery({
-    queryKey: ['member', id],
+    queryKey: ['memberDetail', id],
     queryFn: () => memberService.getMemberDetail(id),
-    enabled: !!id, // Chỉ gọi API khi có id
+    enabled: !!id,
   });
 };

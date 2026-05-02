@@ -144,7 +144,7 @@ func (r *memberRepository) GetAllMembersWithDetails() ([]*dto.MemberListItemDTO,
 		COALESCE(TO_CHAR(s.start_date, 'YYYY-MM-DD'), TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD')) as start_date,
 		COALESCE((s.end_date::date - CURRENT_DATE), 0) as sessions_remaining
 	FROM "Member" m
-	LEFT JOIN "Subscription" s ON m.id = s.member_id AND s.status NOT IN ('Expired', 'Cancelled')
+	LEFT JOIN "Subscription" s ON m.id = s.member_id AND s.status NOT IN ('Expired', 'Cancelled') AND s.end_date >= CURRENT_DATE
 	LEFT JOIN "MembershipPackage" mp ON s.package_id = mp.id
 	ORDER BY m.id DESC
 	`

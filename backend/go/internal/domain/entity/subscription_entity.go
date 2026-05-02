@@ -11,3 +11,13 @@ type Subscription struct {
 	EndDate          time.Time `json:"end_date"`
 	Status           string    `json:"status"`
 }
+
+type SubscriptionHistory struct {
+	ID               int       `json:"id"`
+	PackageName      string    `json:"package_name"`
+	RegistrationDate time.Time `json:"registration_date"`
+	StartDate        time.Time `json:"start_date"`
+	EndDate          time.Time `json:"end_date"`
+	Status           string    `json:"status"`
+	Price            float64   `json:"price"`
+}

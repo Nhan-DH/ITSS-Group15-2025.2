@@ -1,29 +1,18 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Eye, Edit, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { Plus, Eye, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMembers } from '@/hooks/queries/useMembers';
-import { useDeleteMember } from '@/hooks/mutations/useMemberMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
-import Modal from '@/components/Common/Modal';
 
 const MemberList = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, member: null });
   const limit = 10;
 
   const { data: memberResponse, isLoading, isError } = useMembers(page, limit);
-  const deleteMutation = useDeleteMember();
-
-  const handleDelete = () => {
-    if (deleteModal.member) {
-      deleteMutation.mutate(deleteModal.member.id);
-      setDeleteModal({ isOpen: false, member: null });
-    }
-  };
 
   // Mock data fallback
   const mockMembers = [
@@ -150,8 +139,8 @@ const MemberList = () => {
                       </TableCell>
                       <TableCell>{member.phone || member.Phone || 'N/A'}</TableCell>
                       <TableCell>
-                        {member.created_at || member.createdAt || member.registeredAt 
-                          ? new Date(member.created_at || member.createdAt || member.registeredAt).toLocaleDateString('vi-VN')
+                        {member.registered_at || member.registeredAt || member.created_at || member.createdAt || member.registeredAt 
+                          ? new Date(member.registered_at || member.registeredAt || member.created_at || member.createdAt || member.registeredAt).toLocaleDateString('vi-VN')
                           : 'N/A'}
                       </TableCell>
                       <TableCell>
@@ -175,15 +164,6 @@ const MemberList = () => {
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            title="Xóa" 
-                            className="h-8 w-8 text-red-500"
-                            onClick={(e) => { e.stopPropagation(); setDeleteModal({ isOpen: true, member }); }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -221,28 +201,6 @@ const MemberList = () => {
           </div>
         )}
       </div>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, member: null })}
-        title="Xác nhận xóa hội viên"
-      >
-        <div className="p-4">
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
-            Bạn có chắc chắn muốn xóa hội viên <strong>{deleteModal.member?.full_name}</strong> không?
-          </p>
-          <p className="text-sm text-red-500 mb-4">Hành động này không thể hoàn tác.</p>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setDeleteModal({ isOpen: false, member: null })}>
-              Hủy
-            </Button>
-            <Button variant="danger" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };

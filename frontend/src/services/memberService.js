@@ -44,19 +44,60 @@ export const memberService = {
     return axios.put(`/members/${id}`, data);
   },
 
-  updateMemberStatus: async (id, isActive) => {
-    if (IS_MOCK) {
-      await delay(500);
-      return { id, is_active: isActive };
-    }
-    return axios.put(`/members/${id}/status`, { is_active: isActive });
-  },
+  getMemberSubscriptionHistory: async (memberId, page = 1, limit = 5) => {
+  if (IS_MOCK) {
+    await delay(600);
+    return {
+      data: [
+        {
+          id: 1,
+          package_name: 'Gói VIP 12 Tháng',
+          registration_date: '2026-01-15',
+          start_date: '2026-01-15',
+          end_date: '2027-01-15',
+          status: 'active',
+          price: 1200000
+        },
+        {
+          id: 2,
+          package_name: 'Gói Cơ Bản 6 Tháng',
+          registration_date: '2025-07-01',
+          start_date: '2025-07-01',
+          end_date: '2026-01-01',
+          status: 'expired',
+          price: 600000
+        },
+      ],
+      page,
+      limit,
+      total: 2,
+      totalPages: 1
+    };
+  }
 
-  deleteMember: async (id) => {
-    if (IS_MOCK) {
-      await delay(500);
-      return { success: true };
-    }
-    return axios.delete(`/members/${id}`);
-  },
-};
+  const response = await axios.get(
+    `/members/${memberId}/subscriptions?page=${page}&limit=${limit}`
+  );
+  return response;
+},
+
+updateMemberStatus: async (id, isActive) => {
+  if (IS_MOCK) {
+    await delay(500);
+    return { success: true };
+  }
+
+  return axios.put(`/members/${id}/status`, {
+    is_active: isActive
+  });
+},
+
+deleteMember: async (id) => {
+  if (IS_MOCK) {
+    await delay(500);
+    return { success: true };
+  }
+
+  return axios.delete(`/members/${id}`);
+}
+}
