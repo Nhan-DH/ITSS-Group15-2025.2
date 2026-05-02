@@ -9,16 +9,16 @@ import (
 )
 
 type TrainingSeed struct {
-	MemberUsername    string
-	PTUsername        string
-	RequestedStart    string
-	RequestedEnd      string
-	TrainingPlanNote  string
-	BookingStatus     string
-	FacilityName      string
-	SessionTime       string
-	AttendanceStatus  string
-	PTFeedback        string
+	MemberUsername   string
+	PTUsername       string
+	RequestedStart   string
+	RequestedEnd     string
+	TrainingPlanNote string
+	BookingStatus    string
+	FacilityName     string
+	SessionTime      string
+	AttendanceStatus string
+	PTFeedback       string
 }
 
 func main() {
@@ -34,28 +34,28 @@ func main() {
 
 	seeds := []TrainingSeed{
 		{
-			MemberUsername:    "member01",
-			PTUsername:        "pt01",
-			RequestedStart:    "2026-04-20 18:00:00",
-			RequestedEnd:      "2026-04-20 19:30:00",
-			TrainingPlanNote:  "Strength foundation and posture correction",
-			BookingStatus:     "Accepted",
-			FacilityName:      "Main Weight Room",
-			SessionTime:       "2026-04-20 18:00:00",
-			AttendanceStatus:  "Present",
-			PTFeedback:        "Good effort, increase squat volume next week",
+			MemberUsername:   "member01",
+			PTUsername:       "pt01",
+			RequestedStart:   "2026-04-20 18:00:00",
+			RequestedEnd:     "2026-04-20 19:30:00",
+			TrainingPlanNote: "Strength foundation and posture correction",
+			BookingStatus:    "Accepted",
+			FacilityName:     "Main Weight Room",
+			SessionTime:      "2026-04-20 18:00:00",
+			AttendanceStatus: "Present",
+			PTFeedback:       "Good effort, increase squat volume next week",
 		},
 		{
-			MemberUsername:    "member02",
-			PTUsername:        "pt02",
-			RequestedStart:    "2026-04-21 07:00:00",
-			RequestedEnd:      "2026-04-21 08:30:00",
-			TrainingPlanNote:  "Fat-loss plan with HIIT and nutrition guidance",
-			BookingStatus:     "Accepted",
-			FacilityName:      "Cardio Zone",
-			SessionTime:       "2026-04-21 07:00:00",
-			AttendanceStatus:  "Present",
-			PTFeedback:        "Heart rate recovery improved",
+			MemberUsername:   "member02",
+			PTUsername:       "pt02",
+			RequestedStart:   "2026-04-21 07:00:00",
+			RequestedEnd:     "2026-04-21 08:30:00",
+			TrainingPlanNote: "Fat-loss plan with HIIT and nutrition guidance",
+			BookingStatus:    "Accepted",
+			FacilityName:     "Cardio Zone",
+			SessionTime:      "2026-04-21 07:00:00",
+			AttendanceStatus: "Present",
+			PTFeedback:       "Heart rate recovery improved",
 		},
 	}
 
