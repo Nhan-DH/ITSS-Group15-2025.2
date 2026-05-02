@@ -25,18 +25,19 @@ func (r *packageRepository) Create(pkg *entity.MembershipPackage) error {
 
 func (r *packageRepository) GetByID(id int) (*entity.MembershipPackage, error) {
 	pkg := &entity.MembershipPackage{}
-	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, '')
+	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, ''), COALESCE(c.category_name, '')
 	FROM "MembershipPackage" p
 	LEFT JOIN "ServiceCategory" c ON p.category_id = c.id
 	WHERE p.id = $1`
-	err := r.db.QueryRow(query, id).Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description)
+	err := r.db.QueryRow(query, id).Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description, &pkg.CategoryName)
 	return pkg, err
 }
 
 func (r *packageRepository) GetAll() ([]*entity.MembershipPackage, error) {
-	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, '')
+	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, ''), COALESCE(c.category_name, '')
 	FROM "MembershipPackage" p
-	LEFT JOIN "ServiceCategory" c ON p.category_id = c.id`
+	LEFT JOIN "ServiceCategory" c ON p.category_id = c.id
+	ORDER BY p.id DESC`
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -45,7 +46,7 @@ func (r *packageRepository) GetAll() ([]*entity.MembershipPackage, error) {
 	var packages []*entity.MembershipPackage
 	for rows.Next() {
 		pkg := &entity.MembershipPackage{}
-		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description)
+		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description, &pkg.CategoryName)
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +68,7 @@ func (r *packageRepository) GetAllPaginated(page, limit int) ([]*entity.Membersh
 	offset := (page - 1) * limit
 
 	// Get paginated data
-	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, '')
+	query := `SELECT p.id, COALESCE(p.category_id, 0), COALESCE(p.package_name, ''), COALESCE(p.duration_days, 0), COALESCE(p.price, 0), COALESCE(p.is_active, true), COALESCE(c.benefits_description, ''), COALESCE(c.category_name, '')
 	FROM "MembershipPackage" p
 	LEFT JOIN "ServiceCategory" c ON p.category_id = c.id
 	ORDER BY p.id DESC LIMIT $1 OFFSET $2`
@@ -80,7 +81,7 @@ func (r *packageRepository) GetAllPaginated(page, limit int) ([]*entity.Membersh
 	var packages []*entity.MembershipPackage
 	for rows.Next() {
 		pkg := &entity.MembershipPackage{}
-		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description)
+		err := rows.Scan(&pkg.ID, &pkg.CategoryID, &pkg.PackageName, &pkg.DurationDays, &pkg.Price, &pkg.IsActive, &pkg.Description, &pkg.CategoryName)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -94,8 +95,8 @@ func (r *packageRepository) Update(pkg *entity.MembershipPackage) error {
 	if pkg.CategoryID == 0 {
 		categoryID = nil
 	}
-	query := `UPDATE "MembershipPackage" SET category_id = $1, package_name = $2, duration_days = $3, price = $4 WHERE id = $5`
-	_, err := r.db.Exec(query, categoryID, pkg.PackageName, pkg.DurationDays, pkg.Price, pkg.ID)
+	query := `UPDATE "MembershipPackage" SET category_id = $1, package_name = $2, duration_days = $3, price = $4, is_active = $5 WHERE id = $6`
+	_, err := r.db.Exec(query, categoryID, pkg.PackageName, pkg.DurationDays, pkg.Price, pkg.IsActive, pkg.ID)
 	return err
 }
 

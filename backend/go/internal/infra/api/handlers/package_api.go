@@ -87,14 +87,28 @@ func (h *PackageHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PackageHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
 	var pkg entity.MembershipPackage
-	json.NewDecoder(r.Body).Decode(&pkg)
-	err := h.usecase.UpdatePackage(&pkg)
+	err := json.NewDecoder(r.Body).Decode(&pkg)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	pkg.ID = id
+	err = h.usecase.UpdatePackage(&pkg)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	// Fetch updated package with category_name from JOIN
+	updated, err := h.usecase.GetPackageByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updated)
 }
 
 func (h *PackageHandler) Delete(w http.ResponseWriter, r *http.Request) {

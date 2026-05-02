@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Eye, EyeOff } from 'lucide-react';
 import { usePackages } from '@/hooks/queries/usePackages';
-import { useDeletePackage, useUpdatePackageStatus } from '@/hooks/mutations/usePackageMutation';
+import { useUpdatePackageStatus } from '@/hooks/mutations/usePackageMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
 import Button from '@/components/Common/Button';
 import Modal from '@/components/Common/Modal';
@@ -10,28 +10,30 @@ import { formatPriceVND } from '@/utils/formatters';
 
 const PackageList = () => {
   const { data: packages, isLoading, isError } = usePackages();
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, pkg: null });
-  const deleteMutation = useDeletePackage();
+  const [toggleModal, setToggleModal] = useState({ isOpen: false, pkg: null });
   const statusMutation = useUpdatePackageStatus();
 
-  const handleDelete = () => {
-    if (deleteModal.pkg) {
-      deleteMutation.mutate(deleteModal.pkg.id);
-      setDeleteModal({ isOpen: false, pkg: null });
+  // Lưu ý: Nếu bạn muốn dùng deleteMutation, bạn cần import hook tương ứng ở đây
+  // const deleteMutation = useDeletePackage(); 
+
+  const handleToggleStatus = (pkg) => {
+    setToggleModal({ isOpen: true, pkg });
+  };
+
+  const handleConfirmToggle = () => {
+    if (toggleModal.pkg) {
+      const newIsActive = !toggleModal.pkg.is_active;
+      statusMutation.mutate({ id: toggleModal.pkg.id, isActive: newIsActive }, {
+        onSuccess: () => setToggleModal({ isOpen: false, pkg: null })
+      });
     }
   };
 
-  const handleToggleStatus = (pkg) => {
-    const newIsActive = !pkg.is_active;
-    statusMutation.mutate({ id: pkg.id, isActive: newIsActive });
-  };
-
-  // Tạo mock data fallback cho tình huống usePackages hook chưa có data thật
   const mockPackages = packages || [
-    { id: 1, name: "Gói Cơ Bản", duration: 1, durationUnit: "Tháng", price: 300000, status: "active", features: ["Phòng gym cơ bản", "Yoga"] },
-    { id: 2, name: "Gói Nâng Cao", duration: 3, durationUnit: "Tháng", price: 800000, status: "active", features: ["Tất cả khu vực", "Tủ đồ cá nhân"] },
-    { id: 3, name: "Gói VIP (1 Năm)", duration: 12, durationUnit: "Tháng", price: 3000000, status: "active", features: ["HLV cá nhân 2 buổi", "Massge", "Sauna"] },
-    { id: 4, name: "Gói Trải Nghiệm", duration: 7, durationUnit: "Ngày", price: 100000, status: "inactive", features: ["Dùng thử giới hạn"] },
+    { id: 1, name: "Gói Cơ Bản", duration: 1, durationUnit: "Tháng", price: 300000, is_active: true, features: ["Phòng gym cơ bản", "Yoga"] },
+    { id: 2, name: "Gói Nâng Cao", duration: 3, durationUnit: "Tháng", price: 800000, is_active: true, features: ["Tất cả khu vực", "Tủ đồ cá nhân"] },
+    { id: 3, name: "Gói VIP (1 Năm)", duration: 12, durationUnit: "Tháng", price: 3000000, is_active: true, features: ["HLV cá nhân 2 buổi", "Massge", "Sauna"] },
+    { id: 4, name: "Gói Trải Nghiệm", duration: 7, durationUnit: "Ngày", price: 100000, is_active: false, features: ["Dùng thử giới hạn"] },
   ];
 
   return (
@@ -112,16 +114,6 @@ const PackageList = () => {
                             <Edit className="h-4 w-4" />
                           </Button>
                         </Link>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          title="Xóa" 
-                          className="h-8 w-8 text-red-500 hidden sm:inline-flex"
-                          onClick={() => setDeleteModal({ isOpen: true, pkg })}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                        {/* Mobile view Action Fallback */}
                         <div className="sm:hidden text-blue-500 font-medium text-sm underline px-2 py-1">Sửa</div>
                       </div>
                     </TableCell>
@@ -133,23 +125,26 @@ const PackageList = () => {
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
       <Modal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, pkg: null })}
-        title="Xác nhận xóa gói tập"
+        isOpen={toggleModal.isOpen}
+        onClose={() => setToggleModal({ isOpen: false, pkg: null })}
+        title={toggleModal.pkg?.is_active ? 'Ẩn gói tập' : 'Hiển thị gói tập'}
       >
         <div className="p-4">
           <p className="text-gray-700 dark:text-gray-300 mb-4">
-            Bạn có chắc chắn muốn xóa gói tập <strong>{deleteModal.pkg?.name}</strong> không?
+            Bạn có chắc chắn muốn {toggleModal.pkg?.is_active ? 'ẩn' : 'hiển thị'} gói tập <strong>{toggleModal.pkg?.package_name || toggleModal.pkg?.name}</strong> không?
           </p>
-          <p className="text-sm text-red-500 mb-4">Hành động này không thể hoàn tác.</p>
+          {toggleModal.pkg?.is_active && (
+            <p className="text-sm text-amber-600 dark:text-amber-400 mb-4">
+              💡 Gói tập sẽ bị ẩn, member không thể mua.
+            </p>
+          )}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setDeleteModal({ isOpen: false, pkg: null })}>
+            <Button variant="outline" onClick={() => setToggleModal({ isOpen: false, pkg: null })}>
               Hủy
             </Button>
-            <Button variant="danger" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
+            <Button variant="primary" onClick={handleConfirmToggle} disabled={statusMutation.isPending}>
+              {statusMutation.isPending ? 'Đang xử lý...' : toggleModal.pkg?.is_active ? 'Ẩn' : 'Hiển thị'}
             </Button>
           </div>
         </div>
