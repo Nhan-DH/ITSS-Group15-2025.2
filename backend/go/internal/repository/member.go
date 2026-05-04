@@ -20,6 +20,10 @@ func (r *memberRepository) Create(member *entity.Member) error {
 	if member.AccountID == 0 {
 		accountID = nil
 	}
+	var accountID interface{} = member.AccountID
+	if member.AccountID == 0 {
+		accountID = nil
+	}
 	query := `INSERT INTO "Member" (full_name, phone, email, gender, dob, address, account_id, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
 	return r.db.QueryRow(query, member.FullName, member.Phone, member.Email, member.Gender, member.DOB, member.Address, accountID, member.IsActive).Scan(&member.ID)
 }

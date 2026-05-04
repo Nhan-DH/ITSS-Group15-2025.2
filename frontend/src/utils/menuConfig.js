@@ -24,8 +24,7 @@ export const menus = {
   [ROLES.TRAINER]: [
     { title: "Thông tin cá nhân", path: "/trainer/profile", icon: "User" },
     { title: "Học viên", path: "/trainer/students", icon: "Users" },
-    { title: "Lịch dạy", path: "/trainer/schedule", icon: "CalendarCheck" },
-    { title: "Yêu cầu tập luyện", path: "/trainer/evaluation", icon: "CheckSquare" },
+    { title: "Lịch dạy", path: "/trainer/schedule", icon: "CalendarCheck" }
   ],
   [ROLES.MEMBER]: [
     { title: "Tổng quan", path: "/member/dashboard", icon: "LayoutDashboard" },

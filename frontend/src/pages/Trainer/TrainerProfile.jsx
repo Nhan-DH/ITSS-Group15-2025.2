@@ -2,36 +2,6 @@ import React, { useState } from 'react';
 import { Award, Briefcase, Ruler } from 'lucide-react';
 
 const TrainerProfile = () => {
-  const [schedule, setSchedule] = useState([
-    { day: 'Thứ 2', slots: ['6:00 – 7:00', '8:00 – 9:00', '17:00 – 18:00'] },
-    { day: 'Thứ 3', slots: ['9:00 – 10:00', '17:00 – 18:00', '19:00 – 20:00'] },
-    { day: 'Thứ 4', slots: ['6:00 – 7:00', '8:00 – 9:00', '15:00 – 16:00'] },
-    { day: 'Thứ 5', slots: ['18:00 – 19:00', '20:00 – 21:00'] },
-    { day: 'Thứ 6', slots: ['6:00 – 7:00', '8:00 – 9:00', '17:00 – 18:00'] },
-    { day: 'Thứ 7', slots: ['7:00 – 8:00', '9:00 – 10:00'] },
-    { day: 'Chủ nhật', slots: [] },
-  ]);
-
-  const [removedSlots, setRemovedSlots] = useState({});
-
-  const toggleSlot = (dayIndex, slotIndex) => {
-    const key = `${dayIndex}-${slotIndex}`;
-    setRemovedSlots((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
-  const addSlot = (dayIndex) => {
-    const time = prompt('Nhập ca rảnh (vd: 10:00 – 11:00)');
-    if (time && time.trim()) {
-      setSchedule((prev) => {
-        const updated = [...prev];
-        updated[dayIndex].slots = [...updated[dayIndex].slots, time.trim()];
-        return updated;
-      });
-    }
-  };
 
   return (
     <div className="p-6">
@@ -212,61 +182,7 @@ const TrainerProfile = () => {
           </div>
         </div>
 
-        {/* Schedule Card */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">
-            Lịch hỗ trợ luyện tập
-          </h3>
 
-          <div className="space-y-3">
-            {schedule.map((row, dayIndex) => (
-              <div key={dayIndex} className="flex items-start gap-4 pb-3 border-b border-gray-100 last:border-0">
-                <div className="text-sm font-medium text-gray-900 min-w-20">{row.day}</div>
-                <div className="flex flex-wrap gap-2 flex-1">
-                  {row.slots.length === 0 ? (
-                    <span className="text-sm text-gray-400 italic">Không có ca rảnh</span>
-                  ) : (
-                    row.slots.map((slot, slotIndex) => {
-                      const key = `${dayIndex}-${slotIndex}`;
-                      const isRemoved = removedSlots[key];
-                      return (
-                        <button
-                          key={key}
-                          onClick={() => toggleSlot(dayIndex, slotIndex)}
-                          className={`px-3 py-1.5 text-xs rounded-full border transition-all cursor-pointer ${
-                            isRemoved
-                              ? 'bg-gray-100 text-gray-400 border-gray-200 line-through'
-                              : 'bg-green-100 text-green-700 border-green-200 hover:bg-green-50'
-                          }`}
-                        >
-                          {slot}
-                        </button>
-                      );
-                    })
-                  )}
-                  <button
-                    onClick={() => addSlot(dayIndex)}
-                    className="px-3 py-1.5 text-xs text-gray-400 border border-dashed border-gray-300 rounded-full hover:border-gray-400 transition-colors"
-                  >
-                    + Thêm ca
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Legend */}
-          <div className="flex gap-6 mt-4 pt-4 border-t border-gray-100">
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <div className="w-2.5 h-2.5 rounded-full bg-green-100 border border-green-200"></div>
-              Ca rảnh (click để bỏ)
-            </div>
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <div className="w-2.5 h-2.5 rounded-full bg-gray-100 border border-gray-200"></div>
-              Đã xóa
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Footer */}

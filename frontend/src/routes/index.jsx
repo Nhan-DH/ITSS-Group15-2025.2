@@ -4,8 +4,6 @@ import MainLayout from '@/components/Layout/MainLayout';
 import TrainerLayout from '@/components/Layout/TrainerLayout';
 import PrivateRoute from './PrivateRoute';
 import RoleBasedRoute from './RoleBasedRoute';
-
-
 import Login from '@/pages/Login/Login';
 import OwnerDashboard from '@/pages/Owner/OwnerDashboard';
 import MemberList from '@/pages/Owner/MemberManagement/MemberList';
@@ -37,14 +35,11 @@ import FeedbacksView from '@/pages/Manager/FeedbackManagement/FeedbacksView';
 import ReportsView from '@/pages/Manager/Reports/ReportsView';
 import ManagerPackageList from '@/pages/Manager/PackageManagement/PackageListView';
 import ManagerPackageDetail from '@/pages/Manager/PackageManagement/PackageDetail';
-
 import TrainerDashboard from '@/pages/Trainer/TrainerDashboard';
 import TrainerProfile from '@/pages/Trainer/TrainerProfile';
 import StudentList from '@/pages/Trainer/StudentManagement/StudentList';
 import TrackProgress from '@/pages/Trainer/StudentManagement/TrackProgress';
 import ScheduleList from '@/pages/Trainer/Schedule/ScheduleList';
-import EvaluationForm from '@/pages/Trainer/Evaluation/EvaluationForm';
-
 import MemberDashboard from '@/pages/Member/MemberDashboard';
 import PackageInfo from '@/pages/Member/MyPackage/PackageInfo';
 import TrainingHistory from '@/pages/Member/MyPackage/TrainingHistory';
@@ -64,6 +59,7 @@ export const router = createBrowserRouter([
     element: <Login />,
   },
   // Private Routes: Phải có Token JWT (Bọc bởi PrivateRoute)
+
   {
     path: '/',
     element: <PrivateRoute />,
@@ -86,8 +82,7 @@ export const router = createBrowserRouter([
               { path: 'dashboard', element: <TrainerDashboard /> },
               { path: 'students', element: <StudentList /> },
               { path: 'students/:id/progress', element: <TrackProgress /> },
-              { path: 'schedule', element: <ScheduleList /> },
-              { path: 'evaluation', element: <EvaluationForm /> }
+              { path: 'schedule', element: <ScheduleList /> }
             ]
           }
         ]

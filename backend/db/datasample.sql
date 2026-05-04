@@ -66,6 +66,9 @@ INSERT INTO "ServiceCategory" ("category_name", "benefits_description", "allowed
 ('VIP', 'Truy cập mọi khu vực, sử dụng phòng xông hơi, yoga, gym, hồ bơi', 'All'),
 ('Normal', 'Khu vực Gym cơ bản', 'All'),
 ('Female-only', 'Khu vực riêng cho nữ, Yoga, Spa', 'Female');
+('VIP', 'Truy cập mọi khu vực, sử dụng phòng xông hơi, yoga, gym, hồ bơi', 'All'),
+('Normal', 'Khu vực Gym cơ bản', 'All'),
+('Female-only', 'Khu vực riêng cho nữ, Yoga, Spa', 'Female');
 
 INSERT INTO "MembershipPackage" ("category_id", "package_name", "duration_days", "price", "is_active") VALUES
 (1, 'Gói VIP Tháng', 30, 1000000, true),
