@@ -133,7 +133,7 @@ const TrainerModal = ({ selectedTrainer, ptDetails = [], setSelectedTrainer, set
                     <div className="h-8 w-8 rounded-lg bg-white dark:bg-gray-800 flex items-center justify-center text-blue-600 shadow-sm border border-gray-100 dark:border-gray-700">
                       <Mail className="h-4 w-4" />
                     </div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate max-w-[140px]">{pt.email || "N/A"}</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 break-all">{pt.email || "N/A"}</span>
                   </div>
                 </div>
               </div>

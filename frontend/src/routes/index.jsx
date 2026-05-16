@@ -15,6 +15,7 @@ import EquipmentList from '@/pages/Owner/EquipmentManagement/EquipmentList';
 import EquipmentFormPage from '@/pages/Owner/EquipmentManagement/EquipmentForm';
 import StaffList from '@/pages/Owner/StaffManagement/StaffList';
 import StaffFormPage from '@/pages/Owner/StaffManagement/StaffForm';
+import StaffSalary from '@/pages/Owner/StaffManagement/StaffSalary';
 import RoomList from '@/pages/Owner/RoomManagement/RoomList';
 import RoomDetail from '@/pages/Owner/RoomManagement/RoomDetail';
 import RoomFormPage from '@/pages/Owner/RoomManagement/RoomForm';
@@ -132,6 +133,7 @@ export const router = createBrowserRouter([
               { path: 'staffs', element: <StaffList /> },
               { path: 'staffs/create', element: <StaffFormPage /> },
               { path: 'staffs/:id/edit', element: <StaffFormPage /> },
+              { path: 'staffs/:id/salary', element: <StaffSalary /> },
               { path: 'rooms', element: <RoomList /> },
               { path: 'rooms/create', element: <RoomFormPage /> },
               { path: 'rooms/:id', element: <RoomDetail /> },

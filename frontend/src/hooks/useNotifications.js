@@ -66,10 +66,15 @@ export function useNotifications() {
       await axios.post('/notifications/read-all');
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch {
-      // optimistically mark anyway
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     }
   }, []);
 
-  return { notifications, unreadCount, connected, markAllRead };
+  const markOneRead = useCallback((id) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  }, []);
+
+  return { notifications, unreadCount, connected, markAllRead, markOneRead };
 }

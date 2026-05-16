@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Trash2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Eye, ChevronLeft, ChevronRight, Wallet } from 'lucide-react';
 import { useEmployees } from '@/hooks/queries/useEmployees';
 import { useDeleteEmployee, useUpdateEmployee } from '@/hooks/mutations/useEmployeeMutation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/Common/Table';
@@ -180,6 +180,17 @@ const StaffList = () => {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
+                        <Link to={`/owner/staffs/${staff.id}/salary`} onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            title="Quản lý lương"
+                            className="h-8 w-8 text-green-600 dark:text-green-400"
+                          >
+                            <Wallet className="h-4 w-4" />
+                          </Button>
+                        </Link>
                         <Button
                           type="button"
                           variant="ghost"

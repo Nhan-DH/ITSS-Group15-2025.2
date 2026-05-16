@@ -19,11 +19,10 @@ function timeAgo(dateStr) {
 }
 
 const NotificationBell = () => {
-  const { notifications, unreadCount, markAllRead } = useNotifications();
+  const { notifications, unreadCount, markAllRead, markOneRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -32,13 +31,7 @@ const NotificationBell = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleOpen = () => {
-    setOpen((prev) => !prev);
-    if (!open && unreadCount > 0) {
-      // Mark all read when opening the panel
-      markAllRead();
-    }
-  };
+  const handleOpen = () => setOpen((prev) => !prev);
 
   return (
     <div className="relative" ref={ref}>
@@ -81,24 +74,32 @@ const NotificationBell = () => {
               notifications.map((n) => (
                 <li
                   key={n.id}
+                  onClick={() => !n.read && markOneRead(n.id)}
                   className={cn(
                     'flex gap-3 px-4 py-3 transition-colors',
-                    !n.read ? 'bg-blue-50/60 dark:bg-blue-900/10' : ''
+                    !n.read
+                      ? 'bg-blue-50/60 dark:bg-blue-900/10 cursor-pointer hover:bg-blue-100/60 dark:hover:bg-blue-900/20'
+                      : 'opacity-70'
                   )}
                 >
-                  <span
-                    className={cn(
-                      'mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide h-fit',
-                      TYPE_STYLES[n.type] || 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
+                  <div className="relative shrink-0 mt-0.5">
+                    <span
+                      className={cn(
+                        'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide h-fit block',
+                        TYPE_STYLES[n.type] || 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
+                      )}
+                    >
+                      {n.type === 'booking_request'  ? 'Mới'       :
+                       n.type === 'booking_accepted' ? 'Chấp nhận' :
+                       n.type === 'booking_rejected' ? 'Từ chối'   :
+                       n.type === 'booking_cancelled'? 'Hủy'       : 'TB'}
+                    </span>
+                    {!n.read && (
+                      <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500 ring-1 ring-white dark:ring-gray-900" />
                     )}
-                  >
-                    {n.type === 'booking_request'  ? 'Mới'    :
-                     n.type === 'booking_accepted' ? 'Chấp nhận' :
-                     n.type === 'booking_rejected' ? 'Từ chối' :
-                     n.type === 'booking_cancelled'? 'Hủy'    : 'TB'}
-                  </span>
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-900 dark:text-white leading-snug">
+                    <p className={cn('text-xs leading-snug', !n.read ? 'font-semibold text-gray-900 dark:text-white' : 'font-medium text-gray-600 dark:text-gray-400')}>
                       {n.title}
                     </p>
                     <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 leading-snug break-words">
