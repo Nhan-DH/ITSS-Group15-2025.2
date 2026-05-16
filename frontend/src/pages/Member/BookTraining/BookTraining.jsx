@@ -528,17 +528,27 @@ const BookTraining = () => {
                       const evs = key ? availableBookings[key] || [] : [];
                       const isSelected = selectedDate === key;
 
+                      const todayObj = new Date();
+                      const isToday = dayObj.isCurrentMonth
+                        && dayObj.day === todayObj.getDate()
+                        && month === todayObj.getMonth()
+                        && year === todayObj.getFullYear();
+                      const isPast = dayObj.isCurrentMonth
+                        && new Date(year, month, dayObj.day) < new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate());
+
                       return (
                         <div
                           key={idx}
-                          onClick={() => dayObj.isCurrentMonth && selectDay(dayObj.day)}
-                          className={`h-12 flex flex-col items-center justify-center rounded text-xs cursor-pointer transition-all ${
+                          onClick={() => dayObj.isCurrentMonth && !isPast && selectDay(dayObj.day)}
+                          className={`h-12 flex flex-col items-center justify-center rounded text-xs transition-all ${
                             isSelected
-                              ? 'bg-blue-600 text-white font-bold'
-                              : dayObj.isCurrentMonth
-                              ? 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
-                              : 'text-gray-300 dark:text-gray-600'
-                          }`}
+                              ? 'bg-blue-600 text-white font-bold cursor-pointer'
+                              : isPast
+                                ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                                : dayObj.isCurrentMonth
+                                  ? 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer'
+                                  : 'text-gray-300 dark:text-gray-600'
+                          } ${isToday && !isSelected ? 'ring-2 ring-blue-500 ring-inset font-bold text-blue-600 dark:text-blue-400' : ''}`}
                         >
                           <span className="text-sm font-semibold">{dayObj.day}</span>
                         </div>
