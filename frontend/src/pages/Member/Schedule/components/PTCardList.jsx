@@ -39,10 +39,6 @@ const PTCardList = ({ ptDetails, setSelectedTrainer, bookings = [] }) => {
                     <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
                       {pt.full_name}
                     </h3>
-                    <div className="flex items-center gap-1 text-xs font-bold text-yellow-600">
-                      <Star className="h-3 w-3 fill-current" />
-                      4.9
-                    </div>
                   </div>
                   
                   <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
