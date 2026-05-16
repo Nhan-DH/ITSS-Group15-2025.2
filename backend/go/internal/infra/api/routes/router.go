@@ -44,11 +44,13 @@ func NewRouter(
 		return mw(handler)
 	}
 
-	// /pt-details/me must be registered BEFORE the wildcard /pt-details/{employeeID}
-	// in ownerManager — gorilla/mux matches in registration order, so the wildcard
-	// would intercept and block PT users before reaching allRoles otherwise.
+	// These "me" routes must be registered BEFORE subrouters, because ownerManager has
+	// wildcard routes like /members/{memberId}/subscriptions that would match "me" as a
+	// variable, blocking member/PT users before they reach allRoles.
 	authenticated.Handle("/pt-details/me", auth(isAnyRole, ptDetailHandler.GetMe)).Methods("GET")
 	authenticated.Handle("/pt-details/me", auth(isAnyRole, ptDetailHandler.UpdateMe)).Methods("PUT")
+	authenticated.Handle("/members/me/subscriptions", auth(isAnyRole, subscriptionHandler.GetMySubscriptions)).Methods("GET")
+	authenticated.Handle("/members/me/feedbacks", auth(isAnyRole, feedbackHandler.GetMyFeedbacks)).Methods("GET")
 
 	// Owner/Manager only routes (admin and configuration)
 	ownerManager := authenticated.PathPrefix("").Subrouter()
