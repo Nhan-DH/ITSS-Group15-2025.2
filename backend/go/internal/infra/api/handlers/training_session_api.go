@@ -14,15 +14,16 @@ import (
 )
 
 type TrainingSessionHandler struct {
-	usecase training_session_usecase.TrainingSessionUsecase
+	usecase      training_session_usecase.TrainingSessionUsecase
+	memberUsecase member_usecase.MemberUsecase
 }
 
 func NewTrainingSessionHandler(u training_session_usecase.TrainingSessionUsecase, mu member_usecase.MemberUsecase) *TrainingSessionHandler {
 	return &TrainingSessionHandler{usecase: u, memberUsecase: mu}
-
 }
 
 func (h *TrainingSessionHandler) Create(w http.ResponseWriter, r *http.Request) {
+	var trainingSession entity.TrainingSession
 	if err := json.NewDecoder(r.Body).Decode(&trainingSession); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

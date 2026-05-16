@@ -21,21 +21,6 @@ const ratingLabels = {
   5: 'Rất hài lòng'
 };
 
-const feedbackCategories = [
-  { value: 'equipment', label: 'Thiết bị máy tập' },
-  { value: 'service', label: 'Dịch vụ và vệ sinh khu vực chung' },
-  { value: 'staff', label: 'Nhân viên / Huấn luyện viên' },
-  { value: 'other', label: 'Vấn đề khác' }
-];
-
-const ratingLabels = {
-  1: 'Không hài lòng',
-  2: 'Chưa hài lòng',
-  3: 'Bình thường',
-  4: 'Hài lòng',
-  5: 'Rất hài lòng'
-};
-
 const SendFeedback = () => {
   const [rating, setRating] = useState(5);
   const [category, setCategory] = useState('service');

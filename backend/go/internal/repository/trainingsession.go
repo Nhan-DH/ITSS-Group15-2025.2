@@ -16,8 +16,11 @@ func NewTrainingSessionRepository(db *sql.DB) adapter.TrainingSessionRepository 
 }
 
 func (r *trainingSessionRepository) Create(trainingSession *entity.TrainingSession) error {
-
+	var facilityID interface{}
+	if trainingSession.FacilityID != 0 {
+		facilityID = trainingSession.FacilityID
 	}
+	query := `INSERT INTO "TrainingSession" (booking_id, facility_id, session_time, attendance_status, pt_feedback, member_confirmed_at, physical_condition, session_result, nutrition_advice) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`
 	return r.db.QueryRow(query, trainingSession.BookingID, facilityID, trainingSession.SessionTime, trainingSession.AttendanceStatus, trainingSession.PTFeedback, trainingSession.MemberConfirmedAt, trainingSession.PhysicalCondition, trainingSession.SessionResult, trainingSession.NutritionAdvice).Scan(&trainingSession.ID)
 }
 
