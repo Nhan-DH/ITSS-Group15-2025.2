@@ -26,16 +26,17 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-const RetentionChart = ({ className, title, description }) => {
+const RetentionChart = ({ className, title, description, data }) => {
   const isDark = useThemeStore((state) => state.theme === 'dark');
   const { t } = useTranslation('owner');
 
   const chartData = React.useMemo(() => {
-    return rawData.map((item, idx) => ({
+    const sourceData = data || rawData;
+    return sourceData.map((item, idx) => ({
       ...item,
-      name: t('dashboard.chart.week_name', { count: idx + 1, defaultValue: `Week ${idx + 1}` }),
+      name: t('dashboard.chart.week_name', { count: idx + 1, defaultValue: `Tuần ${idx + 1}` }),
     }));
-  }, [t]);
+  }, [data, t]);
 
   const displayTitle = title || t('dashboard.chart.retention_title', { defaultValue: 'Tỷ lệ giữ chân' });
   const displayDescription = description || t('dashboard.chart.retention_desc', { defaultValue: 'Tỷ lệ hội viên gia hạn so với tuần trước' });
