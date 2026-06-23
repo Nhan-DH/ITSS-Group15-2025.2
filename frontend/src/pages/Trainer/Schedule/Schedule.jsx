@@ -110,7 +110,7 @@ const TrainerSchedule = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const first = new Date(year, month, 1).getDay();
-    const offset = first === 0 ? 6 : first - 1;
+    const offset = first;
     const dim = new Date(year, month + 1, 0).getDate();
     const prev = new Date(year, month, 0).getDate();
     const days = [];
