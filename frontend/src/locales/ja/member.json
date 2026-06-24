@@ -145,7 +145,8 @@
       "scheduled": "マイスケジュール",
       "booking": "セッション予約",
       "requests": "リクエスト",
-      "evaluations": "評価"
+      "evaluations": "評価",
+      "checkin_history": "チェックイン履歴"
     },
     "calendar": {
       "days": {
@@ -250,7 +251,10 @@
       "book_btn": "予約",
       "pending": "本日予約済み",
       "limit_reached": "上限到達 (5)",
-      "no_trainers": "現在利用可能なトレーナーはいません。"
+      "no_trainers": "現在利用可能なトレーナーはいません。",
+      "no_pt_working_today": "本日勤務のPTはいません",
+      "slots_today": "本日{{count}}枠",
+      "try_another_day": "スケジュールのあるPTを表示するには、別の日付を選択してください。"
     },
     "evaluation": {
       "no_eval": "評価なし",
@@ -335,7 +339,113 @@
     "detail_trainer_label": "トレーナー",
     "denied_detail_title": "拒否の詳細",
     "denied_request_label": "リクエスト",
-    "denied_reason_label": "拒否理由"
+    "denied_reason_label": "拒否理由",
+    "role_trainer": "トレーナー",
+    "default_session_name": "パーソナルセッション",
+    "default_location": "ジムルーム",
+    "pt_label": "PT",
+    "programs": {
+      "yoga": "ヨガ",
+      "strength_training": "筋力トレーニング",
+      "cardio": "有酸素運動",
+      "hiit": "HIIT",
+      "pilates": "ピラティス",
+      "crossfit": "クロスフィット",
+      "zumba": "ズンバ",
+      "boxing": "ボクシング",
+      "personal_training": "パーソナルトレーニング"
+    },
+    "sessions": {
+      "aerobic": "エアロビクス・クラス",
+      "personal_pt": "パーソナルPT",
+      "zumba": "ズンバ・クラス",
+      "strength": "ストレングス・クラス",
+      "pilates": "ピラティス・クラス"
+    },
+    "locations": {
+      "studio_a": "スタジオA",
+      "studio_b": "スタジオB",
+      "room_a1": "A1教室",
+      "room_b1": "B1教室",
+      "room_a3": "A3教室",
+      "general_room": "トレーニング室"
+    },
+    "trainers": {
+      "minh": {
+        "name": "グエン・ミン",
+        "specialization": "筋力トレーニング、パワーリフティング",
+        "awards": {
+          "0": {
+            "title": "全国ボディビル選手権 金メダル"
+          },
+          "1": {
+            "title": "メンズフィジーク 準優勝"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "シニアPT — ActiveGym ハノイ",
+            "duration": "2021年 – 現在 · 4年間"
+          },
+          "1": {
+            "position": "パーソナルトレーナー — California Fitness",
+            "duration": "2018年 – 2021年 · 3年間"
+          }
+        }
+      },
+      "b": {
+        "name": "レ・ティ・B",
+        "specialization": "有酸素運動、HIIT、クロスフィット",
+        "awards": {
+          "0": {
+            "title": "クロスフィット地域チャンピオン"
+          },
+          "1": {
+            "title": "最優秀HIITインストラクター"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "ヘッドインストラクター — ActiveGym ハノイ",
+            "duration": "2020年 – 現在 · 5年間"
+          },
+          "1": {
+            "position": "フィットネスコーチ — Pure Gym",
+            "duration": "2017年 – 2020年 · 3年間"
+          }
+        }
+      },
+      "d": {
+        "name": "ファム・ティ・D",
+        "specialization": "パーソナルトレーニング、体幹トレーニング",
+        "awards": {
+          "0": {
+            "title": "最優秀パーソナルトレーナー賞"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "シニアPTマネージャー — ActiveGym ハノイ",
+            "duration": "2019年 – 現在 · 6年間"
+          }
+        }
+      },
+      "c": {
+        "name": "チャン・ヴァン・C",
+        "specialization": "ピラティス、柔軟性、リハビリテーション",
+        "awards": {
+          "0": {
+            "title": "ピラティス・マスターインストラクター賞"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "ピラティス・マスターインストラクター — ActiveGym ハノイ",
+            "duration": "2018年 – 現在 · 7年間"
+          }
+        }
+      }
+    }
   },
   "register": {
     "title": "プランに登録",

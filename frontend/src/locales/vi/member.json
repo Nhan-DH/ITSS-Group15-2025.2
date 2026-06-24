@@ -251,7 +251,10 @@
       "book_btn": "Đặt lịch ngay",
       "pending": "Đã đặt ngày này",
       "limit_reached": "Vượt giới hạn (5)",
-      "no_trainers": "Hiện chưa có huấn luyện viên nào sẵn sàng."
+      "no_trainers": "Hiện chưa có huấn luyện viên nào sẵn sàng.",
+      "no_pt_working_today": "Không có PT làm việc hôm nay",
+      "slots_today": "{{count}} slot hôm nay",
+      "try_another_day": "Thử chọn ngày khác để xem danh sách PT có lịch"
     },
     "evaluation": {
       "no_eval": "Không có đánh giá",
@@ -353,7 +356,113 @@
     "detail_trainer_label": "Trainer",
     "denied_detail_title": "Chi tiết từ chối",
     "denied_request_label": "Yêu cầu",
-    "denied_reason_label": "Lý do từ chối"
+    "denied_reason_label": "Lý do từ chối",
+    "role_trainer": "HUẤN LUYỆN VIÊN",
+    "default_session_name": "Buổi tập cá nhân",
+    "default_location": "Phòng tập thể hình",
+    "pt_label": "PT",
+    "programs": {
+      "yoga": "Yoga",
+      "strength_training": "Tập thể lực",
+      "cardio": "Cardio",
+      "hiit": "HIIT",
+      "pilates": "Pilates",
+      "crossfit": "CrossFit",
+      "zumba": "Zumba",
+      "boxing": "Boxing",
+      "personal_training": "Huấn luyện cá nhân"
+    },
+    "sessions": {
+      "aerobic": "Lớp Aerobic",
+      "personal_pt": "PT cá nhân",
+      "zumba": "Lớp Zumba",
+      "strength": "Lớp Strength",
+      "pilates": "Lớp Pilates"
+    },
+    "locations": {
+      "studio_a": "Studio A",
+      "studio_b": "Studio B",
+      "room_a1": "Phòng A1",
+      "room_b1": "Phòng B1",
+      "room_a3": "Phòng A3",
+      "general_room": "Phòng tập"
+    },
+    "trainers": {
+      "minh": {
+        "name": "Nguyễn Minh",
+        "specialization": "Tập thể lực (Strength Training), Powerlifting",
+        "awards": {
+          "0": {
+            "title": "HCV Giải Vô địch Thể hình Quốc gia"
+          },
+          "1": {
+            "title": "Á quân Men's Physique Đông Nam Á"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "PT Cấp cao — ActiveGym Hà Nội",
+            "duration": "2021 – nay · 4 năm"
+          },
+          "1": {
+            "position": "Huấn luyện viên cá nhân — California Fitness",
+            "duration": "2018 – 2021 · 3 năm"
+          }
+        }
+      },
+      "b": {
+        "name": "Lê Thị B",
+        "specialization": "Cardio, HIIT, CrossFit",
+        "awards": {
+          "0": {
+            "title": "Vô địch CrossFit Khu vực"
+          },
+          "1": {
+            "title": "Huấn luyện viên HIIT Xuất sắc nhất"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "Trưởng nhóm Huấn luyện — ActiveGym Hà Nội",
+            "duration": "2020 – nay · 5 năm"
+          },
+          "1": {
+            "position": "Huấn luyện viên Thể hình — Pure Gym",
+            "duration": "2017 – 2020 · 3 năm"
+          }
+        }
+      },
+      "d": {
+        "name": "Phạm Thị D",
+        "specialization": "Huấn luyện cá nhân, Tập cơ lõi (Core Training)",
+        "awards": {
+          "0": {
+            "title": "Huấn luyện viên cá nhân của Năm"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "Quản lý PT Cấp cao — ActiveGym Hà Nội",
+            "duration": "2019 – nay · 6 năm"
+          }
+        }
+      },
+      "c": {
+        "name": "Trần Văn C",
+        "specialization": "Pilates, Kéo giãn & Phục hồi chức năng",
+        "awards": {
+          "0": {
+            "title": "Giải thưởng Huấn luyện viên Master Pilates"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "Huấn luyện viên Master Pilates — ActiveGym Hà Nội",
+            "duration": "2018 – nay · 7 năm"
+          }
+        }
+      }
+    }
   },
   "register": {
     "title": "Đăng Ký Gói Tập",

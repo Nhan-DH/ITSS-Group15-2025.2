@@ -6,6 +6,26 @@ const BookTraining = () => {
   const { t, i18n } = useTranslation('member');
   const locale = i18n.language === 'ja' ? 'ja-JP' : i18n.language === 'en' ? 'en-US' : 'vi-VN';
 
+  const getTranslatedName = (name) => {
+    if (name === 'Buổi tập') return t('book_training.default_session_name', { defaultValue: 'Buổi tập' });
+    if (name === 'PT cá nhân') return t('book_training.sessions.personal_pt', { defaultValue: 'PT cá nhân' });
+    if (name === 'Lớp Pilates') return t('book_training.sessions.pilates', { defaultValue: 'Lớp Pilates' });
+    if (name === 'Lớp Aerobic') return t('book_training.sessions.aerobic', { defaultValue: 'Lớp Aerobic' });
+    if (name === 'Lớp Zumba') return t('book_training.sessions.zumba', { defaultValue: 'Lớp Zumba' });
+    if (name === 'Lớp Strength') return t('book_training.sessions.strength', { defaultValue: 'Lớp Strength' });
+    return name;
+  };
+
+  const getTranslatedLocation = (loc) => {
+    if (loc === 'Phòng tập') return t('book_training.locations.general_room', { defaultValue: 'Phòng tập' });
+    if (loc === 'Phòng A3') return t('book_training.locations.room_a3', { defaultValue: 'Phòng A3' });
+    if (loc === 'Phòng B1') return t('book_training.locations.room_b1', { defaultValue: 'Phòng B1' });
+    if (loc === 'Phòng A1') return t('book_training.locations.room_a1', { defaultValue: 'Phòng A1' });
+    if (loc === 'Studio A') return t('book_training.locations.studio_a', { defaultValue: 'Studio A' });
+    if (loc === 'Studio B') return t('book_training.locations.studio_b', { defaultValue: 'Studio B' });
+    return loc;
+  };
+
   const [activeTab, setActiveTab] = useState('request');
   const [selectedDate, setSelectedDate] = useState('2026-04-14');
   const [selectedTrainer, setSelectedTrainer] = useState(null);
@@ -72,16 +92,17 @@ const BookTraining = () => {
 
   const trainerInfo = {
     'Nguyễn Minh': {
-      name: 'Nguyễn Minh', birthYear: 1992,
-      specialization: 'Strength Training, Powerlifting',
+      name: t('book_training.trainers.minh.name', { defaultValue: 'Nguyễn Minh' }),
+      birthYear: 1992,
+      specialization: t('book_training.trainers.minh.specialization', { defaultValue: 'Strength Training, Powerlifting' }),
       phone: '+84 912 345 678', email: 'nguyen.minh@gym.com',
       awards: [
-        { icon: '🥇', title: 'HCV Bodybuilding Championship', org: 'VNBF 2023' },
-        { icon: '🥈', title: "Á quân Men's Physique", org: 'WBPF 2022' }
+        { icon: '🥇', title: t('book_training.trainers.minh.awards.0.title', { defaultValue: 'HCV Bodybuilding Championship' }), org: 'VNBF 2023' },
+        { icon: '🥈', title: t('book_training.trainers.minh.awards.1.title', { defaultValue: "Á quân Men's Physique" }), org: 'WBPF 2022' }
       ],
       experience: [
-        { position: 'Senior PT — ActiveGym Hà Nội', duration: '2021 – nay · 4 năm' },
-        { position: 'Personal Trainer — California Fitness', duration: '2018 – 2021 · 3 năm' }
+        { position: t('book_training.trainers.minh.experience.0.position', { defaultValue: 'Senior PT — ActiveGym Hà Nội' }), duration: t('book_training.trainers.minh.experience.0.duration', { defaultValue: '2021 – nay · 4 năm' }) },
+        { position: t('book_training.trainers.minh.experience.1.position', { defaultValue: 'Personal Trainer — California Fitness' }), duration: t('book_training.trainers.minh.experience.1.duration', { defaultValue: '2018 – 2021 · 3 năm' }) }
       ],
       measurements: {
         height: { value: 180, unit: 'cm' }, weight: { value: 82, unit: 'kg' },
@@ -91,16 +112,17 @@ const BookTraining = () => {
       }
     },
     'Lê Thị B': {
-      name: 'Lê Thị B', birthYear: 1995,
-      specialization: 'Cardio, HIIT, CrossFit',
+      name: t('book_training.trainers.b.name', { defaultValue: 'Lê Thị B' }),
+      birthYear: 1995,
+      specialization: t('book_training.trainers.b.specialization', { defaultValue: 'Cardio, HIIT, CrossFit' }),
       phone: '+84 912 345 679', email: 'le.thib@gym.com',
       awards: [
-        { icon: '🥇', title: 'CrossFit Regional Champion', org: 'Asia 2023' },
-        { icon: '🏆', title: 'Best HIIT Instructor', org: 'ActiveGym 2024' }
+        { icon: '🥇', title: t('book_training.trainers.b.awards.0.title', { defaultValue: 'CrossFit Regional Champion' }), org: 'Asia 2023' },
+        { icon: '🏆', title: t('book_training.trainers.b.awards.1.title', { defaultValue: 'Best HIIT Instructor' }), org: 'ActiveGym 2024' }
       ],
       experience: [
-        { position: 'Head Instructor — ActiveGym Hà Nội', duration: '2020 – nay · 5 năm' },
-        { position: 'Fitness Coach — Pure Gym', duration: '2017 – 2020 · 3 năm' }
+        { position: t('book_training.trainers.b.experience.0.position', { defaultValue: 'Head Instructor — ActiveGym Hà Nội' }), duration: t('book_training.trainers.b.experience.0.duration', { defaultValue: '2020 – nay · 5 năm' }) },
+        { position: t('book_training.trainers.b.experience.1.position', { defaultValue: 'Fitness Coach — Pure Gym' }), duration: t('book_training.trainers.b.experience.1.duration', { defaultValue: '2017 – 2020 · 3 năm' }) }
       ],
       measurements: {
         height: { value: 165, unit: 'cm' }, weight: { value: 58, unit: 'kg' },
@@ -110,14 +132,15 @@ const BookTraining = () => {
       }
     },
     'Phạm Thị D': {
-      name: 'Phạm Thị D', birthYear: 1993,
-      specialization: 'Personal Training, Core Training',
+      name: t('book_training.trainers.d.name', { defaultValue: 'Phạm Thị D' }),
+      birthYear: 1993,
+      specialization: t('book_training.trainers.d.specialization', { defaultValue: 'Personal Training, Core Training' }),
       phone: '+84 912 345 680', email: 'pham.thid@gym.com',
       awards: [
-        { icon: '🥇', title: 'Personal Trainer of the Year', org: 'Vietnam Fitness 2023' }
+        { icon: '🥇', title: t('book_training.trainers.d.awards.0.title', { defaultValue: 'Personal Trainer of the Year' }), org: 'Vietnam Fitness 2023' }
       ],
       experience: [
-        { position: 'Senior PT Manager — ActiveGym Hà Nội', duration: '2019 – nay · 6 năm' }
+        { position: t('book_training.trainers.d.experience.0.position', { defaultValue: 'Senior PT Manager — ActiveGym Hà Nội' }), duration: t('book_training.trainers.d.experience.0.duration', { defaultValue: '2019 – nay · 6 năm' }) }
       ],
       measurements: {
         height: { value: 168, unit: 'cm' }, weight: { value: 62, unit: 'kg' },
@@ -127,14 +150,15 @@ const BookTraining = () => {
       }
     },
     'Trần Văn C': {
-      name: 'Trần Văn C', birthYear: 1990,
-      specialization: 'Pilates, Flexibility, Rehabilitation',
+      name: t('book_training.trainers.c.name', { defaultValue: 'Trần Văn C' }),
+      birthYear: 1990,
+      specialization: t('book_training.trainers.c.specialization', { defaultValue: 'Pilates, Flexibility, Rehabilitation' }),
       phone: '+84 912 345 682', email: 'tran.vanc@gym.com',
       awards: [
-        { icon: '🥇', title: 'Master Instructor Award', org: 'Pilates Association 2023' }
+        { icon: '🥇', title: t('book_training.trainers.c.awards.0.title', { defaultValue: 'Master Instructor Award' }), org: 'Pilates Association 2023' }
       ],
       experience: [
-        { position: 'Pilates Master Instructor — ActiveGym Hà Nội', duration: '2018 – nay · 7 năm' }
+        { position: t('book_training.trainers.c.experience.0.position', { defaultValue: 'Pilates Master Instructor — ActiveGym Hà Nội' }), duration: t('book_training.trainers.c.experience.0.duration', { defaultValue: '2018 – nay · 7 năm' }) }
       ],
       measurements: {
         height: { value: 175, unit: 'cm' }, weight: { value: 75, unit: 'kg' },
@@ -259,7 +283,7 @@ const BookTraining = () => {
                       className="w-full h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-950 dark:border-gray-800 dark:text-white"
                     >
                       <option value="">{t('book_training.program_placeholder')}</option>
-                      {trainingPrograms.map((prog) => <option key={prog} value={prog}>{prog}</option>)}
+                      {trainingPrograms.map((prog) => <option key={prog} value={prog}>{t(`book_training.programs.${prog.toLowerCase().replace(/ /g, '_')}`, { defaultValue: prog })}</option>)}
                     </select>
                   </div>
                   <div>
@@ -373,10 +397,10 @@ const BookTraining = () => {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xl font-semibold text-blue-600 dark:text-blue-400">
-                        {trainerName.charAt(0)}
+                        {trainerInfo[trainerName].name.charAt(0)}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white">{trainerName}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{trainerInfo[trainerName].name}</h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400">{trainerInfo[trainerName].specialization}</p>
                       </div>
                     </div>
@@ -414,16 +438,16 @@ const BookTraining = () => {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-gray-900 dark:text-white">{request.name}</h3>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">{getTranslatedName(request.name)}</h3>
                           <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${getStatusBadgeClass(request.status)}`}>
                             {t(`schedule.status.${request.status}`, { defaultValue: request.status })}
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                          {request.startTime} - {request.endTime} • {request.location}
+                          {request.startTime} - {request.endTime} • {getTranslatedLocation(request.location)}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          PT {request.trainer} • {t('book_training.sent_on')} {request.submittedAt}
+                          {t('book_training.pt_label', { defaultValue: 'PT' })} {trainerInfo[request.trainer]?.name || request.trainer} • {t('book_training.sent_on')} {request.submittedAt}
                         </p>
                       </div>
                       <div className="text-right">
@@ -468,7 +492,7 @@ const BookTraining = () => {
                   <div className="text-center">
                     <div className="text-base font-semibold text-gray-900 dark:text-white">{trainerInfo[selectedTrainer].name}</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{t('book_training.birth_year_label')}: {trainerInfo[selectedTrainer].birthYear}</div>
-                    <span className="inline-block mt-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded-full">TRAINER</span>
+                    <span className="inline-block mt-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded-full">{t('book_training.role_trainer', { defaultValue: 'TRAINER' })}</span>
                   </div>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
@@ -566,9 +590,9 @@ const BookTraining = () => {
             </div>
             <form onSubmit={handleBookingSubmit} className="p-6 space-y-4">
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <div className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-2">Trainer: {bookingForm.trainer}</div>
+                <div className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-2">{t('book_training.detail_trainer_label')}: {trainerInfo[bookingForm.trainer]?.name || bookingForm.trainer}</div>
                 <div className="text-xs text-blue-800 dark:text-blue-400">
-                  <div>{formData.trainingProgram}</div>
+                  <div>{t(`book_training.programs.${formData.trainingProgram.toLowerCase().replace(/ /g, '_')}`, { defaultValue: formData.trainingProgram })}</div>
                   <div>{formData.sessionCount}</div>
                 </div>
               </div>
@@ -626,10 +650,10 @@ const BookTraining = () => {
                 <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
-            <div className="p-6 space-y-4 overflow-y-auto">
+            <div className="p-6 space-y-4">
               <div>
                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">{t('book_training.detail_title')}</div>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">{selectedWorkout.name}</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{getTranslatedName(selectedWorkout.name)}</p>
               </div>
               <div>
                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">{t('book_training.detail_status_label')}</div>
@@ -643,7 +667,7 @@ const BookTraining = () => {
               </div>
               <div>
                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">{t('book_training.detail_trainer_label')}</div>
-                <p className="text-sm text-gray-900 dark:text-white">{selectedWorkout.trainer}</p>
+                <p className="text-sm text-gray-900 dark:text-white">{trainerInfo[selectedWorkout.trainer]?.name || selectedWorkout.trainer}</p>
               </div>
             </div>
             <div className="flex gap-3 border-t border-gray-200 dark:border-gray-800 p-6">
@@ -668,7 +692,7 @@ const BookTraining = () => {
             <div className="p-5 space-y-4">
               <div>
                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">{t('book_training.denied_request_label')}</div>
-                <p className="text-base font-bold text-gray-900 dark:text-white">{selectedDeniedRequest.name}</p>
+                <p className="text-base font-bold text-gray-900 dark:text-white">{getTranslatedName(selectedDeniedRequest.name)}</p>
               </div>
               <div>
                 <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">{t('book_training.denied_reason_label')}</div>

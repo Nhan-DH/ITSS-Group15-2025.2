@@ -50,8 +50,8 @@ const PTCardList = ({ ptDetails, setSelectedTrainer, bookings = [], selectedDate
       {ptDetails.length === 0 ? (
         <div className="text-center py-16">
           <div className="text-5xl mb-4">🗓️</div>
-          <p className="text-gray-700 dark:text-gray-200 font-semibold mb-1">Không có PT làm việc hôm nay</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500">Thử chọn ngày khác để xem danh sách PT có lịch</p>
+          <p className="text-gray-700 dark:text-gray-200 font-semibold mb-1">{t('schedule.pt_card.no_pt_working_today')}</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">{t('schedule.pt_card.try_another_day')}</p>
         </div>
       ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -91,17 +91,17 @@ const PTCardList = ({ ptDetails, setSelectedTrainer, bookings = [], selectedDate
                   <div className="flex flex-wrap items-center gap-1.5 mb-4">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-[11px] font-medium text-gray-600 dark:text-gray-400">
                       <Clock className="h-3 w-3" />
-                      {pt.experience_years || 0} năm KN
+                      {t('schedule.pt_card.experience', { years: pt.experience_years || 0 })}
                     </span>
                     {slotsToday.length > 0 && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50">
                         <Calendar className="h-3 w-3" />
-                        {slotsToday.length} slot hôm nay
+                        {t('schedule.pt_card.slots_today', { count: slotsToday.length })}
                       </span>
                     )}
                     {isPending && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-yellow-50 dark:bg-yellow-900/20 text-[11px] font-semibold text-yellow-700 dark:text-yellow-400 border border-yellow-100 dark:border-yellow-800/50">
-                        Đã đặt
+                        {t('schedule.pt_card.pending')}
                       </span>
                     )}
                   </div>
@@ -116,8 +116,8 @@ const PTCardList = ({ ptDetails, setSelectedTrainer, bookings = [], selectedDate
                     </button>
 
                     {isLimitReached ? (
-                      <div className="flex-1 py-1.5 text-center bg-gray-100 dark:bg-gray-800 text-gray-400 text-[11px] font-bold rounded-lg cursor-not-allowed" title="Đã đạt giới hạn 5 lượt đặt">
-                        Giới hạn
+                      <div className="flex-1 py-1.5 text-center bg-gray-100 dark:bg-gray-800 text-gray-400 text-[11px] font-bold rounded-lg cursor-not-allowed" title={t('schedule.pt_card.limit_reached')}>
+                        {t('schedule.pt_card.limit_reached')}
                       </div>
                     ) : isPending ? (
                       <div className="flex-1 py-1.5 text-center bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-[11px] font-bold rounded-lg border border-yellow-100 dark:border-yellow-800/50">

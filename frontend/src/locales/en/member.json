@@ -145,7 +145,8 @@
       "scheduled": "My Schedule",
       "booking": "Book Session",
       "requests": "My Requests",
-      "evaluations": "Session Reviews"
+      "evaluations": "Session Reviews",
+      "checkin_history": "Check-in History"
     },
     "calendar": {
       "days": {
@@ -250,7 +251,10 @@
       "book_btn": "Book Now",
       "pending": "Booked this day",
       "limit_reached": "Limit Reached",
-      "no_trainers": "No trainers available at the moment."
+      "no_trainers": "No trainers available at the moment.",
+      "no_pt_working_today": "No PT working today",
+      "slots_today": "{{count}} slot(s) today",
+      "try_another_day": "Try choosing another date to see the list of available PTs."
     },
     "evaluation": {
       "no_eval": "No evaluations",
@@ -352,7 +356,113 @@
     "detail_trainer_label": "Trainer",
     "denied_detail_title": "Rejection Details",
     "denied_request_label": "Request",
-    "denied_reason_label": "Rejection Reason"
+    "denied_reason_label": "Rejection Reason",
+    "role_trainer": "TRAINER",
+    "default_session_name": "Personal Session",
+    "default_location": "Gym Room",
+    "pt_label": "PT",
+    "programs": {
+      "yoga": "Yoga",
+      "strength_training": "Strength Training",
+      "cardio": "Cardio",
+      "hiit": "HIIT",
+      "pilates": "Pilates",
+      "crossfit": "CrossFit",
+      "zumba": "Zumba",
+      "boxing": "Boxing",
+      "personal_training": "Personal Training"
+    },
+    "sessions": {
+      "aerobic": "Aerobic Class",
+      "personal_pt": "Personal PT",
+      "zumba": "Zumba Class",
+      "strength": "Strength Class",
+      "pilates": "Pilates Class"
+    },
+    "locations": {
+      "studio_a": "Studio A",
+      "studio_b": "Studio B",
+      "room_a1": "Room A1",
+      "room_b1": "Room B1",
+      "room_a3": "Room A3",
+      "general_room": "Gym Hall"
+    },
+    "trainers": {
+      "minh": {
+        "name": "Nguyen Minh",
+        "specialization": "Strength Training, Powerlifting",
+        "awards": {
+          "0": {
+            "title": "Gold Medal in National Bodybuilding Championship"
+          },
+          "1": {
+            "title": "Men's Physique Runner-up"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "Senior PT — ActiveGym Hanoi",
+            "duration": "2021 – Present · 4 years"
+          },
+          "1": {
+            "position": "Personal Trainer — California Fitness",
+            "duration": "2018 – 2021 · 3 years"
+          }
+        }
+      },
+      "b": {
+        "name": "Le Thi B",
+        "specialization": "Cardio, HIIT, CrossFit",
+        "awards": {
+          "0": {
+            "title": "CrossFit Regional Champion"
+          },
+          "1": {
+            "title": "Best HIIT Instructor"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "Head Instructor — ActiveGym Hanoi",
+            "duration": "2020 – Present · 5 years"
+          },
+          "1": {
+            "position": "Fitness Coach — Pure Gym",
+            "duration": "2017 – 2020 · 3 years"
+          }
+        }
+      },
+      "d": {
+        "name": "Pham Thi D",
+        "specialization": "Personal Training, Core Training",
+        "awards": {
+          "0": {
+            "title": "Personal Trainer of the Year"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "Senior PT Manager — ActiveGym Hanoi",
+            "duration": "2019 – Present · 6 years"
+          }
+        }
+      },
+      "c": {
+        "name": "Tran Van C",
+        "specialization": "Pilates, Flexibility, Rehabilitation",
+        "awards": {
+          "0": {
+            "title": "Master Instructor Award"
+          }
+        },
+        "experience": {
+          "0": {
+            "position": "Pilates Master Instructor — ActiveGym Hanoi",
+            "duration": "2018 – Present · 7 years"
+          }
+        }
+      }
+    }
   },
   "register": {
     "title": "Register a Package",
